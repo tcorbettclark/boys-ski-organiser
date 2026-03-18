@@ -36,4 +36,5 @@ This is a typical React application structure. The application uses bun and vite
 
 Key concepts:
 - **React** is used for the UI components
-- **JavaScript** is the main programming language.
+- **JavaScript** is the main programming language. No Typescript.
+
