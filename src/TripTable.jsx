@@ -1,8 +1,8 @@
-import TripRow from "./TripRow";
+import TripRow from './TripRow'
 
-export default function TripTable({ trips, onUpdated, onDeleted }) {
+export default function TripTable ({ trips, onUpdated, onDeleted }) {
   if (trips.length === 0) {
-    return <p style={styles.empty}>No trips yet.</p>;
+    return <p style={styles.empty}>No trips yet.</p>
   }
 
   return (
@@ -11,7 +11,7 @@ export default function TripTable({ trips, onUpdated, onDeleted }) {
         <tr>
           <th style={styles.th}>Name</th>
           <th style={styles.th}>Description</th>
-          <th style={styles.th}></th>
+          <th style={styles.th} />
         </tr>
       </thead>
       <tbody>
@@ -25,26 +25,26 @@ export default function TripTable({ trips, onUpdated, onDeleted }) {
         ))}
       </tbody>
     </table>
-  );
+  )
 }
 
 const styles = {
   empty: {
-    color: "#666",
-    padding: "40px",
-    textAlign: "center",
+    color: '#666',
+    padding: '40px',
+    textAlign: 'center'
   },
   table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: "14px",
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '14px'
   },
   th: {
-    textAlign: "left",
-    padding: "10px 14px",
-    background: "#f5f5f5",
-    borderBottom: "2px solid #e0e0e0",
-    fontWeight: "600",
-    color: "#444",
-  },
-};
+    textAlign: 'left',
+    padding: '10px 14px',
+    background: '#f5f5f5',
+    borderBottom: '2px solid #e0e0e0',
+    fontWeight: '600',
+    color: '#444'
+  }
+}

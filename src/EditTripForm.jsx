@@ -1,69 +1,69 @@
-import { useState } from "react";
-import { updateTrip, deleteTrip } from "./database";
-import Field from "./Field";
+import { useState } from 'react'
+import { updateTrip, deleteTrip } from './database'
+import Field from './Field'
 
-export default function EditTripForm({ trip, onUpdated, onDeleted, onCancel }) {
+export default function EditTripForm ({ trip, onUpdated, onDeleted, onCancel }) {
   const [form, setForm] = useState({
     name: trip.name,
-    description: trip.description || "",
-  });
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+    description: trip.description || ''
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  function handleChange (e) {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setSaving(true);
+  async function handleSubmit (e) {
+    e.preventDefault()
+    setError('')
+    setSaving(true)
     try {
-      const updated = await updateTrip(trip.$id, form);
-      onUpdated(updated);
+      const updated = await updateTrip(trip.$id, form)
+      onUpdated(updated)
     } catch (err) {
-      setError(err.message);
-      setSaving(false);
+      setError(err.message)
+      setSaving(false)
     }
   }
 
-  async function handleDelete() {
-    if (!confirm("Delete this trip?")) return;
-    setSaving(true);
+  async function handleDelete () {
+    if (!window.confirm('Delete this trip?')) return
+    setSaving(true)
     try {
-      await deleteTrip(trip.$id);
-      onDeleted();
+      await deleteTrip(trip.$id)
+      onDeleted()
     } catch (err) {
-      setError(err.message);
-      setSaving(false);
+      setError(err.message)
+      setSaving(false)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <Field
-        label="Name"
-        name="name"
+        label='Name'
+        name='name'
         value={form.name}
         onChange={handleChange}
         required
       />
       <Field
-        label="Description"
-        name="description"
+        label='Description'
+        name='description'
         value={form.description}
         onChange={handleChange}
       />
       {error && <p style={styles.error}>{error}</p>}
       <div style={styles.actions}>
-        <button type="submit" disabled={saving} style={styles.saveButton}>
-          {saving ? "Saving…" : "Save"}
+        <button type='submit' disabled={saving} style={styles.saveButton}>
+          {saving ? 'Saving…' : 'Save'}
         </button>
-        <button type="button" onClick={onCancel} style={styles.cancelButton}>
+        <button type='button' onClick={onCancel} style={styles.cancelButton}>
           Cancel
         </button>
         <button
-          type="button"
+          type='button'
           onClick={handleDelete}
           disabled={saving}
           style={styles.deleteButton}
@@ -72,54 +72,54 @@ export default function EditTripForm({ trip, onUpdated, onDeleted, onCancel }) {
         </button>
       </div>
     </form>
-  );
+  )
 }
 
 const styles = {
   form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    padding: "12px 0",
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '12px 0'
   },
   error: {
-    color: "#e53e3e",
-    fontSize: "13px",
-    margin: 0,
+    color: '#e53e3e',
+    fontSize: '13px',
+    margin: 0
   },
   actions: {
-    display: "flex",
-    gap: "8px",
+    display: 'flex',
+    gap: '8px'
   },
   saveButton: {
-    padding: "8px 18px",
-    borderRadius: "8px",
-    border: "none",
-    background: "#fd366e",
-    color: "#fff",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
+    padding: '8px 18px',
+    borderRadius: '8px',
+    border: 'none',
+    background: '#fd366e',
+    color: '#fff',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer'
   },
   cancelButton: {
-    padding: "8px 18px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    background: "#fff",
-    color: "#444",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
+    padding: '8px 18px',
+    borderRadius: '8px',
+    border: '1px solid #ddd',
+    background: '#fff',
+    color: '#444',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer'
   },
   deleteButton: {
-    padding: "8px 18px",
-    borderRadius: "8px",
-    border: "none",
-    background: "#fff",
-    color: "#e53e3e",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginLeft: "auto",
-  },
-};
+    padding: '8px 18px',
+    borderRadius: '8px',
+    border: 'none',
+    background: '#fff',
+    color: '#e53e3e',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    marginLeft: 'auto'
+  }
+}
