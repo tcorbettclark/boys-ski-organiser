@@ -1,0 +1,6 @@
+dist
+node_modules
+
+# Leave all js* alone to be handled by eslint.
+**/*.js
+**/*.jsx
