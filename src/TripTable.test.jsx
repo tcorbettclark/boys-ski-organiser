@@ -22,7 +22,7 @@ function renderTable (trips) {
 describe('TripTable', () => {
   it('shows an empty message when there are no trips', () => {
     renderTable([])
-    expect(screen.getByText('No trips yet.')).toBeInTheDocument()
+    expect(screen.getByText('No trips yet. Add one above.')).toBeInTheDocument()
   })
 
   it('renders a row for each trip', () => {
