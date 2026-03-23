@@ -11,11 +11,13 @@ const { default: TripRow } = await import('./TripRow')
 
 const sampleTrip = { $id: 'trip-1', name: 'Ski Alps', description: 'A great trip' }
 
+const noop = () => {}
+
 function renderRow (trip, props = {}) {
   return render(
     <table>
       <tbody>
-        <TripRow trip={trip} onUpdated={() => {}} onDeleted={() => {}} {...props} />
+        <TripRow trip={trip} onUpdated={noop} onDeleted={noop} {...props} />
       </tbody>
     </table>
   )

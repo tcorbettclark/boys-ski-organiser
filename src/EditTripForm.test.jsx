@@ -16,6 +16,20 @@ const { default: EditTripForm } = await import('./EditTripForm')
 
 const sampleTrip = { $id: 'trip-1', name: 'Ski Alps', description: 'A great trip' }
 
+const noop = () => {}
+
+function renderForm (props = {}) {
+  return render(
+    <EditTripForm
+      trip={sampleTrip}
+      onUpdated={noop}
+      onDeleted={noop}
+      onCancel={noop}
+      {...props}
+    />
+  )
+}
+
 describe('EditTripForm', () => {
   beforeEach(() => {
     mockUpdateTrip.mockClear()
@@ -23,14 +37,7 @@ describe('EditTripForm', () => {
   })
 
   it('pre-fills the name and description fields from the trip prop', () => {
-    render(
-      <EditTripForm
-        trip={sampleTrip}
-        onUpdated={() => {}}
-        onDeleted={() => {}}
-        onCancel={() => {}}
-      />
-    )
+    renderForm()
     const inputs = screen.getAllByRole('textbox')
     expect(inputs[0]).toHaveValue('Ski Alps')
     expect(inputs[1]).toHaveValue('A great trip')
@@ -39,14 +46,7 @@ describe('EditTripForm', () => {
   it('calls updateTrip and onUpdated when the form is saved', async () => {
     const user = userEvent.setup()
     const handleUpdated = mock(() => {})
-    render(
-      <EditTripForm
-        trip={sampleTrip}
-        onUpdated={handleUpdated}
-        onDeleted={() => {}}
-        onCancel={() => {}}
-      />
-    )
+    renderForm({ onUpdated: handleUpdated })
 
     const nameInput = screen.getAllByRole('textbox')[0]
     await user.clear(nameInput)
@@ -66,14 +66,7 @@ describe('EditTripForm', () => {
     window.confirm = mock(() => true)
     const user = userEvent.setup()
     const handleDeleted = mock(() => {})
-    render(
-      <EditTripForm
-        trip={sampleTrip}
-        onUpdated={() => {}}
-        onDeleted={handleDeleted}
-        onCancel={() => {}}
-      />
-    )
+    renderForm({ onDeleted: handleDeleted })
 
     await user.click(screen.getByRole('button', { name: /delete/i }))
 
@@ -86,14 +79,7 @@ describe('EditTripForm', () => {
   it('does not delete when confirm is cancelled', async () => {
     window.confirm = mock(() => false)
     const user = userEvent.setup()
-    render(
-      <EditTripForm
-        trip={sampleTrip}
-        onUpdated={() => {}}
-        onDeleted={() => {}}
-        onCancel={() => {}}
-      />
-    )
+    renderForm()
 
     await user.click(screen.getByRole('button', { name: /delete/i }))
     expect(mockDeleteTrip).not.toHaveBeenCalled()
@@ -102,14 +88,7 @@ describe('EditTripForm', () => {
   it('calls onCancel when Cancel is clicked', async () => {
     const user = userEvent.setup()
     const handleCancel = mock(() => {})
-    render(
-      <EditTripForm
-        trip={sampleTrip}
-        onUpdated={() => {}}
-        onDeleted={() => {}}
-        onCancel={handleCancel}
-      />
-    )
+    renderForm({ onCancel: handleCancel })
 
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     expect(handleCancel).toHaveBeenCalledTimes(1)
@@ -118,14 +97,7 @@ describe('EditTripForm', () => {
   it('shows an error message when save fails', async () => {
     mockUpdateTrip.mockImplementationOnce(() => Promise.reject(new Error('Save failed')))
     const user = userEvent.setup()
-    render(
-      <EditTripForm
-        trip={sampleTrip}
-        onUpdated={() => {}}
-        onDeleted={() => {}}
-        onCancel={() => {}}
-      />
-    )
+    renderForm()
 
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 

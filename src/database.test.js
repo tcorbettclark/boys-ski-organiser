@@ -21,9 +21,14 @@ mock.module('./appwrite', () => ({
 
 const { listTrips, createTrip, updateTrip, deleteTrip } = await import('./database')
 
-describe('listTrips', () => {
-  beforeEach(() => mockListDocuments.mockClear())
+beforeEach(() => {
+  mockListDocuments.mockClear()
+  mockCreateDocument.mockClear()
+  mockUpdateDocument.mockClear()
+  mockDeleteDocument.mockClear()
+})
 
+describe('listTrips', () => {
   it('calls listDocuments and returns documents', async () => {
     const result = await listTrips('user-1')
     expect(mockListDocuments).toHaveBeenCalledTimes(1)
@@ -38,8 +43,6 @@ describe('listTrips', () => {
 })
 
 describe('createTrip', () => {
-  beforeEach(() => mockCreateDocument.mockClear())
-
   it('calls createDocument and returns the new trip', async () => {
     const result = await createTrip('user-1', { name: 'New Trip', description: '' })
     expect(mockCreateDocument).toHaveBeenCalledTimes(1)
@@ -53,8 +56,6 @@ describe('createTrip', () => {
 })
 
 describe('updateTrip', () => {
-  beforeEach(() => mockUpdateDocument.mockClear())
-
   it('calls updateDocument and returns the updated trip', async () => {
     const result = await updateTrip('trip-1', { name: 'Updated Trip' })
     expect(mockUpdateDocument).toHaveBeenCalledTimes(1)
@@ -68,8 +69,6 @@ describe('updateTrip', () => {
 })
 
 describe('deleteTrip', () => {
-  beforeEach(() => mockDeleteDocument.mockClear())
-
   it('calls deleteDocument with the tripId', async () => {
     await deleteTrip('trip-1')
     expect(mockDeleteDocument).toHaveBeenCalledTimes(1)

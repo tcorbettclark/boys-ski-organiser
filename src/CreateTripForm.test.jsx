@@ -12,26 +12,32 @@ mock.module('./database', () => ({
 
 const { default: CreateTripForm } = await import('./CreateTripForm')
 
+const noop = () => {}
+
+function renderForm (props = {}) {
+  return render(<CreateTripForm userId='user-1' onCreated={noop} {...props} />)
+}
+
 describe('CreateTripForm', () => {
   beforeEach(() => mockCreateTrip.mockClear())
 
   it('hides the form on mount and shows the new trip button', () => {
-    render(<CreateTripForm userId='user-1' onCreated={() => {}} />)
+    renderForm()
     expect(screen.queryAllByRole('textbox')).toHaveLength(0)
     expect(screen.getByRole('button', { name: /new trip/i })).toBeInTheDocument()
   })
 
   it('reveals the form when the new trip button is clicked', async () => {
     const user = userEvent.setup()
-    render(<CreateTripForm userId='user-1' onCreated={() => {}} />)
+    renderForm()
     await user.click(screen.getByRole('button', { name: /new trip/i }))
-    expect(screen.queryAllByRole('textbox')).toHaveLength(2)
+    expect(screen.getAllByRole('textbox')).toHaveLength(2)
   })
 
   it('calls createTrip and onCreated when a valid form is submitted', async () => {
     const user = userEvent.setup()
     const handleCreated = mock(() => {})
-    render(<CreateTripForm userId='user-1' onCreated={handleCreated} />)
+    renderForm({ onCreated: handleCreated })
 
     await user.click(screen.getByRole('button', { name: /new trip/i }))
     await user.type(screen.getAllByRole('textbox')[0], 'Ski Alps')
@@ -45,10 +51,10 @@ describe('CreateTripForm', () => {
 
   it('hides the form after successful submission', async () => {
     const user = userEvent.setup()
-    render(<CreateTripForm userId='user-1' onCreated={() => {}} />)
+    renderForm()
 
     await user.click(screen.getByRole('button', { name: /new trip/i }))
-    await user.type(screen.queryAllByRole('textbox')[0], 'Ski Alps')
+    await user.type(screen.getAllByRole('textbox')[0], 'Ski Alps')
     await user.click(screen.getByRole('button', { name: /save trip/i }))
 
     await waitFor(() => {
@@ -59,7 +65,7 @@ describe('CreateTripForm', () => {
   it('displays an error message when the API call fails', async () => {
     mockCreateTrip.mockImplementationOnce(() => Promise.reject(new Error('API error')))
     const user = userEvent.setup()
-    render(<CreateTripForm userId='user-1' onCreated={() => {}} />)
+    renderForm()
 
     await user.click(screen.getByRole('button', { name: /new trip/i }))
     await user.type(screen.getAllByRole('textbox')[0], 'Ski Alps')
