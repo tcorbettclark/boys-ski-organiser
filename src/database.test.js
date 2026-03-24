@@ -104,9 +104,9 @@ describe('getTripByCode', () => {
 describe('createTrip', () => {
   it('checks for code uniqueness before creating', async () => {
     await createTrip('user-1', { name: 'New Trip', description: '' })
-    // one listDocuments call for the code check, then one createDocument
+    // one listDocuments call for the code check, then two createDocument calls (trip + participant)
     expect(mockListDocuments).toHaveBeenCalledTimes(1)
-    expect(mockCreateDocument).toHaveBeenCalledTimes(1)
+    expect(mockCreateDocument).toHaveBeenCalledTimes(2)
   })
 
   it('includes a three-word code in the created document', async () => {
@@ -128,7 +128,7 @@ describe('createTrip', () => {
       .mockImplementationOnce(() => Promise.resolve({ documents: [] }))
     await createTrip('user-1', { name: 'New Trip' })
     expect(mockListDocuments).toHaveBeenCalledTimes(2)
-    expect(mockCreateDocument).toHaveBeenCalledTimes(1)
+    expect(mockCreateDocument).toHaveBeenCalledTimes(2)
   })
 
   it('throws after 100 failed attempts', async () => {

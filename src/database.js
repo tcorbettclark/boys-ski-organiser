@@ -48,13 +48,21 @@ async function findUniqueCode () {
 
 export async function createTrip (userId, data) {
   const code = await findUniqueCode()
-  return databases.createDocument(
+  const trip = await databases.createDocument(
     DATABASE_ID,
     TRIPS_COLLECTION_ID,
     ID.unique(),
     { userId, code, ...data },
     [Permission.read(Role.users()), Permission.write(Role.user(userId))]
   )
+  await databases.createDocument(
+    DATABASE_ID,
+    PARTICIPANTS_COLLECTION_ID,
+    ID.unique(),
+    { userId, tripId: trip.$id },
+    [Permission.read(Role.user(userId)), Permission.write(Role.user(userId))]
+  )
+  return trip
 }
 
 export async function getUserById (userId) {

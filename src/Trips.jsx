@@ -51,7 +51,8 @@ export default function Trips ({ user }) {
   if (loading) return <p style={styles.message}>Loading trips…</p>
   if (error) { return <p style={{ ...styles.message, color: colors.error }}>{error}</p> }
 
-  const allTrips = [...trips, ...participatedTrips]
+  const coordinatedIds = new Set(trips.map((t) => t.$id))
+  const allTrips = [...trips, ...participatedTrips.filter((t) => !coordinatedIds.has(t.$id))]
 
   return (
     <div style={styles.container}>
