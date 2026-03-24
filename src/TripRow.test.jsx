@@ -139,7 +139,7 @@ describe('TripRow', () => {
     await renderRow(sampleTrip)
     await user.click(screen.getByRole('button', { name: /copy trip code/i }))
     await waitFor(() => expect(screen.getByRole('button', { name: /copy trip code/i })).toHaveTextContent('✓'))
-    await act(async () => { await new Promise((r) => setTimeout(r, 1500)) })
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 1500)) })
     expect(screen.getByRole('button', { name: /copy trip code/i })).toHaveTextContent('⧉')
   })
 })
