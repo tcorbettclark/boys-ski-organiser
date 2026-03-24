@@ -52,11 +52,6 @@ describe('TripRow', () => {
     expect(screen.getByText('Alice')).toBeInTheDocument()
   })
 
-  it('hides the coordinator cell when showCoordinator is false', async () => {
-    await renderRow(sampleTrip, { showCoordinator: false })
-    expect(screen.queryByText('Alice')).not.toBeInTheDocument()
-  })
-
   it('shows a dash when description is empty', async () => {
     await renderRow({ ...sampleTrip, description: '' })
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
@@ -74,14 +69,9 @@ describe('TripRow', () => {
     expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
   })
 
-  it('shows "Coordinator" role when trip belongs to the current user', async () => {
+  it('appends "(me)" to the coordinator name when the trip belongs to the current user', async () => {
     await renderRow(sampleTrip, { userId: 'user-1' })
-    expect(screen.getByText('Coordinator')).toBeInTheDocument()
-  })
-
-  it('shows "Participant" role when trip belongs to another user', async () => {
-    await renderRow(sampleTrip, { userId: 'user-2', onLeft: noop })
-    expect(screen.getByText('Participant')).toBeInTheDocument()
+    expect(screen.getByText('Alice (me)')).toBeInTheDocument()
   })
 
   it('calls leaveTrip and onLeft when Leave is clicked', async () => {

@@ -40,24 +40,14 @@ describe('TripTable', () => {
     expect(screen.queryByText('No trips yet.')).not.toBeInTheDocument()
   })
 
-  it('shows the Co-ordinator column header by default', async () => {
+  it('shows the Co-ordinator column header', async () => {
     await renderTable(sampleTrips)
     expect(screen.getByText('Co-ordinator')).toBeInTheDocument()
-  })
-
-  it('hides the Co-ordinator column header when showCoordinator is false', async () => {
-    await renderTable(sampleTrips, { showCoordinator: false })
-    expect(screen.queryByText('Co-ordinator')).not.toBeInTheDocument()
   })
 
   it('shows the Code column header', async () => {
     await renderTable(sampleTrips)
     expect(screen.getByText('Code')).toBeInTheDocument()
-  })
-
-  it('shows the Role column header', async () => {
-    await renderTable(sampleTrips)
-    expect(screen.getByText('Role')).toBeInTheDocument()
   })
 
   it('shows a custom empty message when provided', async () => {

@@ -3,18 +3,17 @@ import EditTripForm from './EditTripForm'
 import { leaveTrip, getUserById } from './database'
 import { colors, fonts, borders } from './theme'
 
-export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft, showCoordinator = true }) {
+export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft }) {
   const [isEditing, setIsEditing] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [leaveError, setLeaveError] = useState('')
   const [coordinator, setCoordinator] = useState(null)
 
   useEffect(() => {
-    if (!showCoordinator) return
     getUserById(trip.userId)
       .then(setCoordinator)
       .catch(() => {})
-  }, [trip.userId, showCoordinator])
+  }, [trip.userId])
 
   async function handleLeave () {
     setLeaveError('')
@@ -31,7 +30,7 @@ export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft, s
   if (isEditing) {
     return (
       <tr style={styles.editingTr}>
-        <td style={styles.editingTd} colSpan={showCoordinator ? 5 : 4}>
+        <td style={styles.editingTd} colSpan={4}>
           <EditTripForm
             trip={trip}
             onUpdated={(updated) => {
@@ -50,14 +49,11 @@ export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft, s
     <tr style={styles.tr}>
       <td style={styles.codeCell}>{trip.code || '—'}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{trip.description || '—'}</td>
-      <td style={{ ...styles.td, color: colors.textSecondary }}>
-        {trip.userId === userId ? 'Coordinator' : 'Participant'}
+      <td style={{ ...styles.td, color: colors.textSecondary }} title={coordinator?.email || undefined}>
+        {trip.userId === userId
+          ? `${coordinator?.name || coordinator?.email || '—'} (me)`
+          : coordinator?.name || coordinator?.email || '—'}
       </td>
-      {showCoordinator && (
-        <td style={{ ...styles.td, color: colors.textSecondary }} title={coordinator?.email || undefined}>
-          {coordinator?.name || coordinator?.email || '—'}
-        </td>
-      )}
       <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
         {trip.userId === userId
           ? (
