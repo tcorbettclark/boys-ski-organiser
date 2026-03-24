@@ -5,7 +5,8 @@
       "Bash(bun run:*)",
       "Skill(git-commit)",
       "Bash(git add:*)",
-      "Bash(git commit)"
+      "Bash(git commit)",
+      "Bash(bun test:*)"
     ]
   },
   "hooks": {
