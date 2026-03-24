@@ -38,6 +38,7 @@ export default function Trips ({ user }) {
 
   function handleDeleted (id) {
     setTrips((t) => t.filter((trip) => trip.$id !== id))
+    setParticipatedTrips((t) => t.filter((trip) => trip.$id !== id))
   }
 
   function handleJoined (trip) {

@@ -10,6 +10,7 @@ const mockCreateTrip = mock(() =>
 const mockJoinTrip = mock(() => Promise.resolve())
 const mockGetTripByCode = mock(() => Promise.resolve({ documents: [] }))
 const mockLeaveTrip = mock(() => Promise.resolve())
+const mockDeleteTrip = mock(() => Promise.resolve())
 const mockGetUserById = mock(() => Promise.resolve({ name: 'Test User', email: 'test@example.com' }))
 
 mock.module('./database', () => ({
@@ -19,6 +20,8 @@ mock.module('./database', () => ({
   joinTrip: mockJoinTrip,
   getTripByCode: mockGetTripByCode,
   leaveTrip: mockLeaveTrip,
+  deleteTrip: mockDeleteTrip,
+  updateTrip: mock(() => Promise.resolve()),
   getUserById: mockGetUserById
 }))
 
@@ -35,6 +38,7 @@ describe('Trips', () => {
     mockListTrips.mockClear()
     mockListParticipatedTrips.mockClear()
     mockCreateTrip.mockClear()
+    mockDeleteTrip.mockClear()
     mockGetUserById.mockClear()
     mockListTrips.mockImplementation(() => Promise.resolve({ documents: [] }))
     mockListParticipatedTrips.mockImplementation(() => Promise.resolve([]))
@@ -90,6 +94,28 @@ describe('Trips', () => {
     await waitFor(() => {
       expect(screen.getByText('Whistler trip')).toBeInTheDocument()
     })
+  })
+
+  it('removes the row when a coordinated trip that is also in participatedTrips is deleted', async () => {
+    const trip = { $id: 't-1', description: 'Alps trip', code: 'aaa-bbb-ccc', userId: 'user-1' }
+    mockListTrips.mockImplementation(() => Promise.resolve({ documents: [trip] }))
+    mockListParticipatedTrips.mockImplementation(() => Promise.resolve([trip]))
+
+    const originalConfirm = window.confirm
+    window.confirm = () => true
+
+    const user = userEvent.setup()
+    await act(async () => { renderTrips() })
+    await waitFor(() => expect(screen.getByText('Alps trip')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /edit/i }))
+    await user.click(screen.getByRole('button', { name: /delete/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Alps trip')).not.toBeInTheDocument()
+    })
+
+    window.confirm = originalConfirm
   })
 
   it('adds a newly created trip to the coordinating list', async () => {
