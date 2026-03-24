@@ -55,11 +55,12 @@ describe('Trips', () => {
     })
   })
 
-  it('shows both the coordinating and joining sections after loading', async () => {
+  it('shows the Trips heading with New Trip and Join Trip buttons after loading', async () => {
     await act(async () => { renderTrips() })
     await waitFor(() => {
-      expect(screen.getByText('Trips I am coordinating')).toBeInTheDocument()
-      expect(screen.getByText('Trips I am joining')).toBeInTheDocument()
+      expect(screen.getByText('Trips')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /\+ new trip/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /\+ join trip/i })).toBeInTheDocument()
     })
   })
 

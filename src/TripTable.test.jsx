@@ -55,19 +55,24 @@ describe('TripTable', () => {
     expect(screen.getByText('Code')).toBeInTheDocument()
   })
 
+  it('shows the Role column header', async () => {
+    await renderTable(sampleTrips)
+    expect(screen.getByText('Role')).toBeInTheDocument()
+  })
+
   it('shows a custom empty message when provided', async () => {
     await renderTable([], { emptyMessage: "You haven't joined any trips yet." })
     expect(screen.getByText("You haven't joined any trips yet.")).toBeInTheDocument()
   })
 
-  it('shows Leave buttons when onLeft is provided', async () => {
-    await renderTable(sampleTrips, { onLeft: () => {} })
+  it('shows Leave buttons when the current user does not own the trips', async () => {
+    await renderTable(sampleTrips, { userId: 'user-2', onLeft: () => {} })
     const leaveButtons = screen.getAllByRole('button', { name: /leave/i })
     expect(leaveButtons).toHaveLength(sampleTrips.length)
   })
 
-  it('shows Edit buttons when onLeft is not provided', async () => {
-    await renderTable(sampleTrips)
+  it('shows Edit buttons when the current user owns the trips', async () => {
+    await renderTable(sampleTrips, { userId: 'user-1' })
     const editButtons = screen.getAllByRole('button', { name: /edit/i })
     expect(editButtons).toHaveLength(sampleTrips.length)
   })

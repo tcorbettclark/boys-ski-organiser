@@ -3,8 +3,7 @@ import { getTripByCode, joinTrip } from './database'
 import Field from './Field'
 import { colors, fonts, borders } from './theme'
 
-export default function JoinTripForm ({ user, onJoined }) {
-  const [showForm, setShowForm] = useState(false)
+export default function JoinTripForm ({ user, onJoined, onDismiss }) {
   const [code, setCode] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -20,7 +19,7 @@ export default function JoinTripForm ({ user, onJoined }) {
       await joinTrip(user.$id, trip.$id)
       onJoined(trip)
       setCode('')
-      setShowForm(false)
+      onDismiss()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -29,71 +28,29 @@ export default function JoinTripForm ({ user, onJoined }) {
   }
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.toolbar}>
-        <h2 style={styles.heading}>Trips I am joining</h2>
-        <button
-          onClick={() => {
-            setShowForm((v) => !v)
-            setError('')
-          }}
-          style={styles.joinButton}
-        >
-          {showForm ? 'Cancel' : '+ Join Trip'}
+    <form onSubmit={handleSubmit} style={styles.form}>
+      <Field
+        label='Trip Code'
+        name='code'
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder='e.g. colourful-skinny-screwdriver'
+        required
+      />
+      {error && <p style={styles.error}>{error}</p>}
+      <div style={styles.actions}>
+        <button type='submit' disabled={saving} style={styles.saveButton}>
+          {saving ? 'Joining…' : 'Join Trip'}
+        </button>
+        <button type='button' onClick={onDismiss} style={styles.cancelButton}>
+          Cancel
         </button>
       </div>
-
-      {showForm && (
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <Field
-            label='Trip Code'
-            name='code'
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            required
-          />
-          {error && <p style={styles.error}>{error}</p>}
-          <button type='submit' disabled={saving} style={styles.saveButton}>
-            {saving ? 'Joining…' : 'Join Trip'}
-          </button>
-        </form>
-      )}
-    </div>
+    </form>
   )
 }
 
 const styles = {
-  wrapper: {
-    marginBottom: '8px'
-  },
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '28px',
-    paddingBottom: '20px',
-    borderBottom: borders.subtle
-  },
-  heading: {
-    fontFamily: fonts.display,
-    fontSize: '30px',
-    fontWeight: '600',
-    color: colors.textPrimary,
-    margin: 0,
-    letterSpacing: '-0.01em'
-  },
-  joinButton: {
-    padding: '9px 22px',
-    borderRadius: '7px',
-    border: 'none',
-    background: colors.accent,
-    color: colors.bgPrimary,
-    fontFamily: fonts.body,
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    letterSpacing: '0.02em'
-  },
   form: {
     background: colors.bgCard,
     border: borders.subtle,
@@ -110,8 +67,12 @@ const styles = {
     fontSize: '13px',
     margin: 0
   },
+  actions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px'
+  },
   saveButton: {
-    alignSelf: 'flex-start',
     padding: '10px 24px',
     borderRadius: '7px',
     border: 'none',
@@ -120,6 +81,16 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '14px',
     fontWeight: '600',
+    cursor: 'pointer'
+  },
+  cancelButton: {
+    padding: '10px 16px',
+    borderRadius: '7px',
+    border: 'none',
+    background: 'transparent',
+    color: colors.textSecondary,
+    fontFamily: fonts.body,
+    fontSize: '14px',
     cursor: 'pointer'
   }
 }

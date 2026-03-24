@@ -18,7 +18,7 @@ const ownTrip = { $id: 'trip-1', code: 'abc-def-ghi', name: 'My Trip', userId: '
 const otherTrip = { $id: 'trip-2', code: 'xyz-uvw-rst', name: 'Other Trip', userId: 'user-2' }
 
 function renderForm (props = {}) {
-  return render(<JoinTripForm user={testUser} onJoined={noop} {...props} />)
+  return render(<JoinTripForm user={testUser} onJoined={noop} onDismiss={noop} {...props} />)
 }
 
 describe('JoinTripForm', () => {
@@ -27,31 +27,18 @@ describe('JoinTripForm', () => {
     mockJoinTrip.mockClear()
   })
 
-  it('shows the "Trips I am joining" heading', () => {
+  it('shows the trip code field', () => {
     renderForm()
-    expect(screen.getByText('Trips I am joining')).toBeInTheDocument()
-  })
-
-  it('hides the form on mount and shows the Join Trip button', () => {
-    renderForm()
-    expect(screen.queryAllByRole('textbox')).toHaveLength(0)
-    expect(screen.getByRole('button', { name: /\+ join trip/i })).toBeInTheDocument()
-  })
-
-  it('reveals the form when the Join Trip button is clicked', async () => {
-    const user = userEvent.setup()
-    renderForm()
-    await user.click(screen.getByRole('button', { name: /join trip/i }))
     expect(screen.getByRole('textbox')).toBeInTheDocument()
   })
 
-  it('hides the form and shows Join Trip when Cancel is clicked', async () => {
+  it('calls onDismiss when Cancel is clicked', async () => {
     const user = userEvent.setup()
-    renderForm()
-    await user.click(screen.getByRole('button', { name: /\+ join trip/i }))
+    const handleDismiss = mock(() => {})
+    renderForm({ onDismiss: handleDismiss })
+
     await user.click(screen.getByRole('button', { name: /cancel/i }))
-    expect(screen.queryAllByRole('textbox')).toHaveLength(0)
-    expect(screen.getByRole('button', { name: /\+ join trip/i })).toBeInTheDocument()
+    expect(handleDismiss).toHaveBeenCalledTimes(1)
   })
 
   it('normalises the code to trimmed lowercase before looking it up', async () => {
@@ -59,7 +46,6 @@ describe('JoinTripForm', () => {
     const user = userEvent.setup()
     renderForm()
 
-    await user.click(screen.getByRole('button', { name: /join trip/i }))
     await user.type(screen.getByRole('textbox'), '  XYZ-UVW-RST  ')
     await user.click(screen.getByRole('button', { name: /join trip/i }))
 
@@ -68,18 +54,17 @@ describe('JoinTripForm', () => {
     })
   })
 
-  it('hides the form and clears the code after a successful join', async () => {
+  it('calls onDismiss after a successful join', async () => {
     mockGetTripByCode.mockImplementationOnce(() => Promise.resolve({ documents: [otherTrip] }))
     const user = userEvent.setup()
-    renderForm()
+    const handleDismiss = mock(() => {})
+    renderForm({ onDismiss: handleDismiss })
 
-    await user.click(screen.getByRole('button', { name: /join trip/i }))
     await user.type(screen.getByRole('textbox'), 'xyz-uvw-rst')
     await user.click(screen.getByRole('button', { name: /join trip/i }))
 
     await waitFor(() => {
-      expect(screen.queryAllByRole('textbox')).toHaveLength(0)
-      expect(screen.getByRole('button', { name: /\+ join trip/i })).toBeInTheDocument()
+      expect(handleDismiss).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -89,7 +74,6 @@ describe('JoinTripForm', () => {
     const handleJoined = mock(() => {})
     renderForm({ onJoined: handleJoined })
 
-    await user.click(screen.getByRole('button', { name: /join trip/i }))
     await user.type(screen.getByRole('textbox'), 'abc-def-ghi')
     await user.click(screen.getByRole('button', { name: /join trip/i }))
 
@@ -104,7 +88,6 @@ describe('JoinTripForm', () => {
     const user = userEvent.setup()
     renderForm()
 
-    await user.click(screen.getByRole('button', { name: /join trip/i }))
     await user.type(screen.getByRole('textbox'), 'bad-code')
     await user.click(screen.getByRole('button', { name: /join trip/i }))
 
@@ -121,7 +104,6 @@ describe('JoinTripForm', () => {
     const user = userEvent.setup()
     renderForm()
 
-    await user.click(screen.getByRole('button', { name: /join trip/i }))
     await user.type(screen.getByRole('textbox'), 'xyz-uvw-rst')
     await user.click(screen.getByRole('button', { name: /join trip/i }))
 

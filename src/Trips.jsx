@@ -10,6 +10,8 @@ export default function Trips ({ user }) {
   const [participatedTrips, setParticipatedTrips] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showJoinForm, setShowJoinForm] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -49,25 +51,50 @@ export default function Trips ({ user }) {
   if (loading) return <p style={styles.message}>Loading trips…</p>
   if (error) { return <p style={{ ...styles.message, color: colors.error }}>{error}</p> }
 
+  const allTrips = [...trips, ...participatedTrips]
+
   return (
     <div style={styles.container}>
-      <CreateTripForm user={user} onCreated={handleCreated} />
+      <div style={styles.toolbar}>
+        <h2 style={styles.heading}>Trips</h2>
+        <div style={styles.buttons}>
+          <button
+            onClick={() => { setShowCreateForm((v) => !v); setShowJoinForm(false) }}
+            style={styles.actionButton}
+          >
+            {showCreateForm ? 'Cancel' : '+ New Trip'}
+          </button>
+          <button
+            onClick={() => { setShowJoinForm((v) => !v); setShowCreateForm(false) }}
+            style={styles.actionButton}
+          >
+            {showJoinForm ? 'Cancel' : '+ Join Trip'}
+          </button>
+        </div>
+      </div>
+
+      {showCreateForm && (
+        <CreateTripForm
+          user={user}
+          onCreated={handleCreated}
+          onDismiss={() => setShowCreateForm(false)}
+        />
+      )}
+      {showJoinForm && (
+        <JoinTripForm
+          user={user}
+          onJoined={handleJoined}
+          onDismiss={() => setShowJoinForm(false)}
+        />
+      )}
+
       <TripTable
-        trips={trips}
+        trips={allTrips}
         userId={user.$id}
         onUpdated={handleUpdated}
         onDeleted={handleDeleted}
-        showCoordinator={false}
-      />
-
-      <div style={styles.divider} />
-
-      <JoinTripForm user={user} onJoined={handleJoined} />
-      <TripTable
-        trips={participatedTrips}
-        userId={user.$id}
         onLeft={handleLeft}
-        emptyMessage="You haven't joined any trips yet."
+        emptyMessage='No trips yet. Create one or join one above.'
       />
     </div>
   )
@@ -87,8 +114,36 @@ const styles = {
     textAlign: 'center',
     fontSize: '15px'
   },
-  divider: {
-    borderTop: borders.subtle,
-    margin: '48px 0'
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '28px',
+    paddingBottom: '20px',
+    borderBottom: borders.subtle
+  },
+  heading: {
+    fontFamily: fonts.display,
+    fontSize: '30px',
+    fontWeight: '600',
+    color: colors.textPrimary,
+    margin: 0,
+    letterSpacing: '-0.01em'
+  },
+  buttons: {
+    display: 'flex',
+    gap: '10px'
+  },
+  actionButton: {
+    padding: '9px 22px',
+    borderRadius: '7px',
+    border: 'none',
+    background: colors.accent,
+    color: colors.bgPrimary,
+    fontFamily: fonts.body,
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    letterSpacing: '0.02em'
   }
 }

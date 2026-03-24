@@ -62,25 +62,35 @@ describe('TripRow', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
   })
 
-  it('shows the Edit button when onLeft is not provided', async () => {
-    await renderRow(sampleTrip)
+  it('shows the Edit button when the trip belongs to the current user', async () => {
+    await renderRow(sampleTrip, { userId: 'user-1' })
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /leave/i })).not.toBeInTheDocument()
   })
 
-  it('shows the Leave button instead of Edit when onLeft is provided', async () => {
-    await renderRow(sampleTrip, { onLeft: noop })
+  it('shows the Leave button when the trip belongs to another user', async () => {
+    await renderRow(sampleTrip, { userId: 'user-2', onLeft: noop })
     expect(screen.getByRole('button', { name: /leave/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
+  })
+
+  it('shows "Coordinator" role when trip belongs to the current user', async () => {
+    await renderRow(sampleTrip, { userId: 'user-1' })
+    expect(screen.getByText('Coordinator')).toBeInTheDocument()
+  })
+
+  it('shows "Participant" role when trip belongs to another user', async () => {
+    await renderRow(sampleTrip, { userId: 'user-2', onLeft: noop })
+    expect(screen.getByText('Participant')).toBeInTheDocument()
   })
 
   it('calls leaveTrip and onLeft when Leave is clicked', async () => {
     const user = userEvent.setup()
     const handleLeft = mock(() => {})
-    await renderRow(sampleTrip, { userId: 'user-1', onLeft: handleLeft })
+    await renderRow(sampleTrip, { userId: 'user-2', onLeft: handleLeft })
     await user.click(screen.getByRole('button', { name: /leave/i }))
     await waitFor(() => {
-      expect(mockLeaveTrip).toHaveBeenCalledWith('user-1', 'trip-1')
+      expect(mockLeaveTrip).toHaveBeenCalledWith('user-2', 'trip-1')
       expect(handleLeft).toHaveBeenCalledWith('trip-1')
     })
   })
@@ -88,7 +98,7 @@ describe('TripRow', () => {
   it('shows an error message when leaving fails', async () => {
     mockLeaveTrip.mockImplementationOnce(() => Promise.reject(new Error('Cannot leave')))
     const user = userEvent.setup()
-    await renderRow(sampleTrip, { userId: 'user-1', onLeft: noop })
+    await renderRow(sampleTrip, { userId: 'user-2', onLeft: noop })
     await user.click(screen.getByRole('button', { name: /leave/i }))
     await waitFor(() => {
       expect(screen.getByText('Cannot leave')).toBeInTheDocument()
@@ -97,7 +107,7 @@ describe('TripRow', () => {
 
   it('shows the edit form when Edit is clicked', async () => {
     const user = userEvent.setup()
-    await renderRow(sampleTrip)
+    await renderRow(sampleTrip, { userId: 'user-1' })
     await user.click(screen.getByRole('button', { name: /edit/i }))
     expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
@@ -105,7 +115,7 @@ describe('TripRow', () => {
 
   it('returns to display mode when Cancel is clicked', async () => {
     const user = userEvent.setup()
-    await renderRow(sampleTrip)
+    await renderRow(sampleTrip, { userId: 'user-1' })
     await user.click(screen.getByRole('button', { name: /edit/i }))
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()

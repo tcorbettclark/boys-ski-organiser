@@ -31,7 +31,7 @@ export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft, s
   if (isEditing) {
     return (
       <tr style={styles.editingTr}>
-        <td style={styles.editingTd} colSpan={showCoordinator ? 4 : 3}>
+        <td style={styles.editingTd} colSpan={showCoordinator ? 5 : 4}>
           <EditTripForm
             trip={trip}
             onUpdated={(updated) => {
@@ -50,25 +50,28 @@ export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft, s
     <tr style={styles.tr}>
       <td style={styles.codeCell}>{trip.code || '—'}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{trip.description || '—'}</td>
+      <td style={{ ...styles.td, color: colors.textSecondary }}>
+        {trip.userId === userId ? 'Coordinator' : 'Participant'}
+      </td>
       {showCoordinator && (
         <td style={{ ...styles.td, color: colors.textSecondary }} title={coordinator?.email || undefined}>
           {coordinator?.name || coordinator?.email || '—'}
         </td>
       )}
       <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
-        {onLeft
+        {trip.userId === userId
           ? (
+            <button onClick={() => setIsEditing(true)} style={styles.editButton}>
+              Edit
+            </button>
+            )
+          : (
             <div>
               <button onClick={handleLeave} disabled={leaving} style={styles.leaveButton}>
                 {leaving ? 'Leaving…' : 'Leave'}
               </button>
               {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
             </div>
-            )
-          : (
-            <button onClick={() => setIsEditing(true)} style={styles.editButton}>
-              Edit
-            </button>
             )}
       </td>
     </tr>
