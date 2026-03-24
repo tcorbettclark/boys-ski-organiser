@@ -37,7 +37,7 @@ export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft })
               onUpdated(updated)
               setIsEditing(false)
             }}
-            onDeleted={() => onDeleted(trip.$id)}
+            onDeleted={() => { setIsEditing(false); onDeleted(trip.$id) }}
             onCancel={() => setIsEditing(false)}
           />
         </td>
