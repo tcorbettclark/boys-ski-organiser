@@ -4,6 +4,7 @@ import { render, screen, act } from '@testing-library/react'
 mock.module('./database', () => ({
   updateTrip: mock(() => Promise.resolve()),
   deleteTrip: mock(() => Promise.resolve()),
+  leaveTrip: mock(() => Promise.resolve()),
   getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' }))
 }))
 
@@ -47,5 +48,27 @@ describe('TripTable', () => {
   it('hides the Co-ordinator column header when showCoordinator is false', async () => {
     await renderTable(sampleTrips, { showCoordinator: false })
     expect(screen.queryByText('Co-ordinator')).not.toBeInTheDocument()
+  })
+
+  it('shows the Code column header', async () => {
+    await renderTable(sampleTrips)
+    expect(screen.getByText('Code')).toBeInTheDocument()
+  })
+
+  it('shows a custom empty message when provided', async () => {
+    await renderTable([], { emptyMessage: "You haven't joined any trips yet." })
+    expect(screen.getByText("You haven't joined any trips yet.")).toBeInTheDocument()
+  })
+
+  it('shows Leave buttons when onLeft is provided', async () => {
+    await renderTable(sampleTrips, { onLeft: () => {} })
+    const leaveButtons = screen.getAllByRole('button', { name: /leave/i })
+    expect(leaveButtons).toHaveLength(sampleTrips.length)
+  })
+
+  it('shows Edit buttons when onLeft is not provided', async () => {
+    await renderTable(sampleTrips)
+    const editButtons = screen.getAllByRole('button', { name: /edit/i })
+    expect(editButtons).toHaveLength(sampleTrips.length)
   })
 })

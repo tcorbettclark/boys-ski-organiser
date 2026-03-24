@@ -4,6 +4,7 @@ const mockListDocuments = mock(() => Promise.resolve({ documents: [] }))
 const mockCreateDocument = mock(() => Promise.resolve({ $id: 'new-id', name: 'New Trip' }))
 const mockUpdateDocument = mock(() => Promise.resolve({ $id: '1', name: 'Updated Trip' }))
 const mockDeleteDocument = mock(() => Promise.resolve())
+const mockGetDocument = mock(() => Promise.resolve({ $id: 'trip-1', name: 'Ski Alps' }))
 
 mock.module('./appwrite', () => ({
   account: {
@@ -15,17 +16,30 @@ mock.module('./appwrite', () => ({
     listDocuments: mockListDocuments,
     createDocument: mockCreateDocument,
     updateDocument: mockUpdateDocument,
-    deleteDocument: mockDeleteDocument
+    deleteDocument: mockDeleteDocument,
+    getDocument: mockGetDocument
   }
 }))
 
-const { listTrips, createTrip, updateTrip, deleteTrip, joinTrip } = await import('./database')
+const {
+  listTrips,
+  getTrip,
+  getTripByCode,
+  createTrip,
+  updateTrip,
+  deleteTrip,
+  joinTrip,
+  listParticipatedTrips,
+  leaveTrip,
+  getUserById
+} = await import('./database')
 
 beforeEach(() => {
   mockListDocuments.mockClear()
   mockCreateDocument.mockClear()
   mockUpdateDocument.mockClear()
   mockDeleteDocument.mockClear()
+  mockGetDocument.mockClear()
 })
 
 describe('listTrips', () => {
@@ -42,6 +56,48 @@ describe('listTrips', () => {
   it('propagates errors', async () => {
     mockListDocuments.mockImplementationOnce(() => Promise.reject(new Error('Network error')))
     await expect(listTrips('user-1')).rejects.toThrow('Network error')
+  })
+})
+
+describe('getTrip', () => {
+  it('calls getDocument with the trip id', async () => {
+    await getTrip('trip-1')
+    expect(mockGetDocument).toHaveBeenCalledTimes(1)
+    const [, , tripId] = mockGetDocument.mock.calls[0]
+    expect(tripId).toBe('trip-1')
+  })
+
+  it('returns the trip document', async () => {
+    const result = await getTrip('trip-1')
+    expect(result.$id).toBe('trip-1')
+    expect(result.name).toBe('Ski Alps')
+  })
+
+  it('propagates errors', async () => {
+    mockGetDocument.mockImplementationOnce(() => Promise.reject(new Error('Not found')))
+    await expect(getTrip('trip-1')).rejects.toThrow('Not found')
+  })
+})
+
+describe('getTripByCode', () => {
+  it('calls listDocuments with a code filter', async () => {
+    mockListDocuments.mockImplementationOnce(() =>
+      Promise.resolve({ documents: [{ $id: 'trip-1', code: 'abc-def-ghi' }] })
+    )
+    const result = await getTripByCode('abc-def-ghi')
+    expect(mockListDocuments).toHaveBeenCalledTimes(1)
+    expect(result.documents[0].code).toBe('abc-def-ghi')
+  })
+
+  it('returns empty documents when code is not found', async () => {
+    mockListDocuments.mockImplementationOnce(() => Promise.resolve({ documents: [] }))
+    const result = await getTripByCode('unknown-code')
+    expect(result.documents).toHaveLength(0)
+  })
+
+  it('propagates errors', async () => {
+    mockListDocuments.mockImplementationOnce(() => Promise.reject(new Error('Network error')))
+    await expect(getTripByCode('abc-def-ghi')).rejects.toThrow('Network error')
   })
 })
 
@@ -124,6 +180,76 @@ describe('joinTrip', () => {
     )
     await expect(joinTrip('user-1', 'trip-1')).rejects.toThrow('You have already joined this trip.')
     expect(mockCreateDocument).not.toHaveBeenCalled()
+  })
+})
+
+describe('leaveTrip', () => {
+  it('deletes the participation record when it exists', async () => {
+    mockListDocuments.mockImplementationOnce(() =>
+      Promise.resolve({ documents: [{ $id: 'p-1', userId: 'user-1', tripId: 'trip-1' }] })
+    )
+    await leaveTrip('user-1', 'trip-1')
+    expect(mockDeleteDocument).toHaveBeenCalledTimes(1)
+    const [, , deletedId] = mockDeleteDocument.mock.calls[0]
+    expect(deletedId).toBe('p-1')
+  })
+
+  it('throws when no participation record is found', async () => {
+    mockListDocuments.mockImplementationOnce(() => Promise.resolve({ documents: [] }))
+    await expect(leaveTrip('user-1', 'trip-1')).rejects.toThrow('Participation record not found.')
+    expect(mockDeleteDocument).not.toHaveBeenCalled()
+  })
+
+  it('propagates errors', async () => {
+    mockListDocuments.mockImplementationOnce(() =>
+      Promise.resolve({ documents: [{ $id: 'p-1' }] })
+    )
+    mockDeleteDocument.mockImplementationOnce(() => Promise.reject(new Error('Delete failed')))
+    await expect(leaveTrip('user-1', 'trip-1')).rejects.toThrow('Delete failed')
+  })
+})
+
+describe('listParticipatedTrips', () => {
+  it('returns an empty array when the user has no participations', async () => {
+    mockListDocuments.mockImplementationOnce(() => Promise.resolve({ documents: [] }))
+    const result = await listParticipatedTrips('user-1')
+    expect(result).toEqual([])
+    expect(mockListDocuments).toHaveBeenCalledTimes(1)
+  })
+
+  it('fetches and returns trips for each participation', async () => {
+    mockListDocuments
+      .mockImplementationOnce(() =>
+        Promise.resolve({ documents: [{ $id: 'p-1', userId: 'user-1', tripId: 'trip-1' }] })
+      )
+      .mockImplementationOnce(() =>
+        Promise.resolve({ documents: [{ $id: 'trip-1', name: 'Ski Alps' }] })
+      )
+    const result = await listParticipatedTrips('user-1')
+    expect(mockListDocuments).toHaveBeenCalledTimes(2)
+    expect(result).toHaveLength(1)
+    expect(result[0].$id).toBe('trip-1')
+  })
+
+  it('propagates errors from the first query', async () => {
+    mockListDocuments.mockImplementationOnce(() => Promise.reject(new Error('Network error')))
+    await expect(listParticipatedTrips('user-1')).rejects.toThrow('Network error')
+  })
+})
+
+describe('getUserById', () => {
+  it('fetches user data and returns the parsed JSON', async () => {
+    global.fetch = mock(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({ $id: 'u-1', name: 'Alice' }) })
+    )
+    const result = await getUserById('u-1')
+    expect(result.name).toBe('Alice')
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws when the response is not ok', async () => {
+    global.fetch = mock(() => Promise.resolve({ ok: false }))
+    await expect(getUserById('u-1')).rejects.toThrow('Failed to fetch user')
   })
 })
 

@@ -16,9 +16,14 @@ mock.module('./appwrite', () => ({
 
 mock.module('./database', () => ({
   listTrips: mock(() => Promise.resolve({ documents: [] })),
+  listParticipatedTrips: mock(() => Promise.resolve([])),
   createTrip: mock(() => Promise.resolve()),
   updateTrip: mock(() => Promise.resolve()),
-  deleteTrip: mock(() => Promise.resolve())
+  deleteTrip: mock(() => Promise.resolve()),
+  getTripByCode: mock(() => Promise.resolve({ documents: [] })),
+  joinTrip: mock(() => Promise.resolve()),
+  leaveTrip: mock(() => Promise.resolve()),
+  getUserById: mock(() => Promise.resolve({ name: 'Test User', email: 'test@example.com' }))
 }))
 
 const { default: App } = await import('./App')
@@ -52,6 +57,44 @@ describe('App', () => {
     render(<App />)
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+    })
+  })
+
+  it('shows the signup form when the Sign up link is clicked', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: /sign up/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
+    })
+  })
+
+  it('returns to the login form from the signup form', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await waitFor(() => screen.getByRole('button', { name: /sign up/i }))
+    await user.click(screen.getByRole('button', { name: /sign up/i }))
+    await waitFor(() => screen.getByRole('heading', { name: /create account/i }))
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
+    })
+  })
+
+  it('shows the email when the user has no name', async () => {
+    mockAccountGet.mockImplementation(() =>
+      Promise.resolve({ $id: 'user-2', name: '', email: 'nameless@example.com' })
+    )
+    render(<App />)
+    await waitFor(() => {
+      expect(screen.getByText('nameless@example.com')).toBeInTheDocument()
     })
   })
 

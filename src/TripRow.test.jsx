@@ -1,11 +1,13 @@
-import { describe, it, expect, mock } from 'bun:test'
-import { render, screen, act } from '@testing-library/react'
+import { describe, it, expect, mock, beforeEach } from 'bun:test'
+import { render, screen, act, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+
+const mockLeaveTrip = mock(() => Promise.resolve())
 
 mock.module('./database', () => ({
   updateTrip: mock(() => Promise.resolve()),
   deleteTrip: mock(() => Promise.resolve()),
-  leaveTrip: mock(() => Promise.resolve()),
+  leaveTrip: mockLeaveTrip,
   getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' }))
 }))
 
@@ -28,9 +30,21 @@ async function renderRow (trip, props = {}) {
 }
 
 describe('TripRow', () => {
+  beforeEach(() => mockLeaveTrip.mockClear())
+
   it('displays the trip description', async () => {
     await renderRow(sampleTrip)
     expect(screen.getByText('A great trip')).toBeInTheDocument()
+  })
+
+  it('shows the trip code', async () => {
+    await renderRow(sampleTrip)
+    expect(screen.getByText('ABC12')).toBeInTheDocument()
+  })
+
+  it('shows a dash when trip code is absent', async () => {
+    await renderRow({ ...sampleTrip, code: undefined })
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
   })
 
   it('shows the coordinator name', async () => {
@@ -48,9 +62,37 @@ describe('TripRow', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
   })
 
-  it('shows the Edit button in display mode', async () => {
+  it('shows the Edit button when onLeft is not provided', async () => {
     await renderRow(sampleTrip)
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /leave/i })).not.toBeInTheDocument()
+  })
+
+  it('shows the Leave button instead of Edit when onLeft is provided', async () => {
+    await renderRow(sampleTrip, { onLeft: noop })
+    expect(screen.getByRole('button', { name: /leave/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
+  })
+
+  it('calls leaveTrip and onLeft when Leave is clicked', async () => {
+    const user = userEvent.setup()
+    const handleLeft = mock(() => {})
+    await renderRow(sampleTrip, { userId: 'user-1', onLeft: handleLeft })
+    await user.click(screen.getByRole('button', { name: /leave/i }))
+    await waitFor(() => {
+      expect(mockLeaveTrip).toHaveBeenCalledWith('user-1', 'trip-1')
+      expect(handleLeft).toHaveBeenCalledWith('trip-1')
+    })
+  })
+
+  it('shows an error message when leaving fails', async () => {
+    mockLeaveTrip.mockImplementationOnce(() => Promise.reject(new Error('Cannot leave')))
+    const user = userEvent.setup()
+    await renderRow(sampleTrip, { userId: 'user-1', onLeft: noop })
+    await user.click(screen.getByRole('button', { name: /leave/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Cannot leave')).toBeInTheDocument()
+    })
   })
 
   it('shows the edit form when Edit is clicked', async () => {
