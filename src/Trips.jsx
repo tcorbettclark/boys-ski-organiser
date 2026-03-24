@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react'
-import { listTrips } from './database'
+import { listTrips, listParticipatedTrips } from './database'
 import CreateTripForm from './CreateTripForm'
+import JoinTripForm from './JoinTripForm'
 import TripTable from './TripTable'
-import { colors, fonts } from './theme'
+import { colors, fonts, borders } from './theme'
 
 export default function Trips ({ user }) {
   const [trips, setTrips] = useState([])
+  const [participatedTrips, setParticipatedTrips] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    listTrips(user.$id)
-      .then((res) => setTrips(res.documents))
+    Promise.all([
+      listTrips(user.$id),
+      listParticipatedTrips(user.$id)
+    ])
+      .then(([ownRes, participated]) => {
+        setTrips(ownRes.documents)
+        setParticipatedTrips(participated)
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [user.$id])
@@ -30,16 +38,35 @@ export default function Trips ({ user }) {
     setTrips((t) => t.filter((trip) => trip.$id !== id))
   }
 
+  function handleJoined (trip) {
+    setParticipatedTrips((t) => [trip, ...t])
+  }
+
+  function handleLeft (tripId) {
+    setParticipatedTrips((t) => t.filter((trip) => trip.$id !== tripId))
+  }
+
   if (loading) return <p style={styles.message}>Loading trips…</p>
   if (error) { return <p style={{ ...styles.message, color: colors.error }}>{error}</p> }
 
   return (
     <div style={styles.container}>
-      <CreateTripForm userId={user.$id} onCreated={handleCreated} />
+      <CreateTripForm user={user} onCreated={handleCreated} />
       <TripTable
         trips={trips}
+        userId={user.$id}
         onUpdated={handleUpdated}
         onDeleted={handleDeleted}
+      />
+
+      <div style={styles.divider} />
+
+      <JoinTripForm user={user} onJoined={handleJoined} />
+      <TripTable
+        trips={participatedTrips}
+        userId={user.$id}
+        onLeft={handleLeft}
+        emptyMessage="You haven't joined any trips yet."
       />
     </div>
   )
@@ -58,5 +85,9 @@ const styles = {
     padding: '80px',
     textAlign: 'center',
     fontSize: '15px'
+  },
+  divider: {
+    borderTop: borders.subtle,
+    margin: '48px 0'
   }
 }

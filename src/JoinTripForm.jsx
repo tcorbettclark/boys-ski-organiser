@@ -1,28 +1,26 @@
 import { useState } from 'react'
-import { createTrip } from './database'
+import { getTripByCode, joinTrip } from './database'
 import Field from './Field'
 import { colors, fonts, borders } from './theme'
 
-const EMPTY_FORM = { name: '', description: '' }
-
-export default function CreateTripForm ({ user, onCreated }) {
+export default function JoinTripForm ({ user, onJoined }) {
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
+  const [code, setCode] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-
-  function handleChange (e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
 
   async function handleSubmit (e) {
     e.preventDefault()
     setError('')
     setSaving(true)
     try {
-      const trip = await createTrip(user.$id, form)
-      onCreated(trip)
-      setForm(EMPTY_FORM)
+      const res = await getTripByCode(code.trim().toLowerCase())
+      if (res.documents.length === 0) throw new Error('No trip found with that code.')
+      const trip = res.documents[0]
+      if (trip.userId === user.$id) throw new Error("You can't join your own trip.")
+      await joinTrip(user.$id, trip.$id)
+      onJoined(trip)
+      setCode('')
       setShowForm(false)
     } catch (err) {
       setError(err.message)
@@ -34,36 +32,30 @@ export default function CreateTripForm ({ user, onCreated }) {
   return (
     <div style={styles.wrapper}>
       <div style={styles.toolbar}>
-        <h2 style={styles.heading}>Trips</h2>
+        <h2 style={styles.heading}>Trips you're joining</h2>
         <button
           onClick={() => {
             setShowForm((v) => !v)
             setError('')
           }}
-          style={styles.newButton}
+          style={styles.joinButton}
         >
-          {showForm ? 'Cancel' : '+ New Trip'}
+          {showForm ? 'Cancel' : '+ Join Trip'}
         </button>
       </div>
 
       {showForm && (
         <form onSubmit={handleSubmit} style={styles.form}>
           <Field
-            label='Name'
-            name='name'
-            value={form.name}
-            onChange={handleChange}
+            label='Trip Code'
+            name='code'
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
             required
-          />
-          <Field
-            label='Description'
-            name='description'
-            value={form.description}
-            onChange={handleChange}
           />
           {error && <p style={styles.error}>{error}</p>}
           <button type='submit' disabled={saving} style={styles.saveButton}>
-            {saving ? 'Saving…' : 'Save Trip'}
+            {saving ? 'Joining…' : 'Join Trip'}
           </button>
         </form>
       )}
@@ -91,7 +83,7 @@ const styles = {
     margin: 0,
     letterSpacing: '-0.01em'
   },
-  newButton: {
+  joinButton: {
     padding: '9px 22px',
     borderRadius: '7px',
     border: 'none',

@@ -1,14 +1,36 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import EditTripForm from './EditTripForm'
+import { leaveTrip, getUserById } from './database'
 import { colors, fonts, borders } from './theme'
 
-export default function TripRow ({ trip, onUpdated, onDeleted }) {
+export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft }) {
   const [isEditing, setIsEditing] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [leaveError, setLeaveError] = useState('')
+  const [coordinator, setCoordinator] = useState(null)
+
+  useEffect(() => {
+    getUserById(trip.userId)
+      .then(setCoordinator)
+      .catch(() => {})
+  }, [trip.userId])
+
+  async function handleLeave () {
+    setLeaveError('')
+    setLeaving(true)
+    try {
+      await leaveTrip(userId, trip.$id)
+      onLeft(trip.$id)
+    } catch (err) {
+      setLeaveError(err.message)
+      setLeaving(false)
+    }
+  }
 
   if (isEditing) {
     return (
       <tr style={styles.editingTr}>
-        <td style={styles.editingTd} colSpan={4}>
+        <td style={styles.editingTd} colSpan={5}>
           <EditTripForm
             trip={trip}
             onUpdated={(updated) => {
@@ -28,10 +50,24 @@ export default function TripRow ({ trip, onUpdated, onDeleted }) {
       <td style={styles.codeCell}>{trip.code || '—'}</td>
       <td style={styles.td}>{trip.name}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{trip.description || '—'}</td>
+      <td style={{ ...styles.td, color: colors.textSecondary }} title={coordinator?.email || undefined}>
+        {coordinator?.name || coordinator?.email || '—'}
+      </td>
       <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
-        <button onClick={() => setIsEditing(true)} style={styles.editButton}>
-          Edit
-        </button>
+        {onLeft
+          ? (
+            <div>
+              <button onClick={handleLeave} disabled={leaving} style={styles.leaveButton}>
+                {leaving ? 'Leaving…' : 'Leave'}
+              </button>
+              {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
+            </div>
+            )
+          : (
+            <button onClick={() => setIsEditing(true)} style={styles.editButton}>
+              Edit
+            </button>
+            )}
       </td>
     </tr>
   )
@@ -79,5 +115,24 @@ const styles = {
     fontWeight: '500',
     cursor: 'pointer',
     letterSpacing: '0.03em'
+  },
+  leaveButton: {
+    padding: '5px 16px',
+    borderRadius: '5px',
+    border: '1px solid rgba(255,107,107,0.3)',
+    background: 'transparent',
+    color: colors.error,
+    fontFamily: fonts.body,
+    fontSize: '12px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    letterSpacing: '0.03em'
+  },
+  leaveError: {
+    color: colors.error,
+    fontFamily: fonts.body,
+    fontSize: '11px',
+    margin: '4px 0 0',
+    whiteSpace: 'normal'
   }
 }

@@ -14,8 +14,10 @@ const { default: CreateTripForm } = await import('./CreateTripForm')
 
 const noop = () => {}
 
+const testUser = { $id: 'user-1', name: 'Test User', email: 'test@example.com' }
+
 function renderForm (props = {}) {
-  return render(<CreateTripForm userId='user-1' onCreated={noop} {...props} />)
+  return render(<CreateTripForm user={testUser} onCreated={noop} {...props} />)
 }
 
 describe('CreateTripForm', () => {

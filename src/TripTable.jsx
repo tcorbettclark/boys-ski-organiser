@@ -1,9 +1,9 @@
 import TripRow from './TripRow'
 import { colors, fonts, borders } from './theme'
 
-export default function TripTable ({ trips, onUpdated, onDeleted }) {
+export default function TripTable ({ trips, userId, onUpdated, onDeleted, onLeft, emptyMessage = 'No trips yet. Add one above.' }) {
   if (trips.length === 0) {
-    return <p style={styles.empty}>No trips yet. Add one above.</p>
+    return <p style={styles.empty}>{emptyMessage}</p>
   }
 
   return (
@@ -13,6 +13,7 @@ export default function TripTable ({ trips, onUpdated, onDeleted }) {
           <th style={styles.th}>Code</th>
           <th style={styles.th}>Name</th>
           <th style={styles.th}>Description</th>
+          <th style={styles.th}>Co-ordinator</th>
           <th style={styles.th} />
         </tr>
       </thead>
@@ -21,8 +22,10 @@ export default function TripTable ({ trips, onUpdated, onDeleted }) {
           <TripRow
             key={trip.$id}
             trip={trip}
+            userId={userId}
             onUpdated={onUpdated}
             onDeleted={onDeleted}
+            onLeft={onLeft}
           />
         ))}
       </tbody>
