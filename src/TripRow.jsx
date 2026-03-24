@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import EditTripForm from './EditTripForm'
 import { leaveTrip, getUserById } from './database'
 import { colors, fonts, borders } from './theme'
@@ -8,6 +8,15 @@ export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft })
   const [leaving, setLeaving] = useState(false)
   const [leaveError, setLeaveError] = useState('')
   const [coordinator, setCoordinator] = useState(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(() => {
+    if (!trip.code) return
+    navigator.clipboard.writeText(trip.code).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }, [trip.code])
 
   useEffect(() => {
     getUserById(trip.userId)
@@ -47,7 +56,21 @@ export default function TripRow ({ trip, userId, onUpdated, onDeleted, onLeft })
 
   return (
     <tr style={styles.tr}>
-      <td style={styles.codeCell}>{trip.code || '—'}</td>
+      <td style={styles.codeCell}>
+        <span style={styles.codeWrapper}>
+          {trip.code || '—'}
+          {trip.code && (
+            <button
+              onClick={handleCopy}
+              style={styles.copyButton}
+              title='Copy code'
+              aria-label='Copy trip code'
+            >
+              {copied ? '✓' : '⧉'}
+            </button>
+          )}
+        </span>
+      </td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{trip.description || '—'}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }} title={coordinator?.email || undefined}>
         {trip.userId === userId
@@ -83,6 +106,21 @@ const styles = {
     fontSize: '13px',
     letterSpacing: '0.08em',
     whiteSpace: 'nowrap'
+  },
+  codeWrapper: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px'
+  },
+  copyButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: colors.textSecondary,
+    fontSize: '13px',
+    padding: '0 2px',
+    lineHeight: 1,
+    opacity: 0.6
   },
   tr: {
     borderBottom: '1px solid rgba(100,190,230,0.07)'

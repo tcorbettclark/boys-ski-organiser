@@ -30,7 +30,13 @@ async function renderRow (trip, props = {}) {
 }
 
 describe('TripRow', () => {
-  beforeEach(() => mockLeaveTrip.mockClear())
+  let mockWriteText
+
+  beforeEach(() => {
+    mockLeaveTrip.mockClear()
+    mockWriteText = mock(() => Promise.resolve())
+    navigator.clipboard.writeText = mockWriteText
+  })
 
   it('displays the trip description', async () => {
     await renderRow(sampleTrip)
@@ -109,5 +115,31 @@ describe('TripRow', () => {
     await user.click(screen.getByRole('button', { name: /edit/i }))
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
+  })
+
+  it('shows a copy button when the trip has a code', async () => {
+    await renderRow(sampleTrip)
+    expect(screen.getByRole('button', { name: /copy trip code/i })).toBeInTheDocument()
+  })
+
+  it('does not show a copy button when the trip has no code', async () => {
+    await renderRow({ ...sampleTrip, code: undefined })
+    expect(screen.queryByRole('button', { name: /copy trip code/i })).not.toBeInTheDocument()
+  })
+
+  it('copies the trip code to the clipboard when the copy button is clicked', async () => {
+    const user = userEvent.setup()
+    await renderRow(sampleTrip)
+    await user.click(screen.getByRole('button', { name: /copy trip code/i }))
+    expect(mockWriteText).toHaveBeenCalledWith('ABC12')
+  })
+
+  it('shows a confirmation tick after copying and reverts after 1500ms', async () => {
+    const user = userEvent.setup({ delay: null })
+    await renderRow(sampleTrip)
+    await user.click(screen.getByRole('button', { name: /copy trip code/i }))
+    await waitFor(() => expect(screen.getByRole('button', { name: /copy trip code/i })).toHaveTextContent('✓'))
+    await act(async () => { await new Promise((r) => setTimeout(r, 1500)) })
+    expect(screen.getByRole('button', { name: /copy trip code/i })).toHaveTextContent('⧉')
   })
 })
