@@ -51,8 +51,7 @@ bun run format
 ```
 src/
   main.jsx          — Entry point, mounts App into the DOM
-  appwrite.js       — Appwrite client initialization
-  database.js       — Database helper functions (CRUD operations)
+  backend.js        — Appwrite client init + all database helper functions (CRUD operations)
   test-setup.js     — Test setup: registers happy-dom globals and RTL jest-dom matchers
   App.jsx           — Root component, auth flow, routing between Login/Signup/Trips
   Login.jsx         — Login form
@@ -92,9 +91,12 @@ The app requires an Appwrite instance configured with:
 ### Environment Variables
 
 ```
-PUBLIC_APPWRITE_ENDPOINT=   # Appwrite API endpoint (exposed to frontend)
-PUBLIC_APPWRITE_PROJECT_ID= # Appwrite project ID (exposed to frontend)
-APPWRITE_API_KEY=           # Server-side API key (not prefixed, not exposed to frontend)
+PUBLIC_APPWRITE_ENDPOINT=                   # Appwrite API endpoint (exposed to frontend)
+PUBLIC_APPWRITE_PROJECT_ID=                 # Appwrite project ID (exposed to frontend)
+PUBLIC_APPWRITE_DATABASE_ID=                # Appwrite database ID
+PUBLIC_APPWRITE_TRIPS_COLLECTION_ID=        # Trips collection ID
+PUBLIC_APPWRITE_PARTICIPANTS_COLLECTION_ID= # Participants collection ID
+APPWRITE_API_KEY=                           # Server-side API key (not prefixed, not exposed to frontend)
 ```
 
 Restart the dev server after changing `.env` values.
@@ -103,7 +105,7 @@ Restart the dev server after changing `.env` values.
 
 - Tests use Bun's test runner + React Testing Library (`@testing-library/react`)
 - Run tests: `bun test` (always serial — `--max-concurrency 1`)
-- Test files live alongside source files (`src/*.test.jsx`, `src/database.test.js`)
+- Test files live alongside source files (`src/*.test.jsx`, `src/backend.test.js`)
 - Each component test uses a `render*` helper with default no-op props; override only what the test cares about
 
 ## Notable Dependencies
@@ -123,4 +125,4 @@ Restart the dev server after changing `.env` values.
 
 - **Env vars not loading**: Restart dev server after `.env` changes; frontend vars must use `PUBLIC_` prefix (Bun's `--env 'PUBLIC_*'` flag exposes them to the bundle)
 - **403 Permission errors**: Verify document-level permissions in Appwrite console match the current user's `userId`
-- **Appwrite import errors**: Check that imports in `database.js` match the exports in `appwrite.js`
+- **Appwrite import errors**: All Appwrite client and DB helpers are exported from `backend.js`; check imports there
