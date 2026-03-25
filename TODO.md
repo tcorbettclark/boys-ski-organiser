@@ -4,7 +4,8 @@
 - [ ] In fact, remove user id from trips and only use participants with a role. Normalises and allows multiple Coordinators in the future
 
 # Technical
-- [ ] Check the deprecated appwrite.databases.* functions in database.js
+
+- [ ] Check the deprecated appwrite.databases.\* functions in database.js
 - [ ] Switch to Typescript
 
 # Helper text
