@@ -10,6 +10,10 @@ jobs:
   build:
     name: test-app
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+      PUBLIC_APPWRITE_PROJECT_ID: 69b05f0a00097b02b873
+      PUBLIC_APPWRITE_DATABASE_ID: 69b80ecc00135af5ff33
     steps:
       - name: Checkout
         uses: actions/checkout@v4
