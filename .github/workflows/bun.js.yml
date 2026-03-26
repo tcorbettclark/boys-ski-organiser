@@ -17,6 +17,8 @@ jobs:
       PUBLIC_APPWRITE_TRIPS_COLLECTION_ID: trips
       PUBLIC_APPWRITE_PARTICIPANTS_COLLECTION_ID: participants
       PUBLIC_APPWRITE_PROPOSALS_COLLECTION_ID: proposals
+      PUBLIC_APPWRITE_POLLS_COLLECTION_ID: polls
+      PUBLIC_APPWRITE_VOTES_COLLECTION_ID: votes
     steps:
       - name: Checkout
         uses: actions/checkout@v4
