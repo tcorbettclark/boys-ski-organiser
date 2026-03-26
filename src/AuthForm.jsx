@@ -40,7 +40,8 @@ export default function AuthForm ({
   }
 
   return (
-    <div style={authStyles.container}>
+    <div style={{ ...authStyles.container, flexDirection: 'column' }}>
+      <div style={bannerStyles}>Work in progress - not live!</div>
       <div style={authStyles.card}>
         <p style={authStyles.eyebrow}>⛷ Ski Tripper</p>
         <h1 style={authStyles.title}>{isSignup ? 'Create Account' : 'Sign In'}</h1>
@@ -93,4 +94,17 @@ export default function AuthForm ({
       </div>
     </div>
   )
+}
+
+const bannerStyles = {
+  background: '#f59e0b',
+  color: '#1a1a1a',
+  fontWeight: '700',
+  fontSize: '14px',
+  textAlign: 'center',
+  padding: '12px 24px',
+  borderRadius: '12px',
+  marginBottom: '20px',
+  maxWidth: '420px',
+  width: '100%',
 }
