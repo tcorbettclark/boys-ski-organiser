@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { account as _account } from './backend'
 import AuthForm from './AuthForm'
 import Trips from './Trips'
+import Proposals from './Proposals'
 import { colors, fonts, borders } from './theme'
 
 function App ({
@@ -11,6 +12,7 @@ function App ({
   const [user, setUser] = useState(null)
   const [checking, setChecking] = useState(true)
   const [page, setPage] = useState('login')
+  const [activePage, setActivePage] = useState('trips')
 
   useEffect(() => {
     accountGet()
@@ -40,6 +42,20 @@ function App ({
     <div style={{ fontFamily: fonts.body, background: colors.bgPrimary, minHeight: '100vh' }}>
       <header style={headerStyles.bar}>
         <span style={headerStyles.wordmark}>⛷ Ski Tripper</span>
+        <nav style={headerStyles.nav}>
+          <button
+            onClick={() => setActivePage('trips')}
+            style={activePage === 'trips' ? headerStyles.navTabActive : headerStyles.navTab}
+          >
+            Trips
+          </button>
+          <button
+            onClick={() => setActivePage('proposals')}
+            style={activePage === 'proposals' ? headerStyles.navTabActive : headerStyles.navTab}
+          >
+            Proposals
+          </button>
+        </nav>
         <div style={headerStyles.userGroup}>
           <span style={headerStyles.name}>{user.name || user.email}</span>
           <button onClick={handleLogout} style={headerStyles.button}>
@@ -47,7 +63,8 @@ function App ({
           </button>
         </div>
       </header>
-      <Trips user={user} />
+      {activePage === 'trips' && <Trips user={user} />}
+      {activePage === 'proposals' && <Proposals user={user} />}
     </div>
   )
 }
@@ -92,6 +109,34 @@ const headerStyles = {
     fontFamily: fonts.body,
     fontSize: '13px',
     fontWeight: '500',
+    cursor: 'pointer',
+    letterSpacing: '0.02em'
+  },
+  nav: {
+    display: 'flex',
+    gap: '4px'
+  },
+  navTab: {
+    padding: '6px 16px',
+    borderRadius: '6px',
+    border: 'none',
+    background: 'transparent',
+    color: colors.textSecondary,
+    fontFamily: fonts.body,
+    fontSize: '13px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    letterSpacing: '0.02em'
+  },
+  navTabActive: {
+    padding: '6px 16px',
+    borderRadius: '6px',
+    border: 'none',
+    background: 'rgba(59,189,232,0.12)',
+    color: colors.accent,
+    fontFamily: fonts.body,
+    fontSize: '13px',
+    fontWeight: '600',
     cursor: 'pointer',
     letterSpacing: '0.02em'
   }
