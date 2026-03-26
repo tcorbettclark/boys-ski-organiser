@@ -21,7 +21,8 @@ function renderProposals (props = {}) {
     createProposal: mock(() => Promise.resolve({ $id: 'p-new' })),
     updateProposal: mock(() => Promise.resolve({ $id: 'p-1' })),
     deleteProposal: mock(() => Promise.resolve()),
-    submitProposal: mock(() => Promise.resolve({ $id: 'p-1', state: 'SUBMITTED' }))
+    submitProposal: mock(() => Promise.resolve({ $id: 'p-1', state: 'SUBMITTED' })),
+    getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' }))
   }
   return render(<Proposals {...defaults} {...props} />)
 }

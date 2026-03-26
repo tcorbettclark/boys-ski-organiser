@@ -2,7 +2,8 @@ import ProposalsRow from './ProposalsRow'
 import {
   updateProposal as _updateProposal,
   deleteProposal as _deleteProposal,
-  submitProposal as _submitProposal
+  submitProposal as _submitProposal,
+  getUserById as _getUserById
 } from './backend'
 import { colors, fonts, borders } from './theme'
 
@@ -15,7 +16,8 @@ export default function ProposalsTable ({
   emptyMessage = 'No proposals yet. Create one above.',
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
-  submitProposal = _submitProposal
+  submitProposal = _submitProposal,
+  getUserById = _getUserById
 }) {
   if (proposals.length === 0) {
     return <p style={styles.empty}>{emptyMessage}</p>
@@ -28,6 +30,7 @@ export default function ProposalsTable ({
           <th style={styles.th}>Resort Name</th>
           <th style={styles.th}>Country</th>
           <th style={styles.th}>Altitude Range</th>
+          <th style={styles.th}>Creator</th>
           <th style={styles.th}>Status</th>
           <th style={styles.th} />
         </tr>
@@ -44,6 +47,7 @@ export default function ProposalsTable ({
             updateProposal={updateProposal}
             deleteProposal={deleteProposal}
             submitProposal={submitProposal}
+            getUserById={getUserById}
           />
         ))}
       </tbody>

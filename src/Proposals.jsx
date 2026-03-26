@@ -5,7 +5,8 @@ import {
   createProposal as _createProposal,
   updateProposal as _updateProposal,
   deleteProposal as _deleteProposal,
-  submitProposal as _submitProposal
+  submitProposal as _submitProposal,
+  getUserById as _getUserById
 } from './backend'
 import CreateProposalForm from './CreateProposalForm'
 import ProposalsTable from './ProposalsTable'
@@ -18,7 +19,8 @@ export default function Proposals ({
   createProposal = _createProposal,
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
-  submitProposal = _submitProposal
+  submitProposal = _submitProposal,
+  getUserById = _getUserById
 }) {
   const [trips, setTrips] = useState([])
   const [selectedTripId, setSelectedTripId] = useState(null)
@@ -51,7 +53,7 @@ export default function Proposals ({
       })
       .catch((err) => setProposalsError(err.message))
       .finally(() => setProposalsLoading(false))
-  }, [selectedTripId])
+  }, [selectedTripId, user.$id])
 
   function handleCreated (proposal) {
     setProposals((p) => [proposal, ...p])
@@ -130,6 +132,7 @@ export default function Proposals ({
           updateProposal={updateProposal}
           deleteProposal={deleteProposal}
           submitProposal={submitProposal}
+          getUserById={getUserById}
         />
       )}
     </div>

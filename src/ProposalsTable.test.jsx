@@ -26,7 +26,8 @@ function renderProposalsTable (props = {}) {
     onSubmitted: mock(() => {}),
     updateProposal: mock(() => Promise.resolve()),
     deleteProposal: mock(() => Promise.resolve()),
-    submitProposal: mock(() => Promise.resolve())
+    submitProposal: mock(() => Promise.resolve()),
+    getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' }))
   }
   return render(<ProposalsTable {...defaults} {...props} />)
 }

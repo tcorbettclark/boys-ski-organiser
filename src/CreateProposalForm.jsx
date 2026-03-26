@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createProposal as _createProposal } from './backend'
 import Field from './Field'
-import { colors, borders, formStyles, fieldStyles } from './theme'
+import { colors, fonts, borders, formStyles, fieldStyles } from './theme'
 
 const EMPTY_FORM = {
   resortName: '',
@@ -147,7 +147,7 @@ const styles = {
     border: borders.card,
     background: colors.bgInput,
     color: colors.textPrimary,
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: fonts.body,
     fontSize: '14px',
     outline: 'none',
     resize: 'vertical',

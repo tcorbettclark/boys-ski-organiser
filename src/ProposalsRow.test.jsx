@@ -27,7 +27,8 @@ function renderProposalsRow (props = {}) {
     onSubmitted: mock(() => {}),
     updateProposal: mock(() => Promise.resolve()),
     deleteProposal: mock(() => Promise.resolve()),
-    submitProposal: mock(() => Promise.resolve())
+    submitProposal: mock(() => Promise.resolve()),
+    getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' }))
   }
   return render(
     <table>
@@ -52,6 +53,13 @@ describe('ProposalsRow', () => {
   it('shows the altitude range', () => {
     renderProposalsRow()
     expect(screen.getByText('1850m - 3456m')).toBeInTheDocument()
+  })
+
+  it('shows creator name', async () => {
+    renderProposalsRow()
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument()
+    })
   })
 
   it('shows the DRAFT status badge', () => {

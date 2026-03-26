@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import EditProposalForm from './EditProposalForm'
 import {
   updateProposal as _updateProposal,
   deleteProposal as _deleteProposal,
-  submitProposal as _submitProposal
+  submitProposal as _submitProposal,
+  getUserById as _getUserById
 } from './backend'
 import { colors, fonts, borders } from './theme'
 
@@ -15,13 +16,23 @@ export default function ProposalsRow ({
   onSubmitted,
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
-  submitProposal = _submitProposal
+  submitProposal = _submitProposal,
+  getUserById = _getUserById
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [creator, setCreator] = useState(null)
   const [deleteError, setDeleteError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+
+  useEffect(() => {
+    if (proposal.userId) {
+      getUserById(proposal.userId)
+        .then(setCreator)
+        .catch(() => {})
+    }
+  }, [proposal.userId])
 
   const isOwner = userId === proposal.userId
   const isDraft = proposal.state === 'DRAFT'
@@ -55,7 +66,7 @@ export default function ProposalsRow ({
   if (isEditing) {
     return (
       <tr style={styles.editingTr}>
-        <td style={styles.editingTd} colSpan={5}>
+        <td style={styles.editingTd} colSpan={6}>
           <EditProposalForm
             proposal={proposal}
             userId={userId}
@@ -78,6 +89,9 @@ export default function ProposalsRow ({
       <td style={styles.td}>{proposal.resortName || '—'}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{proposal.country || '—'}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{proposal.altitudeRange || '—'}</td>
+      <td style={{ ...styles.td, color: colors.textSecondary }} title={creator?.email || undefined}>
+        {creator?.name || creator?.email || '—'}
+      </td>
       <td style={styles.td}>
         <span style={isDraft ? styles.badgeDraft : styles.badgeSubmitted}>
           {proposal.state}
