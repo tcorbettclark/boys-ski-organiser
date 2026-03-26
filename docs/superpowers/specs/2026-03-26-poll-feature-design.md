@@ -46,13 +46,13 @@ Add `REJECTED` as a valid value for the `state` field. No schema changes otherwi
 
 ### New Appwrite collection: `Votes`
 
-| Field          | Type      | Required | Notes                               |
-| -------------- | --------- | -------- | ----------------------------------- |
-| `pollId`       | string    | yes      | Reference to poll                   |
-| `tripId`       | string    | yes      | For querying votes by trip          |
-| `userId`       | string    | yes      | Voter                               |
-| `proposalIds`  | string[]  | yes      | Parallel array with tokenCounts     |
-| `tokenCounts`  | integer[] | yes      | Tokens allocated per proposal       |
+| Field         | Type      | Required | Notes                           |
+| ------------- | --------- | -------- | ------------------------------- |
+| `pollId`      | string    | yes      | Reference to poll               |
+| `tripId`      | string    | yes      | For querying votes by trip      |
+| `userId`      | string    | yes      | Voter                           |
+| `proposalIds` | string[]  | yes      | Parallel array with tokenCounts |
+| `tokenCounts` | integer[] | yes      | Tokens allocated per proposal   |
 
 **Permissions:** `read(Role.users())`, `write(Role.user(userId))`
 
@@ -63,6 +63,7 @@ Add `REJECTED` as a valid value for the `state` field. No schema changes otherwi
 ## Backend Functions
 
 All added to `src/backend.js`. New environment constants:
+
 - `POLLS_COLLECTION_ID = process.env.PUBLIC_APPWRITE_POLLS_COLLECTION_ID`
 - `VOTES_COLLECTION_ID = process.env.PUBLIC_APPWRITE_VOTES_COLLECTION_ID`
 
@@ -113,6 +114,7 @@ All added to `src/backend.js`. New environment constants:
 Main container for the Poll tab. Follows the pattern of `Proposals.jsx`.
 
 **Props (with defaults):**
+
 ```jsx
 function Poll({
   user,
@@ -131,6 +133,7 @@ function Poll({
 **State:** `trips`, `selectedTripId`, `activePoll`, `pastPolls`, `proposals`, `votes`, `myVote`, `loading`, `error`, `isCoordinator`
 
 **Behavior:**
+
 - On mount: fetch participated trips
 - On trip select: fetch polls, proposals, and votes (if active poll exists); determine `isCoordinator` by comparing `user.$id` to coordinator participant
 - Shows trip selector dropdown
@@ -191,27 +194,29 @@ Displays vote totals as a ranked bar chart.
 Follow existing patterns from `Proposals.jsx`. Key additions in `Poll.jsx`:
 
 ```jsx
-const [activePoll, setActivePoll] = useState(null)
-const [pastPolls, setPastPolls] = useState([])
-const [votes, setVotes] = useState([])       // all votes for activePoll
-const [myVote, setMyVote] = useState(null)   // current user's vote doc
+const [activePoll, setActivePoll] = useState(null);
+const [pastPolls, setPastPolls] = useState([]);
+const [votes, setVotes] = useState([]); // all votes for activePoll
+const [myVote, setMyVote] = useState(null); // current user's vote doc
 
 const handlePollCreated = useCallback((poll) => {
-  setActivePoll(poll)
-}, [])
+  setActivePoll(poll);
+}, []);
 
 const handlePollClosed = useCallback((closed) => {
-  setActivePoll(null)
-  setPastPolls((p) => [closed, ...p])
-}, [])
+  setActivePoll(null);
+  setPastPolls((p) => [closed, ...p]);
+}, []);
 
 const handleVoteSaved = useCallback((vote) => {
-  setMyVote(vote)
+  setMyVote(vote);
   setVotes((v) => {
-    const exists = v.find((x) => x.$id === vote.$id)
-    return exists ? v.map((x) => (x.$id === vote.$id ? vote : x)) : [...v, vote]
-  })
-}, [])
+    const exists = v.find((x) => x.$id === vote.$id);
+    return exists
+      ? v.map((x) => (x.$id === vote.$id ? vote : x))
+      : [...v, vote];
+  });
+}, []);
 ```
 
 ## Error Handling
