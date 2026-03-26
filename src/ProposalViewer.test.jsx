@@ -164,7 +164,9 @@ describe('ProposalViewer', () => {
   it('clicking next shows the next proposal', async () => {
     const user = userEvent.setup()
     await renderViewer({ initialIndex: 0 })
-    await user.click(screen.getByRole('button', { name: /next/i }))
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /next/i }))
+    })
     expect(screen.getByText('Chamonix')).toBeInTheDocument()
     expect(screen.getByText('2 of 3')).toBeInTheDocument()
   })
@@ -172,7 +174,9 @@ describe('ProposalViewer', () => {
   it('clicking prev shows the previous proposal', async () => {
     const user = userEvent.setup()
     await renderViewer({ initialIndex: 1 })
-    await user.click(screen.getByRole('button', { name: /previous/i }))
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /previous/i }))
+    })
     expect(screen.getByText("Val d'Isère")).toBeInTheDocument()
     expect(screen.getByText('1 of 3')).toBeInTheDocument()
   })
@@ -185,25 +189,33 @@ describe('ProposalViewer', () => {
 
   it('pressing ArrowRight navigates to next proposal', async () => {
     await renderViewer({ initialIndex: 0 })
-    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'ArrowRight' })
+    })
     expect(screen.getByText('Chamonix')).toBeInTheDocument()
   })
 
   it('pressing ArrowLeft navigates to previous proposal', async () => {
     await renderViewer({ initialIndex: 1 })
-    fireEvent.keyDown(window, { key: 'ArrowLeft' })
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'ArrowLeft' })
+    })
     expect(screen.getByText("Val d'Isère")).toBeInTheDocument()
   })
 
   it('ArrowLeft does nothing on the first proposal', async () => {
     await renderViewer({ initialIndex: 0 })
-    fireEvent.keyDown(window, { key: 'ArrowLeft' })
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'ArrowLeft' })
+    })
     expect(screen.getByText('1 of 3')).toBeInTheDocument()
   })
 
   it('ArrowRight does nothing on the last proposal', async () => {
     await renderViewer({ initialIndex: 2 })
-    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'ArrowRight' })
+    })
     expect(screen.getByText('3 of 3')).toBeInTheDocument()
   })
 
