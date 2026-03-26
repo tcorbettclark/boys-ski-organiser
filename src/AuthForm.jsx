@@ -106,5 +106,5 @@ const bannerStyles = {
   borderRadius: '12px',
   marginBottom: '20px',
   maxWidth: '420px',
-  width: '100%',
+  width: '100%'
 }
