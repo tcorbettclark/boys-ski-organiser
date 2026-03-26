@@ -1,25 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { account as _account } from './backend'
 import AuthForm from './AuthForm'
 import Trips from './Trips'
 import Proposals from './Proposals'
+import ErrorBoundary from './ErrorBoundary'
 import { colors, fonts, borders } from './theme'
 
 function App ({
-  accountGet = () => _account.get(),
-  deleteSession = () => _account.deleteSession('current')
+  accountGet = _account.get.bind(_account),
+  deleteSession = _account.deleteSession.bind(_account, 'current')
 }) {
   const [user, setUser] = useState(null)
   const [checking, setChecking] = useState(true)
   const [page, setPage] = useState('login')
   const [activePage, setActivePage] = useState('trips')
+  const [refreshProposalsKey, setRefreshProposalsKey] = useState(0)
+
+  const handleJoinedTrip = useCallback(() => {
+    setRefreshProposalsKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     accountGet()
       .then(setUser)
       .catch(() => setUser(null))
       .finally(() => setChecking(false))
-  }, [])
+  }, [accountGet])
 
   async function handleLogout () {
     await deleteSession()
@@ -63,8 +69,16 @@ function App ({
           </button>
         </div>
       </header>
-      {activePage === 'trips' && <Trips user={user} />}
-      {activePage === 'proposals' && <Proposals user={user} />}
+      {activePage === 'trips' && (
+        <ErrorBoundary>
+          <Trips user={user} onJoinedTrip={handleJoinedTrip} />
+        </ErrorBoundary>
+      )}
+      {activePage === 'proposals' && (
+        <ErrorBoundary>
+          <Proposals user={user} key={refreshProposalsKey} />
+        </ErrorBoundary>
+      )}
     </div>
   )
 }

@@ -266,10 +266,10 @@ describe('leaveTrip', () => {
 })
 
 describe('listParticipatedTrips', () => {
-  it('returns an empty array when the user has no participations', async () => {
+  it('returns an empty documents array when the user has no participations', async () => {
     const db = makeDb()
     const result = await listParticipatedTrips('user-1', db)
-    expect(result).toEqual([])
+    expect(result).toEqual({ documents: [] })
     expect(db.listDocuments).toHaveBeenCalledTimes(1)
   })
 
@@ -285,8 +285,8 @@ describe('listParticipatedTrips', () => {
     const db = makeDb({ listDocuments })
     const result = await listParticipatedTrips('user-1', db)
     expect(db.listDocuments).toHaveBeenCalledTimes(2)
-    expect(result).toHaveLength(1)
-    expect(result[0].$id).toBe('trip-1')
+    expect(result.documents).toHaveLength(1)
+    expect(result.documents[0].$id).toBe('trip-1')
   })
 
   it('propagates errors from the first query', async () => {

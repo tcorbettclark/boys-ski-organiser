@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import EditTripForm from './EditTripForm'
 import {
   leaveTrip as _leaveTrip,
@@ -16,6 +16,7 @@ export default function TripRow ({
   onUpdated,
   onDeleted,
   onLeft,
+  columnCount = 4,
   leaveTrip = _leaveTrip,
   getUserById = _getUserById,
   updateTrip = _updateTrip,
@@ -27,33 +28,45 @@ export default function TripRow ({
   const [leaveError, setLeaveError] = useState('')
   const [coordinator, setCoordinator] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [copyError, setCopyError] = useState('')
   const [coordinatorUserIdResolved, setCoordinatorUserIdResolved] = useState(coordinatorUserId)
+  const mountedRef = useRef(true)
 
-  const handleCopy = useCallback(() => {
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
+  function handleCopy () {
     if (!trip.code) return
     navigator.clipboard.writeText(trip.code).then(() => {
+      if (!mountedRef.current) return
       setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
+      setCopyError('')
+      setTimeout(() => { if (mountedRef.current) setCopied(false) }, 1500)
+    }).catch(() => {
+      if (!mountedRef.current) return
+      setCopyError('Failed to copy')
     })
-  }, [trip.code])
+  }
 
   useEffect(() => {
     if (coordinatorUserIdResolved) {
       getUserById(coordinatorUserIdResolved)
-        .then(setCoordinator)
-        .catch(() => {})
+        .then((c) => { if (mountedRef.current) setCoordinator(c) })
+        .catch((err) => { console.error('Failed to fetch coordinator:', err) })
     } else {
       getCoordinatorParticipant(trip.$id)
         .then(({ documents }) => {
-          if (documents.length === 0) return
+          if (!mountedRef.current || documents.length === 0) return
           const cid = documents[0].userId
           setCoordinatorUserIdResolved(cid)
           return getUserById(cid)
         })
-        .then((c) => { if (c) setCoordinator(c) })
-        .catch(() => {})
+        .then((c) => { if (mountedRef.current && c) setCoordinator(c) })
+        .catch((err) => { console.error('Failed to fetch coordinator:', err) })
     }
-  }, [coordinatorUserIdResolved])
+  }, [coordinatorUserId, trip.$id])
 
   async function handleLeave () {
     setLeaveError('')
@@ -70,7 +83,7 @@ export default function TripRow ({
   if (isEditing) {
     return (
       <tr style={styles.editingTr}>
-        <td style={styles.editingTd} colSpan={4}>
+        <td style={styles.editingTd} colSpan={columnCount}>
           <EditTripForm
             trip={trip}
             userId={userId}
@@ -94,15 +107,13 @@ export default function TripRow ({
         <span style={styles.codeWrapper}>
           {trip.code || '—'}
           {trip.code && (
-            <button
-              onClick={handleCopy}
-              style={styles.copyButton}
-              title='Copy code'
-              aria-label='Copy trip code'
-            >
+            <button onClick={handleCopy} style={styles.copyButton} title='Copy code' aria-label='Copy trip code'>
               {copied ? '✓' : '⧉'}
             </button>
           )}
+          {copyError
+            ? <span style={styles.copyError}>{copyError}</span>
+            : null}
         </span>
       </td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{trip.description || '—'}</td>
@@ -145,6 +156,11 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px'
+  },
+  copyError: {
+    color: colors.error,
+    fontFamily: fonts.body,
+    fontSize: '11px'
   },
   copyButton: {
     background: 'none',

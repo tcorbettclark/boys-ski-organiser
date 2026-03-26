@@ -12,7 +12,7 @@ function renderTrips (props = {}) {
     <Trips
       user={testUser}
       listTrips={() => Promise.resolve({ documents: [] })}
-      listParticipatedTrips={() => Promise.resolve([])}
+      listParticipatedTrips={() => Promise.resolve({ documents: [] })}
       createTrip={() => Promise.resolve(defaultTrip)}
       getTripByCode={() => Promise.resolve({ documents: [] })}
       joinTrip={() => Promise.resolve()}
@@ -68,9 +68,11 @@ describe('Trips', () => {
   it('renders a row for each joined trip', async () => {
     await act(async () => {
       renderTrips({
-        listParticipatedTrips: () => Promise.resolve([
-          { $id: 't-3', description: 'Whistler trip', code: 'ggg-hhh-iii', userId: 'user-2' }
-        ])
+        listParticipatedTrips: () => Promise.resolve({
+          documents: [
+            { $id: 't-3', description: 'Whistler trip', code: 'ggg-hhh-iii', userId: 'user-2' }
+          ]
+        })
       })
     })
     await waitFor(() => {
@@ -88,7 +90,7 @@ describe('Trips', () => {
     await act(async () => {
       renderTrips({
         listTrips: () => Promise.resolve({ documents: [trip], coordinatorUserIds: { 't-1': 'user-1' } }),
-        listParticipatedTrips: () => Promise.resolve([trip])
+        listParticipatedTrips: () => Promise.resolve({ documents: [trip] })
       })
     })
     await waitFor(() => expect(screen.getByText('Alps trip')).toBeInTheDocument())

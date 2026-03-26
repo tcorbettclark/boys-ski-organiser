@@ -16,7 +16,7 @@ const sampleProposals = [
 function renderProposals (props = {}) {
   const defaults = {
     user,
-    listParticipatedTrips: mock(() => Promise.resolve(sampleTrips)),
+    listParticipatedTrips: mock(() => Promise.resolve({ documents: sampleTrips })),
     listProposals: mock(() => Promise.resolve({ documents: sampleProposals })),
     createProposal: mock(() => Promise.resolve({ $id: 'p-new' })),
     updateProposal: mock(() => Promise.resolve({ $id: 'p-1' })),
@@ -45,7 +45,7 @@ describe('Proposals', () => {
 
   it('shows "Join a trip first" when listParticipatedTrips returns empty array', async () => {
     await act(async () => {
-      renderProposals({ listParticipatedTrips: mock(() => Promise.resolve([])) })
+      renderProposals({ listParticipatedTrips: mock(() => Promise.resolve({ documents: [] })) })
     })
     await waitFor(() => {
       expect(screen.getByText(/join a trip first/i)).toBeInTheDocument()

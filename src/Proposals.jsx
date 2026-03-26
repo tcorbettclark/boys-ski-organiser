@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   listParticipatedTrips as _listParticipatedTrips,
   listProposals as _listProposals,
@@ -14,6 +14,7 @@ import { colors, fonts, borders } from './theme'
 
 export default function Proposals ({
   user,
+  refreshTrips,
   listParticipatedTrips = _listParticipatedTrips,
   listProposals = _listProposals,
   createProposal = _createProposal,
@@ -30,14 +31,20 @@ export default function Proposals ({
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [proposalsLoading, setProposalsLoading] = useState(false)
   const [proposalsError, setProposalsError] = useState('')
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     listParticipatedTrips(user.$id)
       .then((result) => {
-        setTrips(result)
+        if (mountedRef.current) setTrips(result.documents)
       })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
+      .catch((err) => { if (mountedRef.current) setError(err.message) })
+      .finally(() => { if (mountedRef.current) setLoading(false) })
   }, [user.$id])
 
   useEffect(() => {
@@ -49,27 +56,27 @@ export default function Proposals ({
     setProposalsError('')
     listProposals(selectedTripId, user.$id)
       .then((result) => {
-        setProposals(result.documents)
+        if (mountedRef.current) setProposals(result.documents)
       })
-      .catch((err) => setProposalsError(err.message))
-      .finally(() => setProposalsLoading(false))
+      .catch((err) => { if (mountedRef.current) setProposalsError(err.message) })
+      .finally(() => { if (mountedRef.current) setProposalsLoading(false) })
   }, [selectedTripId, user.$id])
 
-  function handleCreated (proposal) {
+  const handleCreated = useCallback((proposal) => {
     setProposals((p) => [proposal, ...p])
-  }
+  }, [])
 
-  function handleUpdated (updated) {
+  const handleUpdated = useCallback((updated) => {
     setProposals((p) => p.map((prop) => (prop.$id === updated.$id ? updated : prop)))
-  }
+  }, [])
 
-  function handleDeleted (id) {
+  const handleDeleted = useCallback((id) => {
     setProposals((p) => p.filter((prop) => prop.$id !== id))
-  }
+  }, [])
 
-  function handleSubmitted (updated) {
+  const handleSubmitted = useCallback((updated) => {
     setProposals((p) => p.map((prop) => (prop.$id === updated.$id ? updated : prop)))
-  }
+  }, [])
 
   if (loading) return <p style={styles.message}>Loading…</p>
   if (error) return <p style={{ ...styles.message, color: colors.error }}>{error}</p>

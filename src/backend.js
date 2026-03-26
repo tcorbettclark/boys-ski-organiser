@@ -39,7 +39,8 @@ export async function listTrips (userId, db = databases) {
     [
       Query.equal('userId', userId),
       Query.equal('role', 'coordinator'),
-      Query.orderDesc('$createdAt')
+      Query.orderDesc('$createdAt'),
+      Query.limit(50)
     ]
   )
   if (coordinatorParticipants.length === 0) {
@@ -115,6 +116,10 @@ export async function getUserById (userId) {
   return res.json()
 }
 
+// Note: PUBLIC_APPWRITE_READ_USERS_API_KEY is intentionally exposed (prefixed PUBLIC_)
+// because it is a read-only key used to fetch user display names for the coordinator
+// column. This is acceptable for this use case; do not use a full API key here.
+
 export async function updateTrip (tripId, data, userId, db = databases) {
   const { documents } = await getCoordinatorParticipant(tripId, db)
   if (documents.length === 0 || documents[0].userId !== userId) {
@@ -138,7 +143,7 @@ export async function deleteTrip (tripId, userId, db = databases) {
     PARTICIPANTS_COLLECTION_ID,
     [Query.equal('tripId', tripId), Query.limit(100)]
   )
-  await Promise.all(
+  await Promise.allSettled(
     documents.map((p) => db.deleteDocument(DATABASE_ID, PARTICIPANTS_COLLECTION_ID, p.$id))
   )
   return db.deleteDocument(DATABASE_ID, TRIPS_COLLECTION_ID, tripId)
@@ -148,19 +153,24 @@ export async function listParticipatedTrips (userId, db = databases) {
   const { documents } = await db.listDocuments(
     DATABASE_ID,
     PARTICIPANTS_COLLECTION_ID,
-    [Query.equal('userId', userId), Query.orderDesc('$createdAt')]
+    [Query.equal('userId', userId), Query.orderDesc('$createdAt'), Query.limit(50)]
   )
-  if (documents.length === 0) return []
+  if (documents.length === 0) return { documents: [] }
   const tripIds = documents.map((p) => p.tripId)
   const { documents: trips } = await db.listDocuments(
     DATABASE_ID,
     TRIPS_COLLECTION_ID,
     [Query.equal('$id', tripIds)]
   )
-  return trips
+  return { documents: trips }
 }
 
 export async function joinTrip (userId, tripId, db = databases) {
+  try {
+    await db.getDocument(DATABASE_ID, TRIPS_COLLECTION_ID, tripId)
+  } catch {
+    throw new Error('Trip not found.')
+  }
   const { documents } = await db.listDocuments(
     DATABASE_ID,
     PARTICIPANTS_COLLECTION_ID,
@@ -186,7 +196,7 @@ export async function leaveTrip (userId, tripId, db = databases) {
   return db.deleteDocument(DATABASE_ID, PARTICIPANTS_COLLECTION_ID, documents[0].$id)
 }
 
-async function verifyParticipant (tripId, userId, db) {
+async function _verifyParticipant (tripId, userId, db) {
   const { documents } = await db.listDocuments(
     DATABASE_ID,
     PARTICIPANTS_COLLECTION_ID,
@@ -196,7 +206,7 @@ async function verifyParticipant (tripId, userId, db) {
 }
 
 export async function createProposal (tripId, userId, data, db = databases) {
-  await verifyParticipant(tripId, userId, db)
+  await _verifyParticipant(tripId, userId, db)
   return db.createDocument(
     DATABASE_ID,
     PROPOSALS_COLLECTION_ID,
@@ -207,16 +217,17 @@ export async function createProposal (tripId, userId, data, db = databases) {
 }
 
 export async function listProposals (tripId, userId, db = databases) {
-  await verifyParticipant(tripId, userId, db)
+  await _verifyParticipant(tripId, userId, db)
   return db.listDocuments(DATABASE_ID, PROPOSALS_COLLECTION_ID, [
     Query.equal('tripId', tripId),
-    Query.orderDesc('$createdAt')
+    Query.orderDesc('$createdAt'),
+    Query.limit(50)
   ])
 }
 
 export async function getProposal (proposalId, userId, db = databases) {
   const proposal = await db.getDocument(DATABASE_ID, PROPOSALS_COLLECTION_ID, proposalId)
-  await verifyParticipant(proposal.tripId, userId, db)
+  await _verifyParticipant(proposal.tripId, userId, db)
   return proposal
 }
 

@@ -46,6 +46,7 @@ export default function TripTable ({
             onUpdated={onUpdated}
             onDeleted={onDeleted}
             onLeft={onLeft}
+            columnCount={4}
             leaveTrip={leaveTrip}
             getUserById={getUserById}
             updateTrip={updateTrip}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   listTrips as _listTrips,
   listParticipatedTrips as _listParticipatedTrips,
@@ -17,6 +17,7 @@ import { colors, fonts, borders } from './theme'
 
 export default function Trips ({
   user,
+  onJoinedTrip,
   listTrips = _listTrips,
   listParticipatedTrips = _listParticipatedTrips,
   createTrip = _createTrip,
@@ -34,33 +35,40 @@ export default function Trips ({
   const [error, setError] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showJoinForm, setShowJoinForm] = useState(false)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     Promise.all([
       listTrips(user.$id),
       listParticipatedTrips(user.$id)
     ])
-      .then(([ownRes, participated]) => {
+      .then(([ownRes, participatedRes]) => {
+        if (!mountedRef.current) return
         setTrips(ownRes.documents)
         setCoordinatorUserIds(ownRes.coordinatorUserIds)
-        setParticipatedTrips(participated)
+        setParticipatedTrips(participatedRes.documents)
       })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
+      .catch((err) => { if (mountedRef.current) setError(err.message) })
+      .finally(() => { if (mountedRef.current) setLoading(false) })
   }, [user.$id])
 
-  function handleCreated (trip) {
+  const handleCreated = useCallback((trip) => {
     setTrips((t) => [trip, ...t])
     setCoordinatorUserIds((m) => ({ ...m, [trip.$id]: user.$id }))
-  }
+  }, [user.$id])
 
-  function handleUpdated (updated) {
+  const handleUpdated = useCallback((updated) => {
     setTrips((t) =>
       t.map((trip) => (trip.$id === updated.$id ? updated : trip))
     )
-  }
+  }, [])
 
-  function handleDeleted (id) {
+  const handleDeleted = useCallback((id) => {
     setTrips((t) => t.filter((trip) => trip.$id !== id))
     setParticipatedTrips((t) => t.filter((trip) => trip.$id !== id))
     setCoordinatorUserIds((m) => {
@@ -68,15 +76,16 @@ export default function Trips ({
       delete copy[id]
       return copy
     })
-  }
+  }, [])
 
-  function handleJoined (trip) {
+  const handleJoined = useCallback((trip) => {
     setParticipatedTrips((t) => [trip, ...t])
-  }
+    onJoinedTrip?.()
+  }, [onJoinedTrip])
 
-  function handleLeft (tripId) {
+  const handleLeft = useCallback((tripId) => {
     setParticipatedTrips((t) => t.filter((trip) => trip.$id !== tripId))
-  }
+  }, [])
 
   if (loading) return <p style={styles.message}>Loading trips…</p>
   if (error) { return <p style={{ ...styles.message, color: colors.error }}>{error}</p> }
