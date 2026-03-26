@@ -9,6 +9,7 @@ import {
   getUserById as _getUserById
 } from './backend'
 import CreateProposalForm from './CreateProposalForm'
+import { randomProposal } from './randomProposal'
 import ProposalsTable from './ProposalsTable'
 import { colors, fonts, borders } from './theme'
 
@@ -29,6 +30,7 @@ export default function Proposals ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [randomizing, setRandomizing] = useState(false)
   const [proposalsLoading, setProposalsLoading] = useState(false)
   const [proposalsError, setProposalsError] = useState('')
   const mountedRef = useRef(true)
@@ -74,6 +76,16 @@ export default function Proposals ({
     setProposals((p) => p.filter((prop) => prop.$id !== id))
   }, [])
 
+  async function handleRandomProposal () {
+    setRandomizing(true)
+    try {
+      const proposal = await createProposal(selectedTripId, user.$id, randomProposal())
+      handleCreated(proposal)
+    } finally {
+      setRandomizing(false)
+    }
+  }
+
   const handleSubmitted = useCallback((updated) => {
     setProposals((p) => p.map((prop) => (prop.$id === updated.$id ? updated : prop)))
   }, [])
@@ -92,6 +104,13 @@ export default function Proposals ({
               style={styles.actionButton}
             >
               {showCreateForm ? 'Cancel' : '+ New Proposal'}
+            </button>
+            <button
+              onClick={handleRandomProposal}
+              disabled={randomizing}
+              style={styles.randomButton}
+            >
+              {randomizing ? 'Adding…' : '🎲 Random'}
             </button>
           </div>
         )}
@@ -186,6 +205,18 @@ const styles = {
     border: 'none',
     background: colors.accent,
     color: colors.bgPrimary,
+    fontFamily: fonts.body,
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    letterSpacing: '0.02em'
+  },
+  randomButton: {
+    padding: '9px 22px',
+    borderRadius: '7px',
+    border: `1px solid ${colors.accent}`,
+    background: 'transparent',
+    color: colors.accent,
     fontFamily: fonts.body,
     fontSize: '13px',
     fontWeight: '600',
