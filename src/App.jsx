@@ -6,9 +6,12 @@ import Proposals from './Proposals'
 import ErrorBoundary from './ErrorBoundary'
 import { colors, fonts, borders } from './theme'
 
+const defaultAccountGet = _account.get.bind(_account)
+const defaultDeleteSession = _account.deleteSession.bind(_account, 'current')
+
 function App ({
-  accountGet = _account.get.bind(_account),
-  deleteSession = _account.deleteSession.bind(_account, 'current')
+  accountGet = defaultAccountGet,
+  deleteSession = defaultDeleteSession
 }) {
   const [user, setUser] = useState(null)
   const [checking, setChecking] = useState(true)
