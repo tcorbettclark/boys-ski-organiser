@@ -44,6 +44,7 @@ export default function ProposalsRow ({
     setSubmitting(true)
     try {
       const result = await submitProposal(proposal.$id, userId)
+      setSubmitting(false)
       onSubmitted(result)
     } catch (err) {
       setSubmitError(err.message)

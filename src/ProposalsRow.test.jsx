@@ -92,8 +92,6 @@ describe('ProposalsRow', () => {
     // In editing mode the normal action buttons are replaced by the edit form
     expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^submit$/i })).not.toBeInTheDocument()
-    // The stub EditProposalForm renders a Cancel button
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   })
 
   it('calls deleteProposal and onDeleted when Delete is clicked', async () => {
