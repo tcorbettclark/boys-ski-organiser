@@ -43,7 +43,12 @@ export default function Proposals ({
   useEffect(() => {
     listParticipatedTrips(user.$id)
       .then((result) => {
-        if (mountedRef.current) setTrips(result.documents)
+        if (mountedRef.current) {
+          setTrips(result.documents)
+          if (result.documents.length === 1 && !selectedTripId) {
+            setSelectedTripId(result.documents[0].$id)
+          }
+        }
       })
       .catch((err) => { if (mountedRef.current) setError(err.message) })
       .finally(() => { if (mountedRef.current) setLoading(false) })

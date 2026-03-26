@@ -127,4 +127,44 @@ describe('Proposals', () => {
       expect(screen.getByRole('button', { name: /create proposal/i })).toBeInTheDocument()
     })
   })
+
+  it('auto-selects single trip and loads proposals', async () => {
+    const singleTrip = [{ $id: 'trip-1', description: 'Alps Adventure', code: 'abc-def-ghi' }]
+    const listProposals = mock(() => Promise.resolve({ documents: sampleProposals }))
+    await act(async () => {
+      renderProposals({
+        listParticipatedTrips: mock(() => Promise.resolve({ documents: singleTrip })),
+        listProposals
+      })
+    })
+    await waitFor(() => {
+      expect(screen.getByText('Proposals')).toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(listProposals).toHaveBeenCalledWith('trip-1', 'user-1')
+      expect(screen.getByText("Val d'Isère")).toBeInTheDocument()
+    })
+  })
+
+  it('does not auto-select when multiple trips exist', async () => {
+    const listProposals = mock(() => Promise.resolve({ documents: [] }))
+    await act(async () => {
+      renderProposals({ listProposals })
+    })
+    await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument())
+    expect(screen.queryByRole('button', { name: /new proposal/i })).not.toBeInTheDocument()
+  })
+
+  it('auto-selected single trip shows "+ New Proposal" button', async () => {
+    const singleTrip = [{ $id: 'trip-1', description: 'Alps Adventure', code: 'abc-def-ghi' }]
+    await act(async () => {
+      renderProposals({
+        listParticipatedTrips: mock(() => Promise.resolve({ documents: singleTrip }))
+      })
+    })
+    await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /\+ new proposal/i })).toBeInTheDocument()
+    })
+  })
 })
