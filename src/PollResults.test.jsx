@@ -6,7 +6,7 @@ const poll = { $id: 'poll-1', proposalIds: ['p-1', 'p-2', 'p-3'] }
 const proposals = [
   { $id: 'p-1', resortName: 'Chamonix' },
   { $id: 'p-2', resortName: 'Verbier' },
-  { $id: 'p-3', resortName: 'Zermatt' },
+  { $id: 'p-3', resortName: 'Zermatt' }
 ]
 
 describe('PollResults', () => {
@@ -31,7 +31,7 @@ describe('PollResults', () => {
   it('shows "2 votes" plural', () => {
     const votes = [
       { $id: 'v-1', proposalIds: ['p-1'], tokenCounts: [2] },
-      { $id: 'v-2', proposalIds: ['p-2'], tokenCounts: [1] },
+      { $id: 'v-2', proposalIds: ['p-2'], tokenCounts: [1] }
     ]
     render(<PollResults poll={poll} proposals={proposals} votes={votes} />)
     expect(screen.getByText('2 votes')).toBeInTheDocument()
@@ -40,7 +40,7 @@ describe('PollResults', () => {
   it('shows correct total tokens per proposal', () => {
     const votes = [
       { $id: 'v-1', proposalIds: ['p-1', 'p-2'], tokenCounts: [2, 1] },
-      { $id: 'v-2', proposalIds: ['p-1'], tokenCounts: [1] },
+      { $id: 'v-2', proposalIds: ['p-1'], tokenCounts: [1] }
     ]
     render(<PollResults poll={poll} proposals={proposals} votes={votes} />)
     // p-1 total = 3, p-2 total = 1, p-3 total = 0

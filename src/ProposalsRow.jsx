@@ -5,7 +5,7 @@ import {
   deleteProposal as _deleteProposal,
   submitProposal as _submitProposal,
   rejectProposal as _rejectProposal,
-  getUserById as _getUserById,
+  getUserById as _getUserById
 } from './backend'
 import { colors, fonts, borders } from './theme'
 
@@ -22,7 +22,7 @@ export default function ProposalsRow ({
   deleteProposal = _deleteProposal,
   submitProposal = _submitProposal,
   rejectProposal = _rejectProposal,
-  getUserById = _getUserById,
+  getUserById = _getUserById
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [creator, setCreator] = useState(null)
@@ -146,7 +146,7 @@ export default function ProposalsRow ({
 
 const styles = {
   tr: {
-    borderBottom: '1px solid rgba(100,190,230,0.07)',
+    borderBottom: '1px solid rgba(100,190,230,0.07)'
   },
   td: {
     padding: '14px 16px',
@@ -154,23 +154,23 @@ const styles = {
     verticalAlign: 'top',
     fontFamily: fonts.body,
     fontSize: '14px',
-    lineHeight: '1.5',
+    lineHeight: '1.5'
   },
   editingTr: {
     borderBottom: '1px solid rgba(59,189,232,0.2)',
     borderTop: '1px solid rgba(59,189,232,0.2)',
-    background: 'rgba(59,189,232,0.04)',
+    background: 'rgba(59,189,232,0.04)'
   },
   editingTd: {
     padding: '20px 24px',
     verticalAlign: 'top',
-    borderLeft: `2px solid ${colors.accent}`,
+    borderLeft: `2px solid ${colors.accent}`
   },
   actions: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    flexWrap: 'wrap',
+    flexWrap: 'wrap'
   },
   viewButton: {
     padding: '5px 16px',
@@ -182,7 +182,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em',
+    letterSpacing: '0.03em'
   },
   editButton: {
     padding: '5px 16px',
@@ -194,7 +194,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em',
+    letterSpacing: '0.03em'
   },
   submitButton: {
     padding: '5px 16px',
@@ -206,7 +206,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em',
+    letterSpacing: '0.03em'
   },
   rejectButton: {
     padding: '5px 16px',
@@ -218,7 +218,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em',
+    letterSpacing: '0.03em'
   },
   badgeDraft: {
     display: 'inline-block',
@@ -229,7 +229,7 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.textSecondary,
     background: 'rgba(106,148,174,0.15)',
-    border: '1px solid rgba(106,148,174,0.2)',
+    border: '1px solid rgba(106,148,174,0.2)'
   },
   badgeSubmitted: {
     display: 'inline-block',
@@ -240,7 +240,7 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.accent,
     background: 'rgba(59,189,232,0.12)',
-    border: '1px solid rgba(59,189,232,0.25)',
+    border: '1px solid rgba(59,189,232,0.25)'
   },
   badgeRejected: {
     display: 'inline-block',
@@ -251,13 +251,13 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.error,
     background: 'rgba(255,107,107,0.12)',
-    border: '1px solid rgba(255,107,107,0.25)',
+    border: '1px solid rgba(255,107,107,0.25)'
   },
   errorText: {
     color: colors.error,
     fontFamily: fonts.body,
     fontSize: '11px',
     margin: '4px 0 0',
-    whiteSpace: 'normal',
-  },
+    whiteSpace: 'normal'
+  }
 }

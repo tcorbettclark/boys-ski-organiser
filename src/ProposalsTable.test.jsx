@@ -32,8 +32,8 @@ async function renderProposalsTable (props = {}) {
     submitProposal: mock(() => Promise.resolve()),
     rejectProposal: mock(() => Promise.resolve()),
     getUserById: mock(() =>
-      Promise.resolve({ name: 'Alice', email: 'alice@example.com' }),
-    ),
+      Promise.resolve({ name: 'Alice', email: 'alice@example.com' })
+    )
   }
   let result
   await act(async () => {
@@ -95,11 +95,11 @@ describe('ProposalsTable', () => {
     const submittedProposal = {
       ...sampleProposal,
       $id: 'p-1',
-      state: 'SUBMITTED',
+      state: 'SUBMITTED'
     }
     await renderProposalsTable({
       proposals: [submittedProposal],
-      isCoordinator: true,
+      isCoordinator: true
     })
     expect(screen.getByRole('button', { name: /^reject$/i })).toBeInTheDocument()
   })
@@ -108,14 +108,14 @@ describe('ProposalsTable', () => {
     const submittedProposal = {
       ...sampleProposal,
       $id: 'p-1',
-      state: 'SUBMITTED',
+      state: 'SUBMITTED'
     }
     await renderProposalsTable({
       proposals: [submittedProposal],
-      isCoordinator: false,
+      isCoordinator: false
     })
     expect(
-      screen.queryByRole('button', { name: /^reject$/i }),
+      screen.queryByRole('button', { name: /^reject$/i })
     ).not.toBeInTheDocument()
   })
 

@@ -1,6 +1,6 @@
 import { colors, fonts } from './theme'
 
-export default function PollResults({ poll, proposals, votes }) {
+export default function PollResults ({ poll, proposals, votes }) {
   const proposalMap = Object.fromEntries(proposals.map((p) => [p.$id, p]))
 
   const totals = {}
@@ -49,32 +49,32 @@ const styles = {
     color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: '0.1em',
-    marginBottom: '12px',
+    marginBottom: '12px'
   },
   row: {
     display: 'grid',
     gridTemplateColumns: '1fr 2fr auto',
     alignItems: 'center',
     gap: '10px',
-    marginBottom: '10px',
+    marginBottom: '10px'
   },
   label: { fontSize: '14px', color: colors.textData },
   barTrack: {
     background: 'rgba(59,189,232,0.1)',
     borderRadius: '3px',
     height: '6px',
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   bar: {
     background: colors.accent,
     height: '100%',
-    borderRadius: '3px',
+    borderRadius: '3px'
   },
   total: {
     fontSize: '14px',
     color: colors.accent,
     fontWeight: '600',
     minWidth: '24px',
-    textAlign: 'right',
-  },
+    textAlign: 'right'
+  }
 }

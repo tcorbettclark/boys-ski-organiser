@@ -148,33 +148,33 @@ describe('ProposalsRow', () => {
 
   it('shows the REJECTED status badge', async () => {
     await renderProposalsRow({
-      proposal: { ...sampleProposal, state: 'REJECTED' },
+      proposal: { ...sampleProposal, state: 'REJECTED' }
     })
     expect(screen.getByText('REJECTED')).toBeInTheDocument()
   })
 
   it('shows no action buttons for REJECTED proposals', async () => {
     await renderProposalsRow({
-      proposal: { ...sampleProposal, state: 'REJECTED' },
+      proposal: { ...sampleProposal, state: 'REJECTED' }
     })
     expect(
-      screen.queryByRole('button', { name: /^view$/i }),
+      screen.queryByRole('button', { name: /^view$/i })
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: /^edit$/i }),
+      screen.queryByRole('button', { name: /^edit$/i })
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: /^submit$/i }),
+      screen.queryByRole('button', { name: /^submit$/i })
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: /^reject$/i }),
+      screen.queryByRole('button', { name: /^reject$/i })
     ).not.toBeInTheDocument()
   })
 
   it('shows Reject button when isCoordinator and proposal is SUBMITTED', async () => {
     await renderProposalsRow({
       isCoordinator: true,
-      proposal: { ...sampleProposal, state: 'SUBMITTED' },
+      proposal: { ...sampleProposal, state: 'SUBMITTED' }
     })
     expect(screen.getByRole('button', { name: /^reject$/i })).toBeInTheDocument()
   })
@@ -182,17 +182,17 @@ describe('ProposalsRow', () => {
   it('does not show Reject button when not coordinator', async () => {
     await renderProposalsRow({
       isCoordinator: false,
-      proposal: { ...sampleProposal, state: 'SUBMITTED' },
+      proposal: { ...sampleProposal, state: 'SUBMITTED' }
     })
     expect(
-      screen.queryByRole('button', { name: /^reject$/i }),
+      screen.queryByRole('button', { name: /^reject$/i })
     ).not.toBeInTheDocument()
   })
 
   it('does not show Reject button for DRAFT proposals even when coordinator', async () => {
     await renderProposalsRow({ isCoordinator: true })
     expect(
-      screen.queryByRole('button', { name: /^reject$/i }),
+      screen.queryByRole('button', { name: /^reject$/i })
     ).not.toBeInTheDocument()
   })
 
@@ -205,7 +205,7 @@ describe('ProposalsRow', () => {
       isCoordinator: true,
       proposal: { ...sampleProposal, state: 'SUBMITTED' },
       rejectProposal,
-      onRejected,
+      onRejected
     })
     await user.click(screen.getByRole('button', { name: /^reject$/i }))
     await waitFor(() => {
@@ -219,7 +219,7 @@ describe('ProposalsRow', () => {
     await renderProposalsRow({
       isCoordinator: true,
       proposal: { ...sampleProposal, state: 'SUBMITTED' },
-      rejectProposal: mock(() => Promise.reject(new Error('Cannot reject'))),
+      rejectProposal: mock(() => Promise.reject(new Error('Cannot reject')))
     })
     await user.click(screen.getByRole('button', { name: /^reject$/i }))
     await waitFor(() => {

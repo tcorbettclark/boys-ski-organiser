@@ -257,14 +257,13 @@ export async function submitProposal (proposalId, userId, db = databases) {
 
 export async function rejectProposal (proposalId, userId, db = databases) {
   const proposal = await db.getDocument(DATABASE_ID, PROPOSALS_COLLECTION_ID, proposalId)
-  if (proposal.state !== 'SUBMITTED')
-    throw new Error('Only submitted proposals can be rejected.')
+  if (proposal.state !== 'SUBMITTED') { throw new Error('Only submitted proposals can be rejected.') }
   const { documents } = await getCoordinatorParticipant(proposal.tripId, db)
   if (documents.length === 0 || documents[0].userId !== userId) {
     throw new Error('Only the coordinator can reject this proposal.')
   }
   return db.updateDocument(DATABASE_ID, PROPOSALS_COLLECTION_ID, proposalId, {
-    state: 'REJECTED',
+    state: 'REJECTED'
   })
 }
 
@@ -279,29 +278,27 @@ export async function createPoll (tripId, userId, db = databases) {
     [
       Query.equal('tripId', tripId),
       Query.equal('state', 'OPEN'),
-      Query.limit(1),
-    ],
+      Query.limit(1)
+    ]
   )
-  if (openPolls.length > 0)
-    throw new Error('A poll is already open for this trip.')
+  if (openPolls.length > 0) { throw new Error('A poll is already open for this trip.') }
   const { documents: proposals } = await db.listDocuments(
     DATABASE_ID,
     PROPOSALS_COLLECTION_ID,
     [
       Query.equal('tripId', tripId),
       Query.equal('state', 'SUBMITTED'),
-      Query.limit(100),
-    ],
+      Query.limit(100)
+    ]
   )
-  if (proposals.length === 0)
-    throw new Error('No submitted proposals to poll on.')
+  if (proposals.length === 0) { throw new Error('No submitted proposals to poll on.') }
   const proposalIds = proposals.map((p) => p.$id)
   return db.createDocument(
     DATABASE_ID,
     POLLS_COLLECTION_ID,
     ID.unique(),
     { tripId, createdBy: userId, state: 'OPEN', proposalIds },
-    [Permission.read(Role.users()), Permission.write(Role.user(userId))],
+    [Permission.read(Role.users()), Permission.write(Role.user(userId))]
   )
 }
 
@@ -313,7 +310,7 @@ export async function closePoll (pollId, userId, db = databases) {
     throw new Error('Only the coordinator can close a poll.')
   }
   return db.updateDocument(DATABASE_ID, POLLS_COLLECTION_ID, pollId, {
-    state: 'CLOSED',
+    state: 'CLOSED'
   })
 }
 
@@ -322,7 +319,7 @@ export async function listPolls (tripId, userId, db = databases) {
   return db.listDocuments(DATABASE_ID, POLLS_COLLECTION_ID, [
     Query.equal('tripId', tripId),
     Query.orderDesc('$createdAt'),
-    Query.limit(50),
+    Query.limit(50)
   ])
 }
 
@@ -332,12 +329,11 @@ export async function upsertVote (
   userId,
   proposalIds,
   tokenCounts,
-  db = databases,
+  db = databases
 ) {
   await _verifyParticipant(tripId, userId, db)
   const poll = await db.getDocument(DATABASE_ID, POLLS_COLLECTION_ID, pollId)
-  if (poll.state !== 'OPEN')
-    throw new Error('Voting is only allowed on open polls.')
+  if (poll.state !== 'OPEN') { throw new Error('Voting is only allowed on open polls.') }
   const total = tokenCounts.reduce((a, b) => a + b, 0)
   if (total > poll.proposalIds.length) {
     throw new Error(`Total tokens cannot exceed ${poll.proposalIds.length}.`)
@@ -348,15 +344,15 @@ export async function upsertVote (
     [
       Query.equal('pollId', pollId),
       Query.equal('userId', userId),
-      Query.limit(1),
-    ],
+      Query.limit(1)
+    ]
   )
   if (documents.length > 0) {
     return db.updateDocument(
       DATABASE_ID,
       VOTES_COLLECTION_ID,
       documents[0].$id,
-      { proposalIds, tokenCounts },
+      { proposalIds, tokenCounts }
     )
   }
   return db.createDocument(
@@ -364,7 +360,7 @@ export async function upsertVote (
     VOTES_COLLECTION_ID,
     ID.unique(),
     { pollId, tripId, userId, proposalIds, tokenCounts },
-    [Permission.read(Role.users()), Permission.write(Role.user(userId))],
+    [Permission.read(Role.users()), Permission.write(Role.user(userId))]
   )
 }
 
@@ -372,6 +368,6 @@ export async function listVotes (pollId, tripId, userId, db = databases) {
   await _verifyParticipant(tripId, userId, db)
   return db.listDocuments(DATABASE_ID, VOTES_COLLECTION_ID, [
     Query.equal('pollId', pollId),
-    Query.limit(200),
+    Query.limit(200)
   ])
 }

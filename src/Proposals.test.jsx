@@ -24,7 +24,7 @@ function renderProposals (props = {}) {
     submitProposal: mock(() => Promise.resolve({ $id: 'p-1', state: 'SUBMITTED' })),
     rejectProposal: mock(() => Promise.resolve({ $id: 'p-1', state: 'REJECTED' })),
     getCoordinatorParticipant: mock(() => Promise.resolve({ documents: [] })),
-    getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' })),
+    getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' }))
   }
   return render(<Proposals {...defaults} {...props} />)
 }
@@ -192,22 +192,22 @@ describe('Proposals', () => {
     await act(async () => {
       renderProposals({
         listProposals: mock(() =>
-          Promise.resolve({ documents: [submittedProposal] }),
+          Promise.resolve({ documents: [submittedProposal] })
         ),
         getCoordinatorParticipant: mock(() =>
-          Promise.resolve({ documents: [{ $id: 'part-1', userId: 'user-1' }] }),
-        ),
+          Promise.resolve({ documents: [{ $id: 'part-1', userId: 'user-1' }] })
+        )
       })
     })
     await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument())
     await act(async () => {
       fireEvent.change(screen.getByRole('combobox'), {
-        target: { value: 'trip-1' },
+        target: { value: 'trip-1' }
       })
     })
     await waitFor(() => {
       expect(
-        screen.getByRole('button', { name: /^reject$/i }),
+        screen.getByRole('button', { name: /^reject$/i })
       ).toBeInTheDocument()
     })
   })
@@ -217,24 +217,24 @@ describe('Proposals', () => {
     await act(async () => {
       renderProposals({
         listProposals: mock(() =>
-          Promise.resolve({ documents: [submittedProposal] }),
+          Promise.resolve({ documents: [submittedProposal] })
         ),
         getCoordinatorParticipant: mock(() =>
           Promise.resolve({
-            documents: [{ $id: 'part-1', userId: 'other-user' }],
-          }),
-        ),
+            documents: [{ $id: 'part-1', userId: 'other-user' }]
+          })
+        )
       })
     })
     await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument())
     await act(async () => {
       fireEvent.change(screen.getByRole('combobox'), {
-        target: { value: 'trip-1' },
+        target: { value: 'trip-1' }
       })
     })
     await waitFor(() => {
       expect(
-        screen.queryByRole('button', { name: /^reject$/i }),
+        screen.queryByRole('button', { name: /^reject$/i })
       ).not.toBeInTheDocument()
     })
   })

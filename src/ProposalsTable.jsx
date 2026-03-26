@@ -6,7 +6,7 @@ import {
   deleteProposal as _deleteProposal,
   submitProposal as _submitProposal,
   rejectProposal as _rejectProposal,
-  getUserById as _getUserById,
+  getUserById as _getUserById
 } from './backend'
 import { colors, fonts, borders } from './theme'
 
@@ -23,7 +23,7 @@ export default function ProposalsTable ({
   deleteProposal = _deleteProposal,
   submitProposal = _submitProposal,
   rejectProposal = _rejectProposal,
-  getUserById = _getUserById,
+  getUserById = _getUserById
 }) {
   const [viewingIndex, setViewingIndex] = useState(null)
 
@@ -83,13 +83,13 @@ const styles = {
     padding: '60px 40px',
     textAlign: 'center',
     fontSize: '15px',
-    fontStyle: 'italic',
+    fontStyle: 'italic'
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     fontFamily: fonts.body,
-    fontSize: '14px',
+    fontSize: '14px'
   },
   th: {
     textAlign: 'left',
@@ -101,6 +101,6 @@ const styles = {
     fontWeight: '500',
     color: colors.textSecondary,
     letterSpacing: '0.1em',
-    textTransform: 'uppercase',
-  },
+    textTransform: 'uppercase'
+  }
 }

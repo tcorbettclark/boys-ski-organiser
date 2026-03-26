@@ -8,7 +8,7 @@ import {
   submitProposal as _submitProposal,
   rejectProposal as _rejectProposal,
   getCoordinatorParticipant as _getCoordinatorParticipant,
-  getUserById as _getUserById,
+  getUserById as _getUserById
 } from './backend'
 import CreateProposalForm from './CreateProposalForm'
 import { randomProposal } from './randomProposal'
@@ -27,7 +27,7 @@ export default function Proposals ({
   submitProposal = _submitProposal,
   rejectProposal = _rejectProposal,
   getCoordinatorParticipant = _getCoordinatorParticipant,
-  getUserById = _getUserById,
+  getUserById = _getUserById
 }) {
   const [trips, setTrips] = useState([])
   const [selectedTripId, setSelectedTripId] = useState(initialSelectedTripId || null)
@@ -76,14 +76,14 @@ export default function Proposals ({
     setProposalsError('')
     Promise.all([
       listProposals(selectedTripId, user.$id),
-      getCoordinatorParticipant(selectedTripId),
+      getCoordinatorParticipant(selectedTripId)
     ])
       .then(([proposalsResult, coordResult]) => {
         if (!mountedRef.current) return
         setProposals(proposalsResult.documents)
         setIsCoordinator(
           coordResult.documents.length > 0 &&
-            coordResult.documents[0].userId === user.$id,
+            coordResult.documents[0].userId === user.$id
         )
       })
       .catch((err) => { if (mountedRef.current) setProposalsError(err.message) })
@@ -203,14 +203,14 @@ const styles = {
     padding: '40px 48px',
     maxWidth: '960px',
     margin: '0 auto',
-    fontFamily: fonts.body,
+    fontFamily: fonts.body
   },
   message: {
     color: colors.textSecondary,
     fontFamily: fonts.body,
     padding: '80px',
     textAlign: 'center',
-    fontSize: '15px',
+    fontSize: '15px'
   },
   toolbar: {
     display: 'flex',
@@ -218,7 +218,7 @@ const styles = {
     justifyContent: 'space-between',
     marginBottom: '28px',
     paddingBottom: '20px',
-    borderBottom: borders.subtle,
+    borderBottom: borders.subtle
   },
   heading: {
     fontFamily: fonts.display,
@@ -226,11 +226,11 @@ const styles = {
     fontWeight: '600',
     color: colors.textPrimary,
     margin: 0,
-    letterSpacing: '-0.01em',
+    letterSpacing: '-0.01em'
   },
   buttons: {
     display: 'flex',
-    gap: '10px',
+    gap: '10px'
   },
   actionButton: {
     padding: '9px 22px',
@@ -242,7 +242,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
-    letterSpacing: '0.02em',
+    letterSpacing: '0.02em'
   },
   randomButton: {
     padding: '9px 22px',
@@ -254,7 +254,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
-    letterSpacing: '0.02em',
+    letterSpacing: '0.02em'
   },
   select: {
     padding: '10px 14px',
@@ -266,6 +266,6 @@ const styles = {
     fontSize: '14px',
     outline: 'none',
     marginBottom: '24px',
-    width: '100%',
-  },
+    width: '100%'
+  }
 }
