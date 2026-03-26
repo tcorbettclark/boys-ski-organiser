@@ -74,24 +74,22 @@ describe('ProposalsRow', () => {
     expect(screen.getByText('SUBMITTED')).toBeInTheDocument()
   })
 
-  it('shows Edit, Delete, and Submit buttons when userId matches and state is DRAFT', async () => {
+  it('shows Edit and Submit buttons when userId matches and state is DRAFT', async () => {
     await renderProposalsRow()
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
   })
 
   it('hides action buttons when userId does not match the proposal creator', async () => {
     await renderProposalsRow({ userId: 'user-2' })
     expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument()
   })
 
   it('hides action buttons when proposal state is SUBMITTED', async () => {
     await renderProposalsRow({ proposal: { ...sampleProposal, state: 'SUBMITTED' } })
     expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /submit/i })).not.toBeInTheDocument()
   })
 
@@ -105,18 +103,6 @@ describe('ProposalsRow', () => {
     expect(screen.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument()
   })
 
-  it('calls deleteProposal and onDeleted when Delete is clicked', async () => {
-    const user = userEvent.setup()
-    const deleteProposal = mock(() => Promise.resolve())
-    const onDeleted = mock(() => {})
-    await renderProposalsRow({ deleteProposal, onDeleted })
-    await user.click(screen.getByRole('button', { name: /delete/i }))
-    await waitFor(() => {
-      expect(deleteProposal).toHaveBeenCalledWith('p-1', 'user-1')
-      expect(onDeleted).toHaveBeenCalledWith('p-1')
-    })
-  })
-
   it('calls submitProposal and onSubmitted when Submit is clicked', async () => {
     const user = userEvent.setup()
     const submittedProposal = { ...sampleProposal, state: 'SUBMITTED' }
@@ -127,17 +113,6 @@ describe('ProposalsRow', () => {
     await waitFor(() => {
       expect(submitProposal).toHaveBeenCalledWith('p-1', 'user-1')
       expect(onSubmitted).toHaveBeenCalledWith(submittedProposal)
-    })
-  })
-
-  it('shows an error when deleteProposal fails', async () => {
-    const user = userEvent.setup()
-    await renderProposalsRow({
-      deleteProposal: mock(() => Promise.reject(new Error('Cannot delete')))
-    })
-    await user.click(screen.getByRole('button', { name: /delete/i }))
-    await waitFor(() => {
-      expect(screen.getByText('Cannot delete')).toBeInTheDocument()
     })
   })
 

@@ -20,9 +20,7 @@ export default function ProposalsRow ({
   getUserById = _getUserById
 }) {
   const [isEditing, setIsEditing] = useState(false)
-  const [deleting, setDeleting] = useState(false)
   const [creator, setCreator] = useState(null)
-  const [deleteError, setDeleteError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
@@ -37,18 +35,6 @@ export default function ProposalsRow ({
   const isOwner = userId === proposal.userId
   const isDraft = proposal.state === 'DRAFT'
   const canAct = isOwner && isDraft
-
-  async function handleDelete () {
-    setDeleteError('')
-    setDeleting(true)
-    try {
-      await deleteProposal(proposal.$id, userId)
-      onDeleted(proposal.$id)
-    } catch (err) {
-      setDeleteError(err.message)
-      setDeleting(false)
-    }
-  }
 
   async function handleSubmit () {
     setSubmitError('')
@@ -103,13 +89,9 @@ export default function ProposalsRow ({
             <button onClick={() => setIsEditing(true)} style={styles.editButton}>
               Edit
             </button>
-            <button onClick={handleDelete} disabled={deleting} style={styles.deleteButton}>
-              {deleting ? 'Deleting…' : 'Delete'}
-            </button>
             <button onClick={handleSubmit} disabled={submitting} style={styles.submitButton}>
               {submitting ? 'Submitting…' : 'Submit'}
             </button>
-            {deleteError && <p style={styles.errorText}>{deleteError}</p>}
             {submitError && <p style={styles.errorText}>{submitError}</p>}
           </div>
         )}
@@ -152,18 +134,6 @@ const styles = {
     border: borders.muted,
     background: 'transparent',
     color: colors.textSecondary,
-    fontFamily: fonts.body,
-    fontSize: '12px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    letterSpacing: '0.03em'
-  },
-  deleteButton: {
-    padding: '5px 16px',
-    borderRadius: '5px',
-    border: '1px solid rgba(255,107,107,0.3)',
-    background: 'transparent',
-    color: colors.error,
     fontFamily: fonts.body,
     fontSize: '12px',
     fontWeight: '500',
