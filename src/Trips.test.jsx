@@ -20,6 +20,7 @@ function renderTrips (props = {}) {
       deleteTrip={() => Promise.resolve()}
       leaveTrip={() => Promise.resolve()}
       getUserById={() => Promise.resolve(defaultUser)}
+      getCoordinatorParticipant={() => Promise.resolve({ documents: [] })}
       {...props}
     />
   )

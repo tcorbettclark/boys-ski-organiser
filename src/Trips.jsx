@@ -8,7 +8,8 @@ import {
   updateTrip as _updateTrip,
   deleteTrip as _deleteTrip,
   leaveTrip as _leaveTrip,
-  getUserById as _getUserById
+  getUserById as _getUserById,
+  getCoordinatorParticipant as _getCoordinatorParticipant
 } from './backend'
 import CreateTripForm from './CreateTripForm'
 import JoinTripForm from './JoinTripForm'
@@ -26,7 +27,8 @@ export default function Trips ({
   updateTrip = _updateTrip,
   deleteTrip = _deleteTrip,
   leaveTrip = _leaveTrip,
-  getUserById = _getUserById
+  getUserById = _getUserById,
+  getCoordinatorParticipant = _getCoordinatorParticipant
 }) {
   const [trips, setTrips] = useState([])
   const [participatedTrips, setParticipatedTrips] = useState([])
@@ -143,6 +145,7 @@ export default function Trips ({
         deleteTrip={deleteTrip}
         leaveTrip={leaveTrip}
         getUserById={getUserById}
+        getCoordinatorParticipant={getCoordinatorParticipant}
       />
     </div>
   )

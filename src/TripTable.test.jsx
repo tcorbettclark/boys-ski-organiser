@@ -20,6 +20,7 @@ async function renderTable (trips, props = {}) {
         onUpdated={noop}
         onDeleted={noop}
         getUserById={() => Promise.resolve(defaultUser)}
+        getCoordinatorParticipant={() => Promise.resolve({ documents: [] })}
         leaveTrip={() => Promise.resolve()}
         updateTrip={() => Promise.resolve({})}
         deleteTrip={() => Promise.resolve()}
