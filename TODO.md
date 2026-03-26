@@ -1,6 +1,6 @@
 # Refactor
 
-- Use auto-install, remove node_modules. See: https://bun.com/docs/runtime/auto-install
+- None
 
 # Technical
 
