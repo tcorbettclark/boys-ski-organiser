@@ -89,9 +89,10 @@ describe('ProposalsRow', () => {
     const user = userEvent.setup()
     renderProposalsRow()
     await user.click(screen.getByRole('button', { name: /^edit$/i }))
-    // In editing mode the normal action buttons are replaced by the edit form
-    expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument()
+    // In editing mode the normal row action buttons are replaced by the edit form
+    // (The edit form itself has a Delete button, so we check for Submit which only exists in row mode)
     expect(screen.queryByRole('button', { name: /^submit$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument()
   })
 
   it('calls deleteProposal and onDeleted when Delete is clicked', async () => {
