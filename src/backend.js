@@ -192,7 +192,7 @@ async function verifyParticipant (tripId, userId, db) {
     PARTICIPANTS_COLLECTION_ID,
     [Query.equal('tripId', tripId), Query.equal('userId', userId), Query.limit(1)]
   )
-  if (documents.length === 0) throw new Error('You must be a participant to create a proposal.')
+  if (documents.length === 0) throw new Error('You must be a participant to access proposals.')
 }
 
 export async function createProposal (tripId, userId, data, db = databases) {
@@ -224,7 +224,8 @@ export async function updateProposal (proposalId, userId, data, db = databases) 
   const proposal = await db.getDocument(DATABASE_ID, PROPOSALS_COLLECTION_ID, proposalId)
   if (proposal.userId !== userId) throw new Error('Only the creator can edit this proposal.')
   if (proposal.state !== 'DRAFT') throw new Error('Only draft proposals can be edited.')
-  return db.updateDocument(DATABASE_ID, PROPOSALS_COLLECTION_ID, proposalId, data)
+  const { state: _state, tripId: _tripId, userId: _userId, ...safeData } = data
+  return db.updateDocument(DATABASE_ID, PROPOSALS_COLLECTION_ID, proposalId, safeData)
 }
 
 export async function deleteProposal (proposalId, userId, db = databases) {

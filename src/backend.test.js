@@ -332,7 +332,7 @@ describe('createProposal', () => {
   it('throws when user is not a participant', async () => {
     const db = makeDb()
     await expect(createProposal('trip-1', 'user-1', {}, db)).rejects.toThrow(
-      'You must be a participant to create a proposal.'
+      'You must be a participant to access proposals.'
     )
     expect(db.createDocument).not.toHaveBeenCalled()
   })
@@ -368,7 +368,7 @@ describe('listProposals', () => {
   it('throws when user is not a participant', async () => {
     const db = makeDb()
     await expect(listProposals('trip-1', 'user-1', db)).rejects.toThrow(
-      'You must be a participant to create a proposal.'
+      'You must be a participant to access proposals.'
     )
   })
 
@@ -399,7 +399,7 @@ describe('getProposal', () => {
     )
     const db = makeDb({ getDocument })
     await expect(getProposal('prop-1', 'user-1', db)).rejects.toThrow(
-      'You must be a participant to create a proposal.'
+      'You must be a participant to access proposals.'
     )
   })
 
@@ -421,6 +421,21 @@ describe('updateProposal', () => {
     const result = await updateProposal('prop-1', 'user-1', { name: 'Updated' }, db)
     expect(db.updateDocument).toHaveBeenCalledTimes(1)
     expect(result.$id).toBe('1')
+  })
+
+  it('strips state, tripId, and userId from data before updating', async () => {
+    const db = makeDb({
+      getDocument: mock(() =>
+        Promise.resolve({ $id: 'prop-1', userId: 'user-1', state: 'DRAFT' })
+      )
+    })
+    await updateProposal('prop-1', 'user-1', { name: 'Updated', state: 'SUBMITTED', tripId: 'other-trip', userId: 'other-user' }, db)
+    expect(db.updateDocument).toHaveBeenCalledTimes(1)
+    const [, , , data] = db.updateDocument.mock.calls[0]
+    expect(data.name).toBe('Updated')
+    expect(data.state).toBeUndefined()
+    expect(data.tripId).toBeUndefined()
+    expect(data.userId).toBeUndefined()
   })
 
   it('throws when user is not the creator', async () => {
