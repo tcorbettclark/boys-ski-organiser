@@ -21,7 +21,8 @@ export default function TripRow ({
   getUserById = _getUserById,
   updateTrip = _updateTrip,
   deleteTrip = _deleteTrip,
-  getCoordinatorParticipant = _getCoordinatorParticipant
+  getCoordinatorParticipant = _getCoordinatorParticipant,
+  copyRevertDelay = 1500
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [leaving, setLeaving] = useState(false)
@@ -43,7 +44,7 @@ export default function TripRow ({
       if (!mountedRef.current) return
       setCopied(true)
       setCopyError('')
-      setTimeout(() => { if (mountedRef.current) setCopied(false) }, 1500)
+      setTimeout(() => { if (mountedRef.current) setCopied(false) }, copyRevertDelay)
     }).catch(() => {
       if (!mountedRef.current) return
       setCopyError('Failed to copy')

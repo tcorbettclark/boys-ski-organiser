@@ -135,17 +135,17 @@ describe('TripRow', () => {
 
   it('copies the trip code to the clipboard when the copy button is clicked', async () => {
     const user = userEvent.setup()
-    await renderRow(sampleTrip)
+    await renderRow(sampleTrip, { copyRevertDelay: 0 })
     await user.click(screen.getByRole('button', { name: /copy trip code/i }))
     expect(mockWriteText).toHaveBeenCalledWith('ABC12')
   })
 
-  it('shows a confirmation tick after copying and reverts after 1500ms', async () => {
+  it('shows a confirmation tick after copying and reverts after delay', async () => {
     const user = userEvent.setup({ delay: null })
-    await renderRow(sampleTrip)
+    await renderRow(sampleTrip, { copyRevertDelay: 50 })
     await user.click(screen.getByRole('button', { name: /copy trip code/i }))
     await waitFor(() => expect(screen.getByRole('button', { name: /copy trip code/i })).toHaveTextContent('✓'))
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 1500)) })
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 50)) })
     expect(screen.getByRole('button', { name: /copy trip code/i })).toHaveTextContent('⧉')
   })
 })
