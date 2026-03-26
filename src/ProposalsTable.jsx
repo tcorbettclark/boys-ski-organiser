@@ -5,21 +5,25 @@ import {
   updateProposal as _updateProposal,
   deleteProposal as _deleteProposal,
   submitProposal as _submitProposal,
-  getUserById as _getUserById
+  rejectProposal as _rejectProposal,
+  getUserById as _getUserById,
 } from './backend'
 import { colors, fonts, borders } from './theme'
 
 export default function ProposalsTable ({
   proposals,
   userId,
+  isCoordinator = false,
   onUpdated,
   onDeleted,
   onSubmitted,
+  onRejected = () => {},
   emptyMessage = 'No proposals yet. Create one above.',
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
   submitProposal = _submitProposal,
-  getUserById = _getUserById
+  rejectProposal = _rejectProposal,
+  getUserById = _getUserById,
 }) {
   const [viewingIndex, setViewingIndex] = useState(null)
 
@@ -45,13 +49,16 @@ export default function ProposalsTable ({
               key={proposal.$id}
               proposal={proposal}
               userId={userId}
+              isCoordinator={isCoordinator}
               onUpdated={onUpdated}
               onDeleted={onDeleted}
               onSubmitted={onSubmitted}
+              onRejected={onRejected}
               onView={() => setViewingIndex(index)}
               updateProposal={updateProposal}
               deleteProposal={deleteProposal}
               submitProposal={submitProposal}
+              rejectProposal={rejectProposal}
               getUserById={getUserById}
             />
           ))}
@@ -76,13 +83,13 @@ const styles = {
     padding: '60px 40px',
     textAlign: 'center',
     fontSize: '15px',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     fontFamily: fonts.body,
-    fontSize: '14px'
+    fontSize: '14px',
   },
   th: {
     textAlign: 'left',
@@ -94,6 +101,6 @@ const styles = {
     fontWeight: '500',
     color: colors.textSecondary,
     letterSpacing: '0.1em',
-    textTransform: 'uppercase'
-  }
+    textTransform: 'uppercase',
+  },
 }

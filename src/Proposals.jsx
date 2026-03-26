@@ -6,7 +6,9 @@ import {
   updateProposal as _updateProposal,
   deleteProposal as _deleteProposal,
   submitProposal as _submitProposal,
-  getUserById as _getUserById
+  rejectProposal as _rejectProposal,
+  getCoordinatorParticipant as _getCoordinatorParticipant,
+  getUserById as _getUserById,
 } from './backend'
 import CreateProposalForm from './CreateProposalForm'
 import { randomProposal } from './randomProposal'
@@ -23,7 +25,9 @@ export default function Proposals ({
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
   submitProposal = _submitProposal,
-  getUserById = _getUserById
+  rejectProposal = _rejectProposal,
+  getCoordinatorParticipant = _getCoordinatorParticipant,
+  getUserById = _getUserById,
 }) {
   const [trips, setTrips] = useState([])
   const [selectedTripId, setSelectedTripId] = useState(initialSelectedTripId || null)
@@ -34,6 +38,7 @@ export default function Proposals ({
   const [randomizing, setRandomizing] = useState(false)
   const [proposalsLoading, setProposalsLoading] = useState(false)
   const [proposalsError, setProposalsError] = useState('')
+  const [isCoordinator, setIsCoordinator] = useState(false)
   const mountedRef = useRef(true)
 
   useEffect(() => {
@@ -64,13 +69,22 @@ export default function Proposals ({
   useEffect(() => {
     if (!selectedTripId) {
       setProposals([])
+      setIsCoordinator(false)
       return
     }
     setProposalsLoading(true)
     setProposalsError('')
-    listProposals(selectedTripId, user.$id)
-      .then((result) => {
-        if (mountedRef.current) setProposals(result.documents)
+    Promise.all([
+      listProposals(selectedTripId, user.$id),
+      getCoordinatorParticipant(selectedTripId),
+    ])
+      .then(([proposalsResult, coordResult]) => {
+        if (!mountedRef.current) return
+        setProposals(proposalsResult.documents)
+        setIsCoordinator(
+          coordResult.documents.length > 0 &&
+            coordResult.documents[0].userId === user.$id,
+        )
       })
       .catch((err) => { if (mountedRef.current) setProposalsError(err.message) })
       .finally(() => { if (mountedRef.current) setProposalsLoading(false) })
@@ -86,6 +100,10 @@ export default function Proposals ({
 
   const handleDeleted = useCallback((id) => {
     setProposals((p) => p.filter((prop) => prop.$id !== id))
+  }, [])
+
+  const handleRejected = useCallback((updated) => {
+    setProposals((p) => p.map((prop) => (prop.$id === updated.$id ? updated : prop)))
   }, [])
 
   async function handleRandomProposal () {
@@ -163,13 +181,16 @@ export default function Proposals ({
         <ProposalsTable
           proposals={proposals}
           userId={user.$id}
+          isCoordinator={isCoordinator}
           onUpdated={handleUpdated}
           onDeleted={handleDeleted}
           onSubmitted={handleSubmitted}
+          onRejected={handleRejected}
           emptyMessage='No proposals yet. Create one above.'
           updateProposal={updateProposal}
           deleteProposal={deleteProposal}
           submitProposal={submitProposal}
+          rejectProposal={rejectProposal}
           getUserById={getUserById}
         />
       )}
@@ -182,14 +203,14 @@ const styles = {
     padding: '40px 48px',
     maxWidth: '960px',
     margin: '0 auto',
-    fontFamily: fonts.body
+    fontFamily: fonts.body,
   },
   message: {
     color: colors.textSecondary,
     fontFamily: fonts.body,
     padding: '80px',
     textAlign: 'center',
-    fontSize: '15px'
+    fontSize: '15px',
   },
   toolbar: {
     display: 'flex',
@@ -197,7 +218,7 @@ const styles = {
     justifyContent: 'space-between',
     marginBottom: '28px',
     paddingBottom: '20px',
-    borderBottom: borders.subtle
+    borderBottom: borders.subtle,
   },
   heading: {
     fontFamily: fonts.display,
@@ -205,11 +226,11 @@ const styles = {
     fontWeight: '600',
     color: colors.textPrimary,
     margin: 0,
-    letterSpacing: '-0.01em'
+    letterSpacing: '-0.01em',
   },
   buttons: {
     display: 'flex',
-    gap: '10px'
+    gap: '10px',
   },
   actionButton: {
     padding: '9px 22px',
@@ -221,7 +242,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
   },
   randomButton: {
     padding: '9px 22px',
@@ -233,7 +254,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
   },
   select: {
     padding: '10px 14px',
@@ -245,6 +266,6 @@ const styles = {
     fontSize: '14px',
     outline: 'none',
     marginBottom: '24px',
-    width: '100%'
-  }
+    width: '100%',
+  },
 }

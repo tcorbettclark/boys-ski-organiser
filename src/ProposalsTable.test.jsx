@@ -22,13 +22,18 @@ async function renderProposalsTable (props = {}) {
   const defaults = {
     proposals: [],
     userId: 'user-1',
+    isCoordinator: false,
     onUpdated: mock(() => {}),
     onDeleted: mock(() => {}),
     onSubmitted: mock(() => {}),
+    onRejected: mock(() => {}),
     updateProposal: mock(() => Promise.resolve()),
     deleteProposal: mock(() => Promise.resolve()),
     submitProposal: mock(() => Promise.resolve()),
-    getUserById: mock(() => Promise.resolve({ name: 'Alice', email: 'alice@example.com' }))
+    rejectProposal: mock(() => Promise.resolve()),
+    getUserById: mock(() =>
+      Promise.resolve({ name: 'Alice', email: 'alice@example.com' }),
+    ),
   }
   let result
   await act(async () => {
@@ -84,6 +89,34 @@ describe('ProposalsTable', () => {
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByText('Chamonix')).toBeInTheDocument()
     expect(within(dialog).getByText('2 of 2')).toBeInTheDocument()
+  })
+
+  it('passes isCoordinator to ProposalsRow — Reject button visible when true and proposal is SUBMITTED', async () => {
+    const submittedProposal = {
+      ...sampleProposal,
+      $id: 'p-1',
+      state: 'SUBMITTED',
+    }
+    await renderProposalsTable({
+      proposals: [submittedProposal],
+      isCoordinator: true,
+    })
+    expect(screen.getByRole('button', { name: /^reject$/i })).toBeInTheDocument()
+  })
+
+  it('does not show Reject button when isCoordinator is false', async () => {
+    const submittedProposal = {
+      ...sampleProposal,
+      $id: 'p-1',
+      state: 'SUBMITTED',
+    }
+    await renderProposalsTable({
+      proposals: [submittedProposal],
+      isCoordinator: false,
+    })
+    expect(
+      screen.queryByRole('button', { name: /^reject$/i }),
+    ).not.toBeInTheDocument()
   })
 
   it('closing the viewer hides it', async () => {
