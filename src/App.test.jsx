@@ -27,6 +27,8 @@ function renderAppWithTrip (props = {}) {
       listTrips={() => Promise.resolve({ documents: [sampleTrip] })}
       listParticipatedTrips={() => Promise.resolve({ documents: [] })}
       updateTrip={() => Promise.resolve(updatedTrip)}
+      getCoordinatorParticipant={() => Promise.resolve({ documents: [] })}
+      getUserById={() => Promise.resolve(defaultUser)}
       {...props}
     />
   )

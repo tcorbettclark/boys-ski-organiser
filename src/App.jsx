@@ -126,6 +126,8 @@ function App ({
             trips={trips}
             onSelectTrip={handleSelectTrip}
             onJoinedTrip={handleJoinedTrip}
+            getCoordinatorParticipant={getCoordinatorParticipant}
+            getUserById={getUserById}
           />
         </ErrorBoundary>
       )}
@@ -137,6 +139,7 @@ function App ({
               <TripOverview
                 trip={selectedTrip}
                 user={user}
+                listParticipatedTrips={listParticipatedTrips}
                 updateTrip={updateTrip}
                 deleteTrip={deleteTrip}
                 leaveTrip={leaveTrip}
