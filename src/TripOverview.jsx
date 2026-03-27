@@ -298,7 +298,8 @@ const styles = {
   codeWithCopy: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '6px'
+    gap: '6px',
+    flex: 1
   },
   copyButton: {
     background: 'none',
@@ -314,7 +315,9 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '11px',
     color: colors.textSecondary,
-    marginLeft: '4px'
+    marginLeft: '4px',
+    textAlign: 'right',
+    flex: 1
   },
   participantList: {
     listStyle: 'none',
