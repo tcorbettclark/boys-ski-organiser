@@ -1,27 +1,16 @@
 import TripRow from './TripRow'
-import {
-  leaveTrip as _leaveTrip,
-  getUserById as _getUserById,
-  updateTrip as _updateTrip,
-  deleteTrip as _deleteTrip,
-  getCoordinatorParticipant as _getCoordinatorParticipant
-} from './backend'
 import { colors, fonts, borders } from './theme'
 
 export default function TripTable ({
   trips,
   userId,
-  coordinatorUserIds = {},
-  onUpdated,
-  onDeleted,
-  onLeft,
-  onViewProposals,
+  onSelectTrip,
   emptyMessage = 'No trips yet. Add one above.',
-  leaveTrip = _leaveTrip,
-  getUserById = _getUserById,
-  updateTrip = _updateTrip,
-  deleteTrip = _deleteTrip,
-  getCoordinatorParticipant = _getCoordinatorParticipant
+  updateTrip,
+  deleteTrip,
+  leaveTrip,
+  getUserById,
+  getCoordinatorParticipant
 }) {
   if (trips.length === 0) {
     return <p style={styles.empty}>{emptyMessage}</p>
@@ -43,16 +32,11 @@ export default function TripTable ({
             key={trip.$id}
             trip={trip}
             userId={userId}
-            coordinatorUserId={coordinatorUserIds[trip.$id]}
-            onUpdated={onUpdated}
-            onDeleted={onDeleted}
-            onLeft={onLeft}
-            onViewProposals={onViewProposals}
-            columnCount={5}
-            leaveTrip={leaveTrip}
-            getUserById={getUserById}
+            onSelectTrip={onSelectTrip}
             updateTrip={updateTrip}
             deleteTrip={deleteTrip}
+            leaveTrip={leaveTrip}
+            getUserById={getUserById}
             getCoordinatorParticipant={getCoordinatorParticipant}
           />
         ))}

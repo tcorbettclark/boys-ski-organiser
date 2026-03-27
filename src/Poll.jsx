@@ -14,8 +14,7 @@ import { colors, fonts, borders } from './theme'
 
 export default function Poll ({
   user,
-  selectedTripId,
-  onTripChange,
+  tripId,
   listPolls = _listPolls,
   listProposals = _listProposals,
   listVotes = _listVotes,
@@ -46,7 +45,7 @@ export default function Poll ({
   }, [])
 
   useEffect(() => {
-    if (!selectedTripId) {
+    if (!tripId) {
       setActivePoll(null)
       setPastPolls([])
       setProposals([])
@@ -61,9 +60,9 @@ export default function Poll ({
     setCreateError('')
     setCloseError('')
     Promise.all([
-      getCoordinatorParticipant(selectedTripId),
-      listProposals(selectedTripId, user.$id),
-      listPolls(selectedTripId, user.$id)
+      getCoordinatorParticipant(tripId),
+      listProposals(tripId, user.$id),
+      listPolls(tripId, user.$id)
     ])
       .then(async ([coordResult, proposalsResult, pollsResult]) => {
         if (!mountedRef.current) return
@@ -80,7 +79,7 @@ export default function Poll ({
         if (open) {
           const votesResult = await listVotes(
             open.$id,
-            selectedTripId,
+            tripId,
             user.$id
           )
           if (mountedRef.current) setVotes(votesResult.documents)
@@ -92,7 +91,7 @@ export default function Poll ({
       .finally(() => {
         if (mountedRef.current) setPollsLoading(false)
       })
-  }, [selectedTripId, user.$id])
+  }, [tripId, user.$id])
 
   const handleVoteSaved = useCallback((vote) => {
     setVotes((v) => {
@@ -107,7 +106,7 @@ export default function Poll ({
     setCreatingPoll(true)
     setCreateError('')
     try {
-      const poll = await createPoll(selectedTripId, user.$id)
+      const poll = await createPoll(tripId, user.$id)
       setActivePoll(poll)
       setVotes([])
     } catch (err) {
@@ -142,16 +141,12 @@ export default function Poll ({
         <h2 style={styles.heading}>Poll</h2>
       </div>
 
-      {!selectedTripId && (
-        <p style={styles.promptMessage}>Select a trip above to view polls.</p>
-      )}
-
       {pollsLoading && <p style={styles.message}>Loading poll…</p>}
       {pollsError && (
         <p style={{ ...styles.message, color: colors.error }}>{pollsError}</p>
       )}
 
-      {!pollsLoading && !pollsError && selectedTripId && (
+      {!pollsLoading && !pollsError && tripId && (
         <>
           {activePoll
             ? (
@@ -215,7 +210,7 @@ export default function Poll ({
                   key={poll.$id}
                   poll={poll}
                   proposals={proposals}
-                  tripId={selectedTripId}
+                  tripId={tripId}
                   userId={user.$id}
                   listVotes={listVotes}
                 />

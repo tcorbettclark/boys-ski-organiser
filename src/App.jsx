@@ -1,28 +1,34 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   account as _account,
+  listTrips as _listTrips,
   listParticipatedTrips as _listParticipatedTrips
 } from './backend'
 import AuthForm from './AuthForm'
+import Header from './Header'
 import Trips from './Trips'
 import Proposals from './Proposals'
 import Poll from './Poll'
+import TripOverview from './TripOverview'
 import ErrorBoundary from './ErrorBoundary'
-import { colors, fonts, borders } from './theme'
+import { colors, fonts } from './theme'
 
 const defaultAccountGet = _account.get.bind(_account)
 const defaultDeleteSession = _account.deleteSession.bind(_account, 'current')
+const defaultListTrips = _listTrips.bind(_listTrips)
 const defaultListParticipatedTrips = _listParticipatedTrips.bind(_listParticipatedTrips)
 
 function App ({
   accountGet = defaultAccountGet,
   deleteSession = defaultDeleteSession,
+  listTrips = defaultListTrips,
   listParticipatedTrips = defaultListParticipatedTrips
 }) {
   const [user, setUser] = useState(null)
   const [checking, setChecking] = useState(true)
   const [page, setPage] = useState('login')
-  const [activePage, setActivePage] = useState('trips')
+  const [view, setView] = useState('tripList')
+  const [tripDetailTab, setTripDetailTab] = useState('overview')
   const [trips, setTrips] = useState([])
   const [selectedTripId, setSelectedTripId] = useState(null)
   const [refreshProposalsKey, setRefreshProposalsKey] = useState(0)
@@ -40,19 +46,39 @@ function App ({
 
   useEffect(() => {
     if (!user) return
-    listParticipatedTrips(user.$id)
-      .then((result) => {
-        setTrips(result.documents)
-        if (result.documents.length === 1 && !selectedTripId) {
-          setSelectedTripId(result.documents[0].$id)
-        }
+    Promise.all([
+      listTrips(user.$id),
+      listParticipatedTrips(user.$id)
+    ])
+      .then(([ownRes, participatedRes]) => {
+        const coordinatedIds = new Set(ownRes.documents.map((t) => t.$id))
+        const allTrips = [
+          ...ownRes.documents,
+          ...participatedRes.documents.filter((t) => !coordinatedIds.has(t.$id))
+        ]
+        setTrips(allTrips)
       })
-  }, [user, listParticipatedTrips])
+      .catch((err) => console.error('Failed to load trips:', err))
+  }, [user, listTrips, listParticipatedTrips])
 
   async function handleLogout () {
     await deleteSession()
     setUser(null)
   }
+
+  function handleSelectTrip (tripId) {
+    setSelectedTripId(tripId)
+    setView('tripDetail')
+    setTripDetailTab('overview')
+  }
+
+  function handleViewAllTrips () {
+    setView('tripList')
+    setSelectedTripId(null)
+    setTripDetailTab('overview')
+  }
+
+  const selectedTrip = trips.find((t) => t.$id === selectedTripId) || null
 
   if (checking) return null
 
@@ -68,170 +94,59 @@ function App ({
 
   return (
     <div style={{ fontFamily: fonts.body, background: colors.bgPrimary, minHeight: '100vh' }}>
-      <header style={headerStyles.bar}>
-        <span style={headerStyles.wordmark}>⛷ Ski Tripper</span>
-        <nav style={headerStyles.nav}>
-          <button
-            onClick={() => setActivePage('trips')}
-            style={activePage === 'trips' ? headerStyles.navTabActive : headerStyles.navTab}
-          >
-            Trips
-          </button>
-          <button
-            onClick={() => setActivePage('proposals')}
-            style={activePage === 'proposals' ? headerStyles.navTabActive : headerStyles.navTab}
-          >
-            Proposals
-          </button>
-          <button
-            onClick={() => setActivePage('poll')}
-            style={
-              activePage === 'poll'
-                ? headerStyles.navTabActive
-                : headerStyles.navTab
-            }
-          >
-            Poll
-          </button>
-        </nav>
-        {activePage !== 'trips' && trips.length > 0 && (
-          <select
-            value={selectedTripId || ''}
-            onChange={(e) => setSelectedTripId(e.target.value || null)}
-            style={headerStyles.tripSelect}
-          >
-            <option value=''>— Select trip —</option>
-            {trips.map((trip) => (
-              <option key={trip.$id} value={trip.$id}>{trip.description || trip.code || trip.$id}</option>
-            ))}
-          </select>
-        )}
-        <div style={headerStyles.userGroup}>
-          <span style={headerStyles.name}>{user.name || user.email}</span>
-          <button onClick={handleLogout} style={headerStyles.button}>
-            Sign Out
-          </button>
-        </div>
-      </header>
-      {activePage === 'trips' && (
+      <Header
+        view={view}
+        tripName={selectedTrip?.description || selectedTrip?.code || ''}
+        tripDetailTab={tripDetailTab}
+        onViewAllTrips={handleViewAllTrips}
+        onTripDetailTabChange={setTripDetailTab}
+        userName={user.name || user.email}
+        onLogout={handleLogout}
+      />
+
+      {view === 'tripList' && (
         <ErrorBoundary>
           <Trips
             user={user}
+            trips={trips}
+            onSelectTrip={handleSelectTrip}
             onJoinedTrip={handleJoinedTrip}
-            onViewProposals={(tripId) => {
-              setSelectedTripId(tripId)
-              setActivePage('proposals')
-            }}
           />
         </ErrorBoundary>
       )}
-      {activePage === 'proposals' && (
-        <ErrorBoundary>
-          <Proposals
-            user={user}
-            key={refreshProposalsKey}
-            selectedTripId={selectedTripId}
-            onTripChange={setSelectedTripId}
-            onRefresh={() => setRefreshProposalsKey((k) => k + 1)}
-          />
-        </ErrorBoundary>
-      )}
-      {activePage === 'poll' && (
-        <ErrorBoundary>
-          <Poll
-            user={user}
-            selectedTripId={selectedTripId}
-            onTripChange={setSelectedTripId}
-          />
-        </ErrorBoundary>
+
+      {view === 'tripDetail' && selectedTripId && (
+        <>
+          {tripDetailTab === 'overview' && (
+            <ErrorBoundary>
+              <TripOverview
+                trip={selectedTrip}
+                user={user}
+              />
+            </ErrorBoundary>
+          )}
+          {tripDetailTab === 'proposals' && (
+            <ErrorBoundary>
+              <Proposals
+                user={user}
+                tripId={selectedTripId}
+                key={refreshProposalsKey}
+                onRefresh={() => setRefreshProposalsKey((k) => k + 1)}
+              />
+            </ErrorBoundary>
+          )}
+          {tripDetailTab === 'poll' && (
+            <ErrorBoundary>
+              <Poll
+                user={user}
+                tripId={selectedTripId}
+              />
+            </ErrorBoundary>
+          )}
+        </>
       )}
     </div>
   )
-}
-
-const headerStyles = {
-  bar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 48px',
-    height: '64px',
-    borderBottom: borders.subtle,
-    background: 'rgba(7,17,31,0.98)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100,
-    gap: '24px'
-  },
-  tripSelect: {
-    padding: '7px 12px',
-    borderRadius: '6px',
-    border: borders.muted,
-    background: colors.bgInput,
-    color: colors.textPrimary,
-    fontFamily: fonts.body,
-    fontSize: '13px',
-    outline: 'none',
-    minWidth: '180px'
-  },
-  wordmark: {
-    fontFamily: fonts.display,
-    fontSize: '22px',
-    fontWeight: '600',
-    color: colors.accent,
-    letterSpacing: '0.02em'
-  },
-  userGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '20px'
-  },
-  name: {
-    fontFamily: fonts.body,
-    fontSize: '13px',
-    color: colors.textSecondary,
-    letterSpacing: '0.02em'
-  },
-  button: {
-    padding: '7px 18px',
-    borderRadius: '6px',
-    border: borders.accent,
-    background: 'transparent',
-    color: colors.accent,
-    fontFamily: fonts.body,
-    fontSize: '13px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    letterSpacing: '0.02em'
-  },
-  nav: {
-    display: 'flex',
-    gap: '4px'
-  },
-  navTab: {
-    padding: '6px 16px',
-    borderRadius: '6px',
-    border: 'none',
-    background: 'transparent',
-    color: colors.textSecondary,
-    fontFamily: fonts.body,
-    fontSize: '13px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    letterSpacing: '0.02em'
-  },
-  navTabActive: {
-    padding: '6px 16px',
-    borderRadius: '6px',
-    border: 'none',
-    background: 'rgba(59,189,232,0.12)',
-    color: colors.accent,
-    fontFamily: fonts.body,
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    letterSpacing: '0.02em'
-  }
 }
 
 export default App

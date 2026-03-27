@@ -11,8 +11,9 @@ function renderTrips (props = {}) {
   return render(
     <Trips
       user={testUser}
-      listTrips={() => Promise.resolve({ documents: [] })}
-      listParticipatedTrips={() => Promise.resolve({ documents: [] })}
+      trips={props.trips || []}
+      onSelectTrip={props.onSelectTrip || (() => {})}
+      onJoinedTrip={props.onJoinedTrip || (() => {})}
       createTrip={() => Promise.resolve(defaultTrip)}
       getTripByCode={() => Promise.resolve({ documents: [] })}
       joinTrip={() => Promise.resolve()}
@@ -21,43 +22,34 @@ function renderTrips (props = {}) {
       leaveTrip={() => Promise.resolve()}
       getUserById={() => Promise.resolve(defaultUser)}
       getCoordinatorParticipant={() => Promise.resolve({ documents: [] })}
-      {...props}
     />
   )
 }
 
 describe('Trips', () => {
-  it('shows a loading message while fetching', () => {
-    renderTrips({ listTrips: () => new Promise(() => {}) })
-    expect(screen.getByText(/loading trips/i)).toBeInTheDocument()
-  })
-
-  it('shows an error when the API call fails', async () => {
-    await act(async () => { renderTrips({ listTrips: () => Promise.reject(new Error('Server error')) }) })
-    await waitFor(() => {
-      expect(screen.getByText('Server error')).toBeInTheDocument()
-    })
-  })
-
-  it('shows the Trips heading with New Trip and Join Trip buttons after loading', async () => {
+  it('shows the My Trips heading with New Trip and Join Trip buttons', async () => {
     await act(async () => { renderTrips() })
     await waitFor(() => {
-      expect(screen.getByText('Trips')).toBeInTheDocument()
+      expect(screen.getByText('My Trips')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /\+ new trip/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /\+ join trip/i })).toBeInTheDocument()
     })
   })
 
-  it('renders a row for each coordinated trip', async () => {
+  it('shows an empty state message when no trips', async () => {
+    await act(async () => { renderTrips({ trips: [] }) })
+    await waitFor(() => {
+      expect(screen.getByText(/no trips yet/i)).toBeInTheDocument()
+    })
+  })
+
+  it('renders a row for each trip', async () => {
     await act(async () => {
       renderTrips({
-        listTrips: () => Promise.resolve({
-          documents: [
-            { $id: 't-1', description: "Val d'Isere week", code: 'aaa-bbb-ccc' },
-            { $id: 't-2', description: 'Chamonix weekend', code: 'ddd-eee-fff' }
-          ],
-          coordinatorUserIds: { 't-1': 'user-1', 't-2': 'user-1' }
-        })
+        trips: [
+          { $id: 't-1', description: "Val d'Isere week", code: 'aaa-bbb-ccc' },
+          { $id: 't-2', description: 'Chamonix weekend', code: 'ddd-eee-fff' }
+        ]
       })
     })
     await waitFor(() => {
@@ -66,61 +58,18 @@ describe('Trips', () => {
     })
   })
 
-  it('renders a row for each joined trip', async () => {
-    await act(async () => {
-      renderTrips({
-        listParticipatedTrips: () => Promise.resolve({
-          documents: [
-            { $id: 't-3', description: 'Whistler trip', code: 'ggg-hhh-iii', userId: 'user-2' }
-          ]
-        })
-      })
-    })
-    await waitFor(() => {
-      expect(screen.getByText('Whistler trip')).toBeInTheDocument()
-    })
-  })
-
-  it('removes the row when a coordinated trip that is also in participatedTrips is deleted', async () => {
-    const trip = { $id: 't-1', description: 'Alps trip', code: 'aaa-bbb-ccc' }
-
-    const originalConfirm = window.confirm
-    window.confirm = () => true
-
+  it('calls onSelectTrip when a row is clicked', async () => {
     const user = userEvent.setup()
+    const handleSelectTrip = () => {}
     await act(async () => {
       renderTrips({
-        listTrips: () => Promise.resolve({ documents: [trip], coordinatorUserIds: { 't-1': 'user-1' } }),
-        listParticipatedTrips: () => Promise.resolve({ documents: [trip] })
+        trips: [{ $id: 't-1', description: 'Test Trip', code: 'xxx-yyy-zzz' }],
+        onSelectTrip: handleSelectTrip
       })
     })
-    await waitFor(() => expect(screen.getByText('Alps trip')).toBeInTheDocument())
-
-    await user.click(screen.getByRole('button', { name: /edit/i }))
-    await user.click(screen.getByRole('button', { name: /delete/i }))
-
+    await user.click(screen.getByText('Test Trip'))
     await waitFor(() => {
-      expect(screen.queryByText('Alps trip')).not.toBeInTheDocument()
-    })
-
-    window.confirm = originalConfirm
-  })
-
-  it('adds a newly created trip to the coordinating list', async () => {
-    const user = userEvent.setup()
-    await act(async () => {
-      renderTrips({
-        createTrip: () => Promise.resolve({ $id: 'new-trip', description: 'Alps in February', code: 'aaa-bbb-ccc' })
-      })
-    })
-    await waitFor(() => screen.getByRole('button', { name: /new trip/i }))
-
-    await user.click(screen.getByRole('button', { name: /new trip/i }))
-    await user.type(screen.getByRole('textbox'), 'Alps in February')
-    await user.click(screen.getByRole('button', { name: /save trip/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText('Alps in February')).toBeInTheDocument()
+      expect(screen.getByText('Test Trip')).toBeInTheDocument()
     })
   })
 })

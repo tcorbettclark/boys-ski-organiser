@@ -10,6 +10,7 @@ function renderApp (props = {}) {
     <App
       accountGet={() => Promise.resolve(defaultUser)}
       deleteSession={() => Promise.resolve()}
+      listTrips={() => Promise.resolve({ documents: [] })}
       listParticipatedTrips={() => Promise.resolve({ documents: [] })}
       {...props}
     />
@@ -86,70 +87,6 @@ describe('App', () => {
     await waitFor(() => {
       expect(mockDelete).toHaveBeenCalledTimes(1)
       expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
-    })
-  })
-
-  it('shows Trips and Proposals nav tabs when authenticated', async () => {
-    renderApp()
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^trips$/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /^proposals$/i })).toBeInTheDocument()
-    })
-  })
-
-  it('shows the Proposals page when the Proposals tab is clicked', async () => {
-    const user = userEvent.setup()
-    renderApp()
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^proposals$/i })).toBeInTheDocument()
-    })
-
-    // The Trips component is mounted by default; clicking Proposals unmounts it
-    await user.click(screen.getByRole('button', { name: /^proposals$/i }))
-
-    // Proposals mounts and immediately starts loading; Trips is no longer rendered
-    await waitFor(() => {
-      expect(screen.queryByText(/loading trips/i)).not.toBeInTheDocument()
-      // The Proposals nav tab button is still in the header
-      expect(screen.getByRole('button', { name: /^proposals$/i })).toBeInTheDocument()
-    })
-  })
-
-  it('switches back to the Trips page when the Trips tab is clicked after navigating to Proposals', async () => {
-    const user = userEvent.setup()
-    renderApp()
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^proposals$/i })).toBeInTheDocument()
-    })
-    await user.click(screen.getByRole('button', { name: /^proposals$/i }))
-
-    // Now switch back to Trips
-    await user.click(screen.getByRole('button', { name: /^trips$/i }))
-
-    // The user name is still visible in the header
-    await waitFor(() => {
-      expect(screen.getByText('Test User')).toBeInTheDocument()
-    })
-  })
-
-  it('shows a Poll nav tab when authenticated', async () => {
-    renderApp()
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^poll$/i })).toBeInTheDocument()
-    })
-  })
-
-  it('shows the Poll page when the Poll tab is clicked', async () => {
-    const user = userEvent.setup()
-    renderApp()
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^poll$/i })).toBeInTheDocument()
-    })
-    await user.click(screen.getByRole('button', { name: /^poll$/i }))
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^poll$/i })).toBeInTheDocument()
     })
   })
 })

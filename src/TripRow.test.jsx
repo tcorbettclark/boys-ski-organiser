@@ -16,15 +16,15 @@ async function renderRow (trip, props = {}) {
         <tbody>
           <TripRow
             trip={trip}
-            onUpdated={noop}
-            onDeleted={noop}
+            userId={props.userId || 'user-1'}
+            onSelectTrip={props.onSelectTrip || noop}
             getUserById={() => Promise.resolve(defaultUser)}
-            leaveTrip={() => Promise.resolve()}
+            leaveTrip={props.leaveTrip || (() => Promise.resolve())}
             updateTrip={() => Promise.resolve(defaultUpdated)}
             deleteTrip={() => Promise.resolve()}
             getCoordinatorParticipant={() =>
-              Promise.resolve({ documents: [{ userId: 'user-1' }] })}
-            {...props}
+              Promise.resolve({ documents: [{ userId: props.coordinatorUserId || 'user-1' }] })}
+            copyRevertDelay={props.copyRevertDelay}
           />
         </tbody>
       </table>
@@ -57,7 +57,7 @@ describe('TripRow', () => {
 
   it('shows the coordinator name', async () => {
     await renderRow(sampleTrip)
-    expect(screen.getByText('Test User')).toBeInTheDocument()
+    expect(screen.getByText(/Test User/)).toBeInTheDocument()
   })
 
   it('shows a dash when description is empty', async () => {
@@ -72,7 +72,7 @@ describe('TripRow', () => {
   })
 
   it('shows the Leave button when the trip belongs to another user', async () => {
-    await renderRow(sampleTrip, { userId: 'user-2', coordinatorUserId: 'user-1', onLeft: noop })
+    await renderRow(sampleTrip, { userId: 'user-2', coordinatorUserId: 'user-1' })
     expect(screen.getByRole('button', { name: /leave/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
   })
@@ -82,33 +82,23 @@ describe('TripRow', () => {
     expect(screen.getByText('Test User (me)')).toBeInTheDocument()
   })
 
-  it('calls onViewProposals when Proposals button is clicked', async () => {
+  it('calls onSelectTrip when row is clicked', async () => {
     const user = userEvent.setup()
-    const handleViewProposals = mock(() => {})
-    await renderRow(sampleTrip, { onViewProposals: handleViewProposals })
-    await user.click(screen.getByRole('button', { name: /proposals/i }))
-    expect(handleViewProposals).toHaveBeenCalledWith('trip-1')
+    const handleSelectTrip = mock(() => {})
+    await renderRow(sampleTrip, { onSelectTrip: handleSelectTrip })
+    await user.click(screen.getByText('A great trip'))
+    expect(handleSelectTrip).toHaveBeenCalledWith('trip-1')
   })
 
-  it('shows Proposals button for non-coordinator users', async () => {
-    await renderRow(sampleTrip, { userId: 'user-2', coordinatorUserId: 'user-1' })
-    expect(screen.getByRole('button', { name: /proposals/i })).toBeInTheDocument()
-  })
-
-  it('shows Proposals button for coordinator users', async () => {
-    await renderRow(sampleTrip, { userId: 'user-1', coordinatorUserId: 'user-1' })
-    expect(screen.getByRole('button', { name: /proposals/i })).toBeInTheDocument()
-  })
-
-  it('calls leaveTrip and onLeft when Leave is clicked', async () => {
+  it('calls onSelectTrip with null when Leave is clicked', async () => {
     const user = userEvent.setup()
     const mockLeave = mock(() => Promise.resolve())
-    const handleLeft = mock(() => {})
-    await renderRow(sampleTrip, { userId: 'user-2', onLeft: handleLeft, leaveTrip: mockLeave })
+    const handleSelectTrip = mock(() => {})
+    await renderRow(sampleTrip, { userId: 'user-2', coordinatorUserId: 'user-1', onSelectTrip: handleSelectTrip, leaveTrip: mockLeave })
     await user.click(screen.getByRole('button', { name: /leave/i }))
     await waitFor(() => {
       expect(mockLeave).toHaveBeenCalledWith('user-2', 'trip-1')
-      expect(handleLeft).toHaveBeenCalledWith('trip-1')
+      expect(handleSelectTrip).toHaveBeenCalledWith(null)
     })
   })
 
@@ -116,7 +106,8 @@ describe('TripRow', () => {
     const user = userEvent.setup()
     await renderRow(sampleTrip, {
       userId: 'user-2',
-      onLeft: noop,
+      coordinatorUserId: 'user-1',
+      onSelectTrip: noop,
       leaveTrip: () => Promise.reject(new Error('Cannot leave'))
     })
     await user.click(screen.getByRole('button', { name: /leave/i }))
@@ -127,7 +118,7 @@ describe('TripRow', () => {
 
   it('shows the edit form when Edit is clicked', async () => {
     const user = userEvent.setup()
-    await renderRow(sampleTrip, { userId: 'user-1' })
+    await renderRow(sampleTrip, { userId: 'user-1', coordinatorUserId: 'user-1' })
     await user.click(screen.getByRole('button', { name: /edit/i }))
     expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
@@ -135,7 +126,7 @@ describe('TripRow', () => {
 
   it('returns to display mode when Cancel is clicked', async () => {
     const user = userEvent.setup()
-    await renderRow(sampleTrip, { userId: 'user-1' })
+    await renderRow(sampleTrip, { userId: 'user-1', coordinatorUserId: 'user-1' })
     await user.click(screen.getByRole('button', { name: /edit/i }))
     await user.click(screen.getByRole('button', { name: /cancel/i }))
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
@@ -153,7 +144,7 @@ describe('TripRow', () => {
 
   it('copies the trip code to the clipboard when the copy button is clicked', async () => {
     const user = userEvent.setup()
-    await renderRow(sampleTrip, { copyRevertDelay: 0 })
+    await renderRow(sampleTrip)
     await user.click(screen.getByRole('button', { name: /copy trip code/i }))
     expect(mockWriteText).toHaveBeenCalledWith('ABC12')
   })

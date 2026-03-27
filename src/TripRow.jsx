@@ -12,16 +12,11 @@ import { colors, fonts, borders } from './theme'
 export default function TripRow ({
   trip,
   userId,
-  coordinatorUserId,
-  onUpdated,
-  onDeleted,
-  onLeft,
-  onViewProposals,
-  columnCount = 5,
-  leaveTrip = _leaveTrip,
-  getUserById = _getUserById,
+  onSelectTrip,
   updateTrip = _updateTrip,
   deleteTrip = _deleteTrip,
+  leaveTrip = _leaveTrip,
+  getUserById = _getUserById,
   getCoordinatorParticipant = _getCoordinatorParticipant,
   copyRevertDelay = 1500
 }) {
@@ -31,13 +26,25 @@ export default function TripRow ({
   const [coordinator, setCoordinator] = useState(null)
   const [copied, setCopied] = useState(false)
   const [copyError, setCopyError] = useState('')
-  const [coordinatorUserIdResolved, setCoordinatorUserIdResolved] = useState(coordinatorUserId)
+  const [isCoordinator, setIsCoordinator] = useState(false)
   const mountedRef = useRef(true)
 
   useEffect(() => {
     mountedRef.current = true
     return () => { mountedRef.current = false }
   }, [])
+
+  useEffect(() => {
+    getCoordinatorParticipant(trip.$id)
+      .then(({ documents }) => {
+        if (!mountedRef.current || documents.length === 0) return
+        const cid = documents[0].userId
+        setIsCoordinator(cid === userId)
+        return getUserById(cid)
+      })
+      .then((c) => { if (mountedRef.current && c) setCoordinator(c) })
+      .catch((err) => console.error('Failed to fetch coordinator:', err))
+  }, [trip.$id, userId])
 
   function handleCopy () {
     if (!trip.code) return
@@ -52,30 +59,12 @@ export default function TripRow ({
     })
   }
 
-  useEffect(() => {
-    if (coordinatorUserIdResolved) {
-      getUserById(coordinatorUserIdResolved)
-        .then((c) => { if (mountedRef.current) setCoordinator(c) })
-        .catch((err) => { console.error('Failed to fetch coordinator:', err) })
-    } else {
-      getCoordinatorParticipant(trip.$id)
-        .then(({ documents }) => {
-          if (!mountedRef.current || documents.length === 0) return
-          const cid = documents[0].userId
-          setCoordinatorUserIdResolved(cid)
-          return getUserById(cid)
-        })
-        .then((c) => { if (mountedRef.current && c) setCoordinator(c) })
-        .catch((err) => { console.error('Failed to fetch coordinator:', err) })
-    }
-  }, [coordinatorUserId, trip.$id])
-
   async function handleLeave () {
     setLeaveError('')
     setLeaving(true)
     try {
       await leaveTrip(userId, trip.$id)
-      onLeft(trip.$id)
+      onSelectTrip(null)
     } catch (err) {
       setLeaveError(err.message)
       setLeaving(false)
@@ -85,15 +74,12 @@ export default function TripRow ({
   if (isEditing) {
     return (
       <tr style={styles.editingTr}>
-        <td style={styles.editingTd} colSpan={columnCount}>
+        <td style={styles.editingTd} colSpan={4}>
           <EditTripForm
             trip={trip}
             userId={userId}
-            onUpdated={(updated) => {
-              onUpdated(updated)
-              setIsEditing(false)
-            }}
-            onDeleted={() => { setIsEditing(false); onDeleted(trip.$id) }}
+            onUpdated={() => setIsEditing(false)}
+            onDeleted={() => { setIsEditing(false); onSelectTrip(null) }}
             onCancel={() => setIsEditing(false)}
             updateTrip={updateTrip}
             deleteTrip={deleteTrip}
@@ -104,12 +90,17 @@ export default function TripRow ({
   }
 
   return (
-    <tr style={styles.tr}>
+    <tr style={styles.tr} onClick={() => onSelectTrip(trip.$id)}>
       <td style={styles.codeCell}>
         <span style={styles.codeWrapper}>
           {trip.code || '—'}
           {trip.code && (
-            <button onClick={handleCopy} style={styles.copyButton} title='Copy code' aria-label='Copy trip code'>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleCopy() }}
+              style={styles.copyButton}
+              title='Copy code'
+              aria-label='Copy trip code'
+            >
               {copied ? '✓' : '⧉'}
             </button>
           )}
@@ -120,15 +111,12 @@ export default function TripRow ({
       </td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{trip.description || '—'}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }} title={coordinator?.email || undefined}>
-        {coordinatorUserIdResolved === userId
+        {isCoordinator
           ? `${coordinator?.name || coordinator?.email || '—'} (me)`
           : coordinator?.name || coordinator?.email || '—'}
       </td>
-      <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
-        <button onClick={() => onViewProposals(trip.$id)} style={styles.proposalsButton}>
-          Proposals
-        </button>
-        {coordinatorUserIdResolved === userId
+      <td style={{ ...styles.td, whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+        {isCoordinator
           ? (
             <button onClick={() => setIsEditing(true)} style={styles.editButton}>
               Edit

@@ -11,7 +11,7 @@ const sampleProposals = [
 function renderProposals (props = {}) {
   const defaults = {
     user,
-    selectedTripId: null,
+    tripId: 'trip-1',
     listProposals: mock(() => Promise.resolve({ documents: sampleProposals })),
     createProposal: mock(() => Promise.resolve({ $id: 'p-new' })),
     updateProposal: mock(() => Promise.resolve({ $id: 'p-1' })),
@@ -25,26 +25,18 @@ function renderProposals (props = {}) {
 }
 
 describe('Proposals', () => {
-  it('shows prompt to select a trip when selectedTripId is null', async () => {
-    await act(async () => { renderProposals() })
-    await waitFor(() => {
-      expect(screen.getByText('Proposals')).toBeInTheDocument()
-      expect(screen.getByText(/select a trip above/i)).toBeInTheDocument()
-    })
-  })
-
-  it('shows proposals when selectedTripId is provided', async () => {
+  it('shows proposals when tripId is provided', async () => {
     const listProposals = mock(() => Promise.resolve({ documents: sampleProposals }))
-    await act(async () => { renderProposals({ selectedTripId: 'trip-1', listProposals }) })
+    await act(async () => { renderProposals({ tripId: 'trip-1', listProposals }) })
     await waitFor(() => {
       expect(listProposals).toHaveBeenCalledWith('trip-1', 'user-1')
       expect(screen.getByText("Val d'Isère")).toBeInTheDocument()
     })
   })
 
-  it('shows "No proposals yet" when selected trip has no proposals', async () => {
+  it('shows "No proposals yet" when trip has no proposals', async () => {
     await act(async () => {
-      renderProposals({ selectedTripId: 'trip-1', listProposals: mock(() => Promise.resolve({ documents: [] })) })
+      renderProposals({ tripId: 'trip-1', listProposals: mock(() => Promise.resolve({ documents: [] })) })
     })
     await waitFor(() => {
       expect(screen.getByText(/no proposals yet/i)).toBeInTheDocument()
@@ -52,21 +44,14 @@ describe('Proposals', () => {
   })
 
   it('shows "+ New Proposal" button when a trip is selected', async () => {
-    await act(async () => { renderProposals({ selectedTripId: 'trip-1' }) })
+    await act(async () => { renderProposals({ tripId: 'trip-1' }) })
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /\+ new proposal/i })).toBeInTheDocument()
     })
   })
 
-  it('hides "+ New Proposal" button when no trip selected', async () => {
-    await act(async () => { renderProposals({ selectedTripId: null }) })
-    await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /new proposal/i })).not.toBeInTheDocument()
-    })
-  })
-
   it('shows create form when "+ New Proposal" is clicked', async () => {
-    await act(async () => { renderProposals({ selectedTripId: 'trip-1' }) })
+    await act(async () => { renderProposals({ tripId: 'trip-1' }) })
     await waitFor(() => expect(screen.getByRole('button', { name: /\+ new proposal/i })).toBeInTheDocument())
 
     await act(async () => {
@@ -78,9 +63,9 @@ describe('Proposals', () => {
     })
   })
 
-  it('fetches new proposals when selectedTripId changes', async () => {
+  it('fetches new proposals when tripId changes', async () => {
     const listProposals = mock(() => Promise.resolve({ documents: sampleProposals }))
-    await act(async () => { renderProposals({ selectedTripId: 'trip-1', listProposals }) })
+    await act(async () => { renderProposals({ tripId: 'trip-1', listProposals }) })
     await waitFor(() => { expect(listProposals).toHaveBeenCalledWith('trip-1', 'user-1') })
 
     listProposals.mockClear()
@@ -88,12 +73,12 @@ describe('Proposals', () => {
     listProposals.mockImplementation(() => Promise.resolve({ documents: newProposals }))
 
     const { rerender } = await act(async () => {
-      return renderProposals({ selectedTripId: 'trip-1', listProposals })
+      return renderProposals({ tripId: 'trip-1', listProposals })
     })
     await act(async () => {
       rerender(<Proposals
         user={user}
-        selectedTripId='trip-2'
+        tripId='trip-2'
         listProposals={listProposals}
         createProposal={mock(() => Promise.resolve({ $id: 'p-new' }))}
         updateProposal={mock(() => Promise.resolve({ $id: 'p-1' }))}
@@ -111,7 +96,7 @@ describe('Proposals', () => {
     const submittedProposal = { ...sampleProposals[0], state: 'SUBMITTED' }
     await act(async () => {
       renderProposals({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         listProposals: mock(() => Promise.resolve({ documents: [submittedProposal] })),
         getCoordinatorParticipant: mock(() =>
           Promise.resolve({ documents: [{ $id: 'part-1', userId: 'user-1' }] })
@@ -127,7 +112,7 @@ describe('Proposals', () => {
     const submittedProposal = { ...sampleProposals[0], state: 'SUBMITTED' }
     await act(async () => {
       renderProposals({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         listProposals: mock(() => Promise.resolve({ documents: [submittedProposal] })),
         getCoordinatorParticipant: mock(() =>
           Promise.resolve({ documents: [{ $id: 'part-1', userId: 'other-user' }] })

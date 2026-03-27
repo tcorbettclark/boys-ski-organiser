@@ -16,7 +16,7 @@ import { colors, fonts, borders } from './theme'
 
 export default function Proposals ({
   user,
-  selectedTripId,
+  tripId,
   onRefresh,
   listProposals = _listProposals,
   createProposal = _createProposal,
@@ -42,7 +42,7 @@ export default function Proposals ({
   }, [])
 
   useEffect(() => {
-    if (!selectedTripId) {
+    if (!tripId) {
       setProposals([])
       setIsCoordinator(false)
       setLoading(false)
@@ -52,8 +52,8 @@ export default function Proposals ({
     setProposalsLoading(true)
     setProposalsError('')
     Promise.all([
-      listProposals(selectedTripId, user.$id),
-      getCoordinatorParticipant(selectedTripId)
+      listProposals(tripId, user.$id),
+      getCoordinatorParticipant(tripId)
     ])
       .then(([proposalsResult, coordResult]) => {
         if (!mountedRef.current) return
@@ -65,7 +65,7 @@ export default function Proposals ({
       })
       .catch((err) => { if (mountedRef.current) setProposalsError(err.message) })
       .finally(() => { if (mountedRef.current) setProposalsLoading(false) })
-  }, [selectedTripId, user.$id])
+  }, [tripId, user.$id])
 
   const handleCreated = useCallback((proposal) => {
     setProposals((p) => [proposal, ...p])
@@ -86,7 +86,7 @@ export default function Proposals ({
   async function handleRandomProposal () {
     setRandomizing(true)
     try {
-      const proposal = await createProposal(selectedTripId, user.$id, randomProposal())
+      const proposal = await createProposal(tripId, user.$id, randomProposal())
       handleCreated(proposal)
     } finally {
       setRandomizing(false)
@@ -103,7 +103,7 @@ export default function Proposals ({
     <div style={styles.container}>
       <div style={styles.toolbar}>
         <h2 style={styles.heading}>Proposals</h2>
-        {selectedTripId && (
+        {tripId && (
           <div style={styles.buttons}>
             <button
               onClick={() => setShowCreateForm((v) => !v)}
@@ -122,13 +122,9 @@ export default function Proposals ({
         )}
       </div>
 
-      {!selectedTripId && (
-        <p style={styles.promptMessage}>Select a trip above to view proposals.</p>
-      )}
-
-      {showCreateForm && selectedTripId && (
+      {showCreateForm && tripId && (
         <CreateProposalForm
-          tripId={selectedTripId}
+          tripId={tripId}
           userId={user.$id}
           onCreated={handleCreated}
           onDismiss={() => setShowCreateForm(false)}

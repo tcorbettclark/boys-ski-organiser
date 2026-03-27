@@ -27,7 +27,7 @@ const closedPoll = {
 function renderPoll (props = {}) {
   const defaults = {
     user,
-    selectedTripId: null,
+    tripId: 'trip-1',
     listPolls: mock(() => Promise.resolve({ documents: [] })),
     listProposals: mock(() => Promise.resolve({ documents: sampleProposals })),
     listVotes: mock(() => Promise.resolve({ documents: [] })),
@@ -40,25 +40,10 @@ function renderPoll (props = {}) {
 }
 
 describe('Poll', () => {
-  it('shows prompt to select a trip when selectedTripId is null', async () => {
-    await act(async () => { renderPoll() })
-    await waitFor(() => {
-      expect(screen.getByText('Poll')).toBeInTheDocument()
-      expect(screen.getByText(/select a trip above/i)).toBeInTheDocument()
-    })
-  })
-
-  it('shows prompt to select a trip when selectedTripId is null', async () => {
-    await act(async () => { renderPoll({ selectedTripId: null }) })
-    await waitFor(() => {
-      expect(screen.getByText(/select a trip above/i)).toBeInTheDocument()
-    })
-  })
-
   it('shows Create Poll button when coordinator with SUBMITTED proposals and no active poll', async () => {
     await act(async () => {
       renderPoll({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         getCoordinatorParticipant: mock(() =>
           Promise.resolve({ documents: [{ $id: 'part-1', userId: 'user-1' }] })
         )
@@ -72,7 +57,7 @@ describe('Poll', () => {
   it('does not show Create Poll button when not coordinator', async () => {
     await act(async () => {
       renderPoll({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         getCoordinatorParticipant: mock(() => Promise.resolve({ documents: [] }))
       })
     })
@@ -84,7 +69,7 @@ describe('Poll', () => {
   it('shows active poll panel when an OPEN poll exists', async () => {
     await act(async () => {
       renderPoll({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         listPolls: mock(() => Promise.resolve({ documents: [openPoll] }))
       })
     })
@@ -96,7 +81,7 @@ describe('Poll', () => {
   it('shows Close Poll button for coordinator when poll is OPEN', async () => {
     await act(async () => {
       renderPoll({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         listPolls: mock(() => Promise.resolve({ documents: [openPoll] })),
         getCoordinatorParticipant: mock(() =>
           Promise.resolve({ documents: [{ $id: 'part-1', userId: 'user-1' }] })
@@ -111,7 +96,7 @@ describe('Poll', () => {
   it('does not show Close Poll button for non-coordinator', async () => {
     await act(async () => {
       renderPoll({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         listPolls: mock(() => Promise.resolve({ documents: [openPoll] })),
         getCoordinatorParticipant: mock(() => Promise.resolve({ documents: [] }))
       })
@@ -124,7 +109,7 @@ describe('Poll', () => {
   it('shows past polls section when closed polls exist', async () => {
     await act(async () => {
       renderPoll({
-        selectedTripId: 'trip-1',
+        tripId: 'trip-1',
         listPolls: mock(() => Promise.resolve({ documents: [closedPoll] }))
       })
     })
