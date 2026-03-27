@@ -14,6 +14,8 @@ export default function TripOverview ({
   getUserById = _getUserById
 }) {
   const [participants, setParticipants] = useState([])
+  const [coordinator, setCoordinator] = useState(null)
+  const [coordinatorUserId, setCoordinatorUserId] = useState(null)
   const [loading, setLoading] = useState(true)
   const mountedRef = useRef(true)
 
@@ -21,6 +23,19 @@ export default function TripOverview ({
     mountedRef.current = true
     return () => { mountedRef.current = false }
   }, [])
+
+  useEffect(() => {
+    if (!trip) return
+    getCoordinatorParticipant(trip.$id)
+      .then(({ documents }) => {
+        if (!mountedRef.current || documents.length === 0) return
+        const cid = documents[0].userId
+        if (mountedRef.current) setCoordinatorUserId(cid)
+        return getUserById(cid)
+      })
+      .then((c) => { if (mountedRef.current && c) setCoordinator(c) })
+      .catch((err) => console.error('Failed to load coordinator:', err))
+  }, [trip, user.$id])
 
   useEffect(() => {
     if (!trip) return
@@ -64,6 +79,14 @@ export default function TripOverview ({
               <span style={styles.detailValue}>{trip.description}</span>
             </div>
           )}
+          <div style={styles.detailRow}>
+            <span style={styles.detailLabel}>Coordinator</span>
+            <span style={styles.detailValue}>
+              {coordinator
+                ? `${coordinator.name || coordinator.email}${coordinatorUserId === user.$id ? ' (me)' : ''}`
+                : '…'}
+            </span>
+          </div>
         </div>
       </div>
 
