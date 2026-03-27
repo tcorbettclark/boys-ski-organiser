@@ -26,7 +26,6 @@
 
 # For a trip I am coordinating
 
-- Create a new poll from selected submitted proposals.
 - Set/edit the timetable of stages.
 
 # For a trip I have joined but am not coordinating
@@ -36,7 +35,6 @@
 
 # Polls
 
-- Vote in an open poll, easily viewing/browsing the proposals
 - View the votes from a closed poll
 
 # Notifications
