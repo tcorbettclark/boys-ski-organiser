@@ -32,6 +32,6 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "bun run standard --fix --ignore .agents",
-    "*.{md,json,jsonc,txt}": "bun run prettier --write"
+    "*.{md,json,jsonc}": "bun run prettier --write"
   }
 }
