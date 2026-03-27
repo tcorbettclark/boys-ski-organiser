@@ -6,9 +6,6 @@ export default function TripTable ({
   userId,
   onSelectTrip,
   emptyMessage = 'No trips yet. Add one above.',
-  updateTrip,
-  deleteTrip,
-  leaveTrip,
   getUserById,
   getCoordinatorParticipant
 }) {
@@ -23,7 +20,6 @@ export default function TripTable ({
           <th style={styles.th}>Code</th>
           <th style={styles.th}>Description</th>
           <th style={styles.th}>Co-ordinator</th>
-          <th style={styles.th}>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -33,9 +29,6 @@ export default function TripTable ({
             trip={trip}
             userId={userId}
             onSelectTrip={onSelectTrip}
-            updateTrip={updateTrip}
-            deleteTrip={deleteTrip}
-            leaveTrip={leaveTrip}
             getUserById={getUserById}
             getCoordinatorParticipant={getCoordinatorParticipant}
           />

@@ -1,32 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
-import EditTripForm from './EditTripForm'
 import {
-  leaveTrip as _leaveTrip,
   getUserById as _getUserById,
-  updateTrip as _updateTrip,
-  deleteTrip as _deleteTrip,
   getCoordinatorParticipant as _getCoordinatorParticipant
 } from './backend'
-import { colors, fonts, borders } from './theme'
+import { colors, fonts } from './theme'
 
 export default function TripRow ({
   trip,
   userId,
   onSelectTrip,
-  updateTrip = _updateTrip,
-  deleteTrip = _deleteTrip,
-  leaveTrip = _leaveTrip,
   getUserById = _getUserById,
   getCoordinatorParticipant = _getCoordinatorParticipant,
   copyRevertDelay = 1500
 }) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [leaving, setLeaving] = useState(false)
-  const [leaveError, setLeaveError] = useState('')
   const [coordinator, setCoordinator] = useState(null)
   const [copied, setCopied] = useState(false)
   const [copyError, setCopyError] = useState('')
-  const [isCoordinator, setIsCoordinator] = useState(false)
+  const [hovered, setHovered] = useState(false)
   const mountedRef = useRef(true)
 
   useEffect(() => {
@@ -38,9 +28,7 @@ export default function TripRow ({
     getCoordinatorParticipant(trip.$id)
       .then(({ documents }) => {
         if (!mountedRef.current || documents.length === 0) return
-        const cid = documents[0].userId
-        setIsCoordinator(cid === userId)
-        return getUserById(cid)
+        return getUserById(documents[0].userId)
       })
       .then((c) => { if (mountedRef.current && c) setCoordinator(c) })
       .catch((err) => console.error('Failed to fetch coordinator:', err))
@@ -59,38 +47,13 @@ export default function TripRow ({
     })
   }
 
-  async function handleLeave () {
-    setLeaveError('')
-    setLeaving(true)
-    try {
-      await leaveTrip(userId, trip.$id)
-      onSelectTrip(null)
-    } catch (err) {
-      setLeaveError(err.message)
-      setLeaving(false)
-    }
-  }
-
-  if (isEditing) {
-    return (
-      <tr style={styles.editingTr}>
-        <td style={styles.editingTd} colSpan={4}>
-          <EditTripForm
-            trip={trip}
-            userId={userId}
-            onUpdated={() => setIsEditing(false)}
-            onDeleted={() => { setIsEditing(false); onSelectTrip(null) }}
-            onCancel={() => setIsEditing(false)}
-            updateTrip={updateTrip}
-            deleteTrip={deleteTrip}
-          />
-        </td>
-      </tr>
-    )
-  }
-
   return (
-    <tr style={styles.tr} onClick={() => onSelectTrip(trip.$id)}>
+    <tr
+      style={{ ...styles.tr, ...(hovered ? styles.trHovered : {}) }}
+      onClick={() => onSelectTrip(trip.$id)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <td style={styles.codeCell}>
         <span style={styles.codeWrapper}>
           {trip.code || '—'}
@@ -111,25 +74,7 @@ export default function TripRow ({
       </td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>{trip.description || '—'}</td>
       <td style={{ ...styles.td, color: colors.textSecondary }} title={coordinator?.email || undefined}>
-        {isCoordinator
-          ? `${coordinator?.name || coordinator?.email || '—'} (me)`
-          : coordinator?.name || coordinator?.email || '—'}
-      </td>
-      <td style={{ ...styles.td, whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
-        {isCoordinator
-          ? (
-            <button onClick={() => setIsEditing(true)} style={styles.editButton}>
-              Edit
-            </button>
-            )
-          : (
-            <div>
-              <button onClick={handleLeave} disabled={leaving} style={styles.leaveButton}>
-                {leaving ? 'Leaving…' : 'Leave'}
-              </button>
-              {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
-            </div>
-            )}
+        {coordinator?.name || coordinator?.email || '—'}
       </td>
     </tr>
   )
@@ -166,7 +111,11 @@ const styles = {
     opacity: 0.6
   },
   tr: {
-    borderBottom: '1px solid rgba(100,190,230,0.07)'
+    borderBottom: '1px solid rgba(100,190,230,0.07)',
+    cursor: 'pointer'
+  },
+  trHovered: {
+    background: 'rgba(59,189,232,0.06)'
   },
   td: {
     padding: '14px 16px',
@@ -175,59 +124,5 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '14px',
     lineHeight: '1.5'
-  },
-  editingTr: {
-    borderBottom: '1px solid rgba(59,189,232,0.2)',
-    borderTop: '1px solid rgba(59,189,232,0.2)',
-    background: 'rgba(59,189,232,0.04)'
-  },
-  editingTd: {
-    padding: '20px 24px',
-    verticalAlign: 'top',
-    borderLeft: `2px solid ${colors.accent}`
-  },
-  editButton: {
-    padding: '5px 16px',
-    borderRadius: '5px',
-    border: borders.muted,
-    background: 'transparent',
-    color: colors.textSecondary,
-    fontFamily: fonts.body,
-    fontSize: '12px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    letterSpacing: '0.03em'
-  },
-  proposalsButton: {
-    padding: '5px 16px',
-    borderRadius: '5px',
-    border: `1px solid ${colors.accent}`,
-    background: 'transparent',
-    color: colors.accent,
-    fontFamily: fonts.body,
-    fontSize: '12px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    letterSpacing: '0.03em',
-    marginRight: '8px'
-  },
-  leaveButton: {
-    padding: '5px 16px',
-    borderRadius: '5px',
-    border: '1px solid rgba(255,107,107,0.3)',
-    background: 'transparent',
-    color: colors.error,
-    fontFamily: fonts.body,
-    fontSize: '12px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    letterSpacing: '0.03em'
-  },
-  leaveError: {
-    color: colors.error,
-    fontFamily: fonts.body,
-    fontSize: '11px',
-    margin: '4px 0 0',
-    whiteSpace: 'normal'
   }
 }

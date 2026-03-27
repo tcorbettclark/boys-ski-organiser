@@ -5,7 +5,6 @@ import TripRow from './TripRow'
 
 const sampleTrip = { $id: 'trip-1', code: 'ABC12', name: 'Ski Alps', description: 'A great trip' }
 const defaultUser = { name: 'Test User', email: 'test@example.com' }
-const defaultUpdated = { $id: 'trip-1', description: 'Updated', code: 'aaa-bbb-ccc' }
 
 const noop = () => {}
 
@@ -19,9 +18,6 @@ async function renderRow (trip, props = {}) {
             userId={props.userId || 'user-1'}
             onSelectTrip={props.onSelectTrip || noop}
             getUserById={() => Promise.resolve(defaultUser)}
-            leaveTrip={props.leaveTrip || (() => Promise.resolve())}
-            updateTrip={() => Promise.resolve(defaultUpdated)}
-            deleteTrip={() => Promise.resolve()}
             getCoordinatorParticipant={() =>
               Promise.resolve({ documents: [{ userId: props.coordinatorUserId || 'user-1' }] })}
             copyRevertDelay={props.copyRevertDelay}
@@ -65,71 +61,12 @@ describe('TripRow', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
   })
 
-  it('shows the Edit button when the trip belongs to the current user', async () => {
-    await renderRow(sampleTrip, { userId: 'user-1', coordinatorUserId: 'user-1' })
-    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /leave/i })).not.toBeInTheDocument()
-  })
-
-  it('shows the Leave button when the trip belongs to another user', async () => {
-    await renderRow(sampleTrip, { userId: 'user-2', coordinatorUserId: 'user-1' })
-    expect(screen.getByRole('button', { name: /leave/i })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
-  })
-
-  it('appends "(me)" to the coordinator name when the trip belongs to the current user', async () => {
-    await renderRow(sampleTrip, { userId: 'user-1', coordinatorUserId: 'user-1' })
-    expect(screen.getByText('Test User (me)')).toBeInTheDocument()
-  })
-
   it('calls onSelectTrip when row is clicked', async () => {
     const user = userEvent.setup()
     const handleSelectTrip = mock(() => {})
     await renderRow(sampleTrip, { onSelectTrip: handleSelectTrip })
     await user.click(screen.getByText('A great trip'))
     expect(handleSelectTrip).toHaveBeenCalledWith('trip-1')
-  })
-
-  it('calls onSelectTrip with null when Leave is clicked', async () => {
-    const user = userEvent.setup()
-    const mockLeave = mock(() => Promise.resolve())
-    const handleSelectTrip = mock(() => {})
-    await renderRow(sampleTrip, { userId: 'user-2', coordinatorUserId: 'user-1', onSelectTrip: handleSelectTrip, leaveTrip: mockLeave })
-    await user.click(screen.getByRole('button', { name: /leave/i }))
-    await waitFor(() => {
-      expect(mockLeave).toHaveBeenCalledWith('user-2', 'trip-1')
-      expect(handleSelectTrip).toHaveBeenCalledWith(null)
-    })
-  })
-
-  it('shows an error message when leaving fails', async () => {
-    const user = userEvent.setup()
-    await renderRow(sampleTrip, {
-      userId: 'user-2',
-      coordinatorUserId: 'user-1',
-      onSelectTrip: noop,
-      leaveTrip: () => Promise.reject(new Error('Cannot leave'))
-    })
-    await user.click(screen.getByRole('button', { name: /leave/i }))
-    await waitFor(() => {
-      expect(screen.getByText('Cannot leave')).toBeInTheDocument()
-    })
-  })
-
-  it('shows the edit form when Edit is clicked', async () => {
-    const user = userEvent.setup()
-    await renderRow(sampleTrip, { userId: 'user-1', coordinatorUserId: 'user-1' })
-    await user.click(screen.getByRole('button', { name: /edit/i }))
-    expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
-  })
-
-  it('returns to display mode when Cancel is clicked', async () => {
-    const user = userEvent.setup()
-    await renderRow(sampleTrip, { userId: 'user-1', coordinatorUserId: 'user-1' })
-    await user.click(screen.getByRole('button', { name: /edit/i }))
-    await user.click(screen.getByRole('button', { name: /cancel/i }))
-    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
   })
 
   it('shows a copy button when the trip has a code', async () => {

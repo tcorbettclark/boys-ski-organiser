@@ -2,8 +2,12 @@ import { useEffect, useState, useRef } from 'react'
 import {
   listParticipatedTrips as _listParticipatedTrips,
   getCoordinatorParticipant as _getCoordinatorParticipant,
-  getUserById as _getUserById
+  getUserById as _getUserById,
+  updateTrip as _updateTrip,
+  deleteTrip as _deleteTrip,
+  leaveTrip as _leaveTrip
 } from './backend'
+import EditTripForm from './EditTripForm'
 import { colors, fonts, borders } from './theme'
 
 export default function TripOverview ({
@@ -11,12 +15,20 @@ export default function TripOverview ({
   user,
   listParticipatedTrips = _listParticipatedTrips,
   getCoordinatorParticipant = _getCoordinatorParticipant,
-  getUserById = _getUserById
+  getUserById = _getUserById,
+  updateTrip = _updateTrip,
+  deleteTrip = _deleteTrip,
+  leaveTrip = _leaveTrip,
+  onLeft
 }) {
   const [participants, setParticipants] = useState([])
   const [coordinator, setCoordinator] = useState(null)
   const [coordinatorUserId, setCoordinatorUserId] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isCoordinator, setIsCoordinator] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [leaveError, setLeaveError] = useState('')
   const mountedRef = useRef(true)
 
   useEffect(() => {
@@ -30,7 +42,10 @@ export default function TripOverview ({
       .then(({ documents }) => {
         if (!mountedRef.current || documents.length === 0) return
         const cid = documents[0].userId
-        if (mountedRef.current) setCoordinatorUserId(cid)
+        if (mountedRef.current) {
+          setCoordinatorUserId(cid)
+          setIsCoordinator(cid === user.$id)
+        }
         return getUserById(cid)
       })
       .then((c) => { if (mountedRef.current && c) setCoordinator(c) })
@@ -60,12 +75,58 @@ export default function TripOverview ({
       .finally(() => { if (mountedRef.current) setLoading(false) })
   }, [trip, user.$id])
 
+  async function handleLeave () {
+    setLeaveError('')
+    setLeaving(true)
+    try {
+      await leaveTrip(user.$id, trip.$id)
+      onLeft?.()
+    } catch (err) {
+      setLeaveError(err.message)
+      setLeaving(false)
+    }
+  }
+
   if (!trip) return null
+
+  if (isEditing) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Edit Trip</h3>
+          <EditTripForm
+            trip={trip}
+            userId={user.$id}
+            onUpdated={() => setIsEditing(false)}
+            onDeleted={() => {}}
+            onCancel={() => setIsEditing(false)}
+            updateTrip={updateTrip}
+            deleteTrip={deleteTrip}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Trip Details</h3>
+        <div style={styles.cardHeader}>
+          <h3 style={styles.cardTitle}>Trip Details</h3>
+          <div style={styles.actions}>
+            {!isCoordinator && (
+              <button onClick={handleLeave} disabled={leaving} style={styles.leaveButton}>
+                {leaving ? 'Leaving…' : 'Leave Trip'}
+              </button>
+            )}
+            {isCoordinator && (
+              <button onClick={() => setIsEditing(true)} style={styles.editButton}>
+                Edit
+              </button>
+            )}
+          </div>
+        </div>
+        {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
         <div style={styles.details}>
           {trip.code && (
             <div style={styles.detailRow}>
@@ -128,14 +189,52 @@ const styles = {
     borderRadius: '12px',
     padding: '24px'
   },
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
+  },
+  actions: {
+    display: 'flex',
+    gap: '8px'
+  },
   cardTitle: {
     fontFamily: fonts.display,
     fontSize: '18px',
     fontWeight: '600',
     color: colors.textPrimary,
-    margin: '0 0 20px',
-    paddingBottom: '12px',
-    borderBottom: borders.subtle
+    margin: 0
+  },
+  editButton: {
+    padding: '6px 16px',
+    borderRadius: '5px',
+    border: borders.muted,
+    background: 'transparent',
+    color: colors.textSecondary,
+    fontFamily: fonts.body,
+    fontSize: '12px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    letterSpacing: '0.03em'
+  },
+  leaveButton: {
+    padding: '6px 16px',
+    borderRadius: '5px',
+    border: '1px solid rgba(255,107,107,0.3)',
+    background: 'transparent',
+    color: colors.error,
+    fontFamily: fonts.body,
+    fontSize: '12px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    letterSpacing: '0.03em'
+  },
+  leaveError: {
+    color: colors.error,
+    fontFamily: fonts.body,
+    fontSize: '12px',
+    margin: '0 0 12px'
   },
   details: {
     display: 'flex',

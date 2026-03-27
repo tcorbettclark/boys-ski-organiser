@@ -19,9 +19,6 @@ async function renderTable (trips, props = {}) {
         onSelectTrip={noop}
         getUserById={() => Promise.resolve(defaultUser)}
         getCoordinatorParticipant={() => Promise.resolve({ documents: [] })}
-        leaveTrip={() => Promise.resolve()}
-        updateTrip={() => Promise.resolve({})}
-        deleteTrip={() => Promise.resolve()}
         {...props}
       />
     )
@@ -58,10 +55,5 @@ describe('TripTable', () => {
   it('shows a custom empty message when provided', async () => {
     await renderTable([], { emptyMessage: "You haven't joined any trips yet." })
     expect(screen.getByText("You haven't joined any trips yet.")).toBeInTheDocument()
-  })
-
-  it('shows Actions column header', async () => {
-    await renderTable(sampleTrips)
-    expect(screen.getByText('Actions')).toBeInTheDocument()
   })
 })

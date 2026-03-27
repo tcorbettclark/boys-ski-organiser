@@ -2,7 +2,10 @@ import { useEffect, useState, useCallback } from 'react'
 import {
   account as _account,
   listTrips as _listTrips,
-  listParticipatedTrips as _listParticipatedTrips
+  listParticipatedTrips as _listParticipatedTrips,
+  updateTrip as _updateTrip,
+  deleteTrip as _deleteTrip,
+  leaveTrip as _leaveTrip
 } from './backend'
 import AuthForm from './AuthForm'
 import Header from './Header'
@@ -17,12 +20,18 @@ const defaultAccountGet = _account.get.bind(_account)
 const defaultDeleteSession = _account.deleteSession.bind(_account, 'current')
 const defaultListTrips = _listTrips.bind(_listTrips)
 const defaultListParticipatedTrips = _listParticipatedTrips.bind(_listParticipatedTrips)
+const defaultUpdateTrip = _updateTrip.bind(_updateTrip)
+const defaultDeleteTrip = _deleteTrip.bind(_deleteTrip)
+const defaultLeaveTrip = _leaveTrip.bind(_leaveTrip)
 
 function App ({
   accountGet = defaultAccountGet,
   deleteSession = defaultDeleteSession,
   listTrips = defaultListTrips,
-  listParticipatedTrips = defaultListParticipatedTrips
+  listParticipatedTrips = defaultListParticipatedTrips,
+  updateTrip = defaultUpdateTrip,
+  deleteTrip = defaultDeleteTrip,
+  leaveTrip = defaultLeaveTrip
 }) {
   const [user, setUser] = useState(null)
   const [checking, setChecking] = useState(true)
@@ -122,6 +131,10 @@ function App ({
               <TripOverview
                 trip={selectedTrip}
                 user={user}
+                updateTrip={updateTrip}
+                deleteTrip={deleteTrip}
+                leaveTrip={leaveTrip}
+                onLeft={handleViewAllTrips}
               />
             </ErrorBoundary>
           )}

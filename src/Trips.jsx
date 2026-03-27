@@ -82,9 +82,6 @@ export default function Trips ({
         userId={user.$id}
         onSelectTrip={onSelectTrip}
         emptyMessage='No trips yet. Create one or join one above.'
-        updateTrip={updateTrip}
-        deleteTrip={deleteTrip}
-        leaveTrip={leaveTrip}
         getUserById={getUserById}
         getCoordinatorParticipant={getCoordinatorParticipant}
       />
