@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useLayoutEffect } from 'react'
 import { upsertVote as _upsertVote } from './backend'
 import { colors, fonts, borders } from './theme'
 
@@ -25,10 +25,125 @@ export default function PollVoting ({
   const [saved, setSaved] = useState(false)
   const [selectedToken, setSelectedToken] = useState(null) // { source: 'pile' | proposalId }
   const suppressClickRef = useRef(false)
+  const dragRef = useRef(null) // { source, startX, startY, moved }
+  const ghostRef = useRef(null)
+  const remainingRef = useRef(null)
 
   const maxTokens = poll.proposalIds.length
   const totalUsed = Object.values(allocations).reduce((a, b) => a + b, 0)
   const remaining = maxTokens - totalUsed
+  remainingRef.current = remaining
+
+  useLayoutEffect(() => {
+    function onPointerMove (e) {
+      if (!dragRef.current) return
+      const { startX, startY } = dragRef.current
+      const dx = e.clientX - startX
+      const dy = e.clientY - startY
+
+      if (!dragRef.current.moved && Math.sqrt(dx * dx + dy * dy) > 8) {
+        dragRef.current.moved = true
+        const ghost = document.createElement('div')
+        ghost.textContent = '🪙'
+        Object.assign(ghost.style, {
+          position: 'fixed',
+          width: '38px',
+          height: '38px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle at 35% 35%, rgba(59,189,232,0.4), rgba(59,189,232,0.15))',
+          border: '2px solid rgba(59,189,232,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '18px',
+          lineHeight: '1',
+          pointerEvents: 'none',
+          zIndex: '9999',
+          transform: 'translate(-50%, -50%) scale(1.2)',
+          transition: 'transform 0.1s'
+        })
+        document.body.appendChild(ghost)
+        ghostRef.current = ghost
+      }
+
+      if (ghostRef.current) {
+        ghostRef.current.style.left = `${e.clientX}px`
+        ghostRef.current.style.top = `${e.clientY}px`
+      }
+    }
+
+    function onPointerUp (e) {
+      if (!dragRef.current) return
+      const { source, moved } = dragRef.current
+      dragRef.current = null
+
+      if (ghostRef.current) {
+        document.body.removeChild(ghostRef.current)
+        ghostRef.current = null
+      }
+
+      if (!moved) return // tap — let the click event fire
+
+      suppressClickRef.current = true
+
+      const el = document.elementFromPoint(e.clientX, e.clientY)
+      const zoneEl = el?.closest('[data-zone]')
+      const target = zoneEl?.dataset?.zone
+
+      if (!target || target === source) return
+
+      if (target === 'pile') {
+        if (source !== 'pile') {
+          setAllocations((prev) => ({ ...prev, [source]: prev[source] - 1 }))
+          setSaved(false)
+        }
+      } else if (source === 'pile') {
+        if (remainingRef.current > 0) {
+          setAllocations((prev) => ({ ...prev, [target]: prev[target] + 1 }))
+          setSaved(false)
+        }
+      } else {
+        setAllocations((prev) => ({
+          ...prev,
+          [source]: prev[source] - 1,
+          [target]: prev[target] + 1
+        }))
+        setSaved(false)
+      }
+    }
+
+    function onPointerCancel () {
+      if (!dragRef.current) return
+      dragRef.current = null
+      if (ghostRef.current) {
+        document.body.removeChild(ghostRef.current)
+        ghostRef.current = null
+      }
+    }
+
+    document.addEventListener('pointermove', onPointerMove)
+    document.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointercancel', onPointerCancel)
+    return () => {
+      document.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointerup', onPointerUp)
+      document.removeEventListener('pointercancel', onPointerCancel)
+      if (ghostRef.current) {
+        document.body.removeChild(ghostRef.current)
+        ghostRef.current = null
+      }
+    }
+  }, []) // stable — uses refs for current state values
+
+  function startDrag (e, source) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    dragRef.current = {
+      source,
+      startX: e.clientX,
+      startY: e.clientY,
+      moved: false
+    }
+  }
 
   function handlePileZoneClick () {
     if (suppressClickRef.current) { suppressClickRef.current = false; return }
@@ -120,6 +235,7 @@ export default function PollVoting ({
                 ...styles.token,
                 ...(selectedToken?.source === 'pile' && i === 0 ? styles.tokenSelected : {})
               }}
+              onPointerDown={(e) => startDrag(e, 'pile')}
             >
               🪙
             </div>
@@ -164,6 +280,7 @@ export default function PollVoting ({
                         ...styles.tokenSmall,
                         ...(selectedToken?.source === proposalId && i === 0 ? styles.tokenSmallSelected : {})
                       }}
+                      onPointerDown={(e) => { e.stopPropagation(); startDrag(e, proposalId) }}
                     >
                       🪙
                     </div>
