@@ -2,6 +2,11 @@
 
 - None
 
+# Other
+
+- Don’t use space to show code in trip.
+- Where do the dates go? In the trip?
+
 # Technical
 
 - Check the deprecated appwrite.databases.\* functions in database.js
@@ -28,8 +33,9 @@
 
 - Set/edit the timetable of stages.
 
-# For a trip I have joined but am not coordinating
+# Proposals
 
+- Q&A feature - ask questions of the proposer, who answers (with help of AI). But they take responsibility for the answer. Uses email/messaging to prod them to answer. Log of Q&A is attached to each proposal.
 - Clone a proposal (starts off in Draft). This allows a proposal to be updated.
 - Have AI seed (potentially multiple) proposals which start in Draft.
 
@@ -41,3 +47,4 @@
 
 - Be emailed when a poll opens.
 - Send reminder emails when the poll is closing (T-3, T-1)
+- Ping proposers that they have a new question to answer
