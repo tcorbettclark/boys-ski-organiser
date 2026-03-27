@@ -9,8 +9,8 @@
 
 # Technical
 
-- Check the deprecated appwrite.databases.\* functions in database.js
-- Switch to Typescript
+- Check the deprecated `appwrite.databases.\*` functions in `database.js`
+- Switch to TypeScript
 
 # Helper text
 
@@ -23,11 +23,11 @@
 - Verify email.
 - Jump new user to complete their user preferences
 - Forgotten password.
-- Remove account? What happens to proposals, votes, etc?
+- Remove account? What happens to proposals, votes, etc.
 
 # User preferences
 
-- User profile for ski/snowboard, difficulty of slope, powder or piste, time skiing vs eating vs apres, ...
+- User profile for ski/snowboard, difficulty of slope, powder, or piste, time skiing vs eating vs apres, ...
 
 # For a trip I am coordinating
 
