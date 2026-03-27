@@ -144,6 +144,20 @@ export default function TripOverview ({
         </div>
         {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
         <div style={styles.details}>
+          {trip.description && (
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel}>Description</span>
+              <span style={styles.detailValue}>{trip.description}</span>
+            </div>
+          )}
+          <div style={styles.detailRow}>
+            <span style={styles.detailLabel}>Coordinator</span>
+            <span style={styles.detailValue}>
+              {coordinator
+                ? `${coordinator.name || coordinator.email}${coordinatorUserId === user.$id ? ' (me)' : ''}`
+                : '…'}
+            </span>
+          </div>
           {trip.code && (
             <div style={styles.detailRow}>
               <span style={styles.detailLabel}>Code</span>
@@ -163,20 +177,6 @@ export default function TripOverview ({
               </span>
             </div>
           )}
-          {trip.description && (
-            <div style={styles.detailRow}>
-              <span style={styles.detailLabel}>Description</span>
-              <span style={styles.detailValue}>{trip.description}</span>
-            </div>
-          )}
-          <div style={styles.detailRow}>
-            <span style={styles.detailLabel}>Coordinator</span>
-            <span style={styles.detailValue}>
-              {coordinator
-                ? `${coordinator.name || coordinator.email}${coordinatorUserId === user.$id ? ' (me)' : ''}`
-                : '…'}
-            </span>
-          </div>
         </div>
       </div>
 
