@@ -11,8 +11,9 @@ export default function ParticipantList ({
 
   useEffect(() => {
     if (!tripId) return
-    listTripParticipants(tripId)
-      .then(({ documents }) => {
+    async function load () {
+      try {
+        const { documents } = await listTripParticipants(tripId)
         setParticipants(
           documents.map((p) => ({
             id: p.$id,
@@ -20,8 +21,11 @@ export default function ParticipantList ({
             role: p.role
           }))
         )
-      })
-      .finally(() => setLoading(false))
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [tripId])
 
   if (loading) return <p style={styles.loading}>Loading participants…</p>
