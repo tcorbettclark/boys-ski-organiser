@@ -4,6 +4,7 @@
 
 # Other
 
+- Act update vercel-react-best-practices output - see IMPROVEMENTS.md (stashed).
 - Where do the dates go? In the trip?
 - A coordinator should be able to put a REJECTED proposal back to SUBMITTED (e.g. in case they made a mistake).
 - Put the Overview, Proposals, Polls all into one scrollable page.
