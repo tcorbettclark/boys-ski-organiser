@@ -19,7 +19,7 @@
     "threewords": "^0.0.1"
   },
   "devDependencies": {
-    "@happy-dom/global-registrator": "^20.8.8",
+    "@happy-dom/global-registrator": "^20.8.9",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
