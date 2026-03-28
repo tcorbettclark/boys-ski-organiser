@@ -34,6 +34,14 @@ export function getCoordinatorParticipant (tripId, db = databases) {
   ])
 }
 
+export function listTripParticipants (tripId, db = databases) {
+  return db.listDocuments(DATABASE_ID, PARTICIPANTS_COLLECTION_ID, [
+    Query.equal('tripId', tripId),
+    Query.orderDesc('$createdAt'),
+    Query.limit(100)
+  ])
+}
+
 export async function listTrips (ParticipantUserId, db = databases) {
   const { documents: coordinatorParticipants } = await db.listDocuments(
     DATABASE_ID,
