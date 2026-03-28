@@ -8,6 +8,7 @@ export default function ParticipantList ({
 }) {
   const [participants, setParticipants] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!tripId) return
@@ -21,12 +22,16 @@ export default function ParticipantList ({
             role: p.role
           }))
         )
+      } catch (err) {
+        setError(err)
       } finally {
         setLoading(false)
       }
     }
     load()
   }, [tripId])
+
+  if (error) throw error
 
   if (loading) return <p style={styles.loading}>Loading participants…</p>
 

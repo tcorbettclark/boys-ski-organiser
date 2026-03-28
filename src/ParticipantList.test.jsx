@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test'
+import { describe, it, expect, mock } from 'bun:test'
 import { render, screen, waitFor } from '@testing-library/react'
 import ParticipantList from './ParticipantList'
 
@@ -41,5 +41,28 @@ describe('ParticipantList', () => {
     )
     await waitFor(() => expect(screen.queryByText('Loading participants…')).not.toBeInTheDocument())
     expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
+  })
+
+  it('surfaces fetch errors so ErrorBoundary can catch them', async () => {
+    class ErrorBoundary extends (await import('react')).Component {
+      constructor (props) { super(props); this.state = { error: null } }
+      static getDerivedStateFromError (error) { return { error } }
+      render () { return this.state.error ? <span>caught: {this.state.error.message}</span> : this.props.children }
+    }
+
+    const spy = mock(() => {})
+    const originalError = console.error
+    console.error = spy
+
+    render(
+      <ErrorBoundary>
+        <ParticipantList
+          tripId='trip-1'
+          listTripParticipants={() => Promise.reject(new Error('boom'))}
+        />
+      </ErrorBoundary>
+    )
+    await waitFor(() => expect(screen.getByText('caught: boom')).toBeInTheDocument())
+    console.error = originalError
   })
 })
