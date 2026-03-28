@@ -1,6 +1,6 @@
 # thoughts/tickets/refactor-1.md
 
-status: implemented
+status: reviewed
 
 ## Feature: Remove separate web calls to fetch names of users
 
