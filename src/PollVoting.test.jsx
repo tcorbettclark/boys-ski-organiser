@@ -132,15 +132,6 @@ describe('PollVoting', () => {
     })
   })
 
-  it('shows "Vote saved" on success', async () => {
-    const user = userEvent.setup()
-    renderPollVoting()
-    await user.click(screen.getByRole('button', { name: /save vote/i }))
-    await waitFor(() => {
-      expect(screen.getByText(/vote saved/i)).toBeInTheDocument()
-    })
-  })
-
   it('shows error on failure', async () => {
     const user = userEvent.setup()
     renderPollVoting({
