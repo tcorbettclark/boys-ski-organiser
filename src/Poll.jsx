@@ -166,24 +166,21 @@ export default function Poll ({
                     </div>
                   )}
                 </div>
-                <div style={styles.pollColumns}>
-                  <div style={styles.pollLeft}>
-                    <PollVoting
-                      poll={activePoll}
-                      proposals={proposals}
-                      myVote={myVote}
-                      userId={user.$id}
-                      onVoteSaved={handleVoteSaved}
-                      upsertVote={upsertVote}
-                    />
-                  </div>
-                  <div style={styles.pollRight}>
-                    <PollResults
-                      poll={activePoll}
-                      proposals={proposals}
-                      votes={votes}
-                    />
-                  </div>
+                <PollVoting
+                  poll={activePoll}
+                  proposals={proposals}
+                  myVote={myVote}
+                  userId={user.$id}
+                  onVoteSaved={handleVoteSaved}
+                  upsertVote={upsertVote}
+                />
+                <div style={styles.activeVotesSection}>
+                  <h4 style={styles.activeVotesHeading}>Votes so far</h4>
+                  <PollResults
+                    poll={activePoll}
+                    proposals={proposals}
+                    votes={votes}
+                  />
                 </div>
               </div>
               )
@@ -334,6 +331,18 @@ const styles = {
   },
   pollLeft: {},
   pollRight: {},
+  activeVotesSection: {
+    marginTop: '24px',
+    paddingTop: '20px',
+    borderTop: borders.subtle
+  },
+  activeVotesHeading: {
+    fontFamily: fonts.display,
+    fontSize: '16px',
+    fontWeight: '600',
+    color: colors.textSecondary,
+    margin: '0 0 12px'
+  },
   createSection: {
     marginBottom: '24px'
   },
