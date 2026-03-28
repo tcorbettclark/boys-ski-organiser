@@ -168,6 +168,24 @@ describe('PollVoting', () => {
     expect(screen.getByRole('button', { name: /save vote/i })).not.toBeDisabled()
   })
 
+  it('displays proposals in alphabetical order regardless of proposalIds order', () => {
+    const pollOutOfOrder = {
+      $id: 'poll-1',
+      tripId: 'trip-1',
+      proposalIds: ['p-3', 'p-1', 'p-2']
+    }
+    const proposalsOutOfOrder = [
+      { $id: 'p-1', resortName: 'Chamonix' },
+      { $id: 'p-2', resortName: 'Verbier' },
+      { $id: 'p-3', resortName: 'Zermatt' }
+    ]
+    renderPollVoting({ poll: pollOutOfOrder, proposals: proposalsOutOfOrder })
+    const resortNames = screen.getAllByText(/Chamonix|Verbier|Zermatt/)
+    expect(resortNames[0].textContent).toBe('Chamonix')
+    expect(resortNames[1].textContent).toBe('Verbier')
+    expect(resortNames[2].textContent).toBe('Zermatt')
+  })
+
   it('Save button disabled after incrementing then decrementing back to saved value', async () => {
     const user = userEvent.setup()
     const myVote = { proposalIds: ['p-1'], tokenCounts: [1] }

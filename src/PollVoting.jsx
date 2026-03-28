@@ -11,10 +11,13 @@ export default function PollVoting ({
   upsertVote = _upsertVote
 }) {
   const proposalMap = Object.fromEntries(proposals.map((p) => [p.$id, p]))
+  const sortedProposalIds = [...poll.proposalIds].sort((a, b) =>
+    (proposalMap[a]?.resortName || '').localeCompare(proposalMap[b]?.resortName || '')
+  )
 
   const [allocations, setAllocations] = useState(() => {
     const init = {}
-    poll.proposalIds.forEach((id) => {
+    sortedProposalIds.forEach((id) => {
       init[id] = 0
     })
     if (myVote) {
@@ -28,7 +31,7 @@ export default function PollVoting ({
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
 
-  const maxTokens = poll.proposalIds.length
+  const maxTokens = sortedProposalIds.length
   const totalUsed = Object.values(allocations).reduce((a, b) => a + b, 0)
   const remaining = maxTokens - totalUsed
 
@@ -38,7 +41,7 @@ export default function PollVoting ({
       savedAllocations[id] = myVote.tokenCounts[i] || 0
     })
   }
-  const isUnchanged = myVote && poll.proposalIds.every(
+  const isUnchanged = myVote && sortedProposalIds.every(
     (id) => allocations[id] === (savedAllocations[id] || 0)
   )
 
@@ -56,7 +59,7 @@ export default function PollVoting ({
     setSaving(true)
     setSaveError('')
     setSaved(false)
-    const nonZeroIds = poll.proposalIds.filter((id) => allocations[id] > 0)
+    const nonZeroIds = sortedProposalIds.filter((id) => allocations[id] > 0)
     try {
       const result = await upsertVote(
         poll.$id,
@@ -77,7 +80,7 @@ export default function PollVoting ({
   return (
     <div style={styles.container}>
       <div style={styles.proposals}>
-        {poll.proposalIds.map((proposalId) => {
+        {sortedProposalIds.map((proposalId) => {
           const count = allocations[proposalId]
           const proposal = proposalMap[proposalId]
           const name = proposal?.resortName || proposalId

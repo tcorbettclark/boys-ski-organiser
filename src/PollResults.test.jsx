@@ -50,6 +50,25 @@ describe('PollResults', () => {
     expect(screen.getByText('0')).toBeInTheDocument()
   })
 
+  it('sorts proposals alphabetically by resort name regardless of votes', () => {
+    const pollAlpha = { $id: 'poll-1', proposalIds: ['p-3', 'p-1', 'p-2'] }
+    const proposalsAlpha = [
+      { $id: 'p-1', resortName: 'Chamonix' },
+      { $id: 'p-2', resortName: 'Verbier' },
+      { $id: 'p-3', resortName: 'Zermatt' }
+    ]
+    const votes = [
+      { $id: 'v-1', proposalIds: ['p-1'], tokenCounts: [100] },
+      { $id: 'v-2', proposalIds: ['p-2'], tokenCounts: [200] },
+      { $id: 'v-3', proposalIds: ['p-3'], tokenCounts: [50] }
+    ]
+    render(<PollResults poll={pollAlpha} proposals={proposalsAlpha} votes={votes} />)
+    const labels = screen.getAllByTestId('proposal-label')
+    expect(labels[0].textContent).toBe('Chamonix')
+    expect(labels[1].textContent).toBe('Verbier')
+    expect(labels[2].textContent).toBe('Zermatt')
+  })
+
   it('ignores token allocations for proposalIds not in the poll', () => {
     const votes = [{ $id: 'v-1', proposalIds: ['p-99'], tokenCounts: [5] }]
     render(<PollResults poll={poll} proposals={proposals} votes={votes} />)

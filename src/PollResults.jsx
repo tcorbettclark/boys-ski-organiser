@@ -15,7 +15,7 @@ export default function PollResults ({ poll, proposals, votes }) {
     })
   })
 
-  const sorted = [...poll.proposalIds].sort((a, b) => totals[b] - totals[a])
+  const sorted = [...poll.proposalIds].sort((a, b) => (proposalMap[a]?.resortName || '').localeCompare(proposalMap[b]?.resortName || ''))
   const maxTotal = Math.max(...Object.values(totals), 1)
   const voterCount = votes.length
 
@@ -30,7 +30,7 @@ export default function PollResults ({ poll, proposals, votes }) {
         const barWidth = `${Math.round((total / maxTotal) * 100)}%`
         return (
           <div key={proposalId} style={styles.row}>
-            <div style={styles.label}>{proposal?.resortName || proposalId}</div>
+            <div style={styles.label} data-testid='proposal-label'>{proposal?.resortName || proposalId}</div>
             <div style={styles.barTrack}>
               <div style={{ ...styles.bar, width: barWidth }} />
             </div>
