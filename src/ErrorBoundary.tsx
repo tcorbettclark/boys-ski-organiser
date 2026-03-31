@@ -1,4 +1,4 @@
-import { Component, ReactNode } from 'react'
+import { Component, type ReactNode } from 'react'
 import { colors, fonts } from './theme'
 
 interface ErrorBoundaryProps {
@@ -30,8 +30,14 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         <div style={styles.container}>
           <p style={styles.emoji}>⚠️</p>
           <h2 style={styles.heading}>Something went wrong</h2>
-          <p style={styles.message}>{this.state.error?.message || 'An unexpected error occurred.'}</p>
-          <button onClick={() => this.setState({ hasError: false, error: null })} style={styles.button}>
+          <p style={styles.message}>
+            {this.state.error?.message || 'An unexpected error occurred.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={styles.button}
+          >
             Try again
           </button>
         </div>
@@ -47,23 +53,23 @@ const styles = {
     maxWidth: '960px',
     margin: '0 auto',
     fontFamily: fonts.body,
-    textAlign: 'center'
+    textAlign: 'center',
   },
   emoji: {
     fontSize: '48px',
-    margin: '0 0 16px'
+    margin: '0 0 16px',
   },
   heading: {
     fontFamily: fonts.display,
     fontSize: '24px',
     fontWeight: '600',
     color: colors.textPrimary,
-    margin: '0 0 12px'
+    margin: '0 0 12px',
   },
   message: {
     fontSize: '14px',
     color: colors.textSecondary,
-    margin: '0 0 24px'
+    margin: '0 0 24px',
   },
   button: {
     padding: '9px 22px',
@@ -74,8 +80,8 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '13px',
     fontWeight: '600',
-    cursor: 'pointer'
-  }
+    cursor: 'pointer',
+  },
 } as const
 
 export default ErrorBoundary

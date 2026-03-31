@@ -6,7 +6,7 @@ import {
   deleteProposal as _deleteProposal,
   submitProposal as _submitProposal,
   rejectProposal as _rejectProposal,
-  getCoordinatorParticipant as _getCoordinatorParticipant
+  getCoordinatorParticipant as _getCoordinatorParticipant,
 } from './backend'
 import type { Models } from 'appwrite'
 import { randomProposal } from './randomProposal'
@@ -28,7 +28,10 @@ interface ProposalsProps {
   user: Models.User
   tripId: string
   onRefresh?: () => void
-  listProposals?: (tripId: string, userId: string) => Promise<{ documents: Proposal[] }>
+  listProposals?: (
+    tripId: string,
+    userId: string
+  ) => Promise<{ documents: Proposal[] }>
   createProposal?: (
     tripId: string,
     userId: string,
@@ -46,24 +49,30 @@ interface ProposalsProps {
       approximateCost?: string
     }
   ) => Promise<unknown>
-  updateProposal?: (proposalId: string, userId: string, data: Partial<Proposal>) => Promise<unknown>
+  updateProposal?: (
+    proposalId: string,
+    userId: string,
+    data: Partial<Proposal>
+  ) => Promise<unknown>
   deleteProposal?: (proposalId: string, userId: string) => Promise<void>
   submitProposal?: (proposalId: string, userId: string) => Promise<unknown>
   rejectProposal?: (proposalId: string, userId: string) => Promise<unknown>
-  getCoordinatorParticipant?: (tripId: string) => Promise<{ documents: Array<{ ParticipantUserId: string }> }>
+  getCoordinatorParticipant?: (
+    tripId: string
+  ) => Promise<{ documents: Array<{ ParticipantUserId: string }> }>
 }
 
 export default function Proposals({
   user,
   tripId,
-  onRefresh,
+  onRefresh: _onRefresh,
   listProposals = _listProposals,
   createProposal = _createProposal,
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
   submitProposal = _submitProposal,
   rejectProposal = _rejectProposal,
-  getCoordinatorParticipant = _getCoordinatorParticipant
+  getCoordinatorParticipant = _getCoordinatorParticipant,
 }: ProposalsProps) {
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,7 +85,9 @@ export default function Proposals({
 
   useEffect(() => {
     mountedRef.current = true
-    return () => { mountedRef.current = false }
+    return () => {
+      mountedRef.current = false
+    }
   }, [])
 
   useEffect(() => {
@@ -91,7 +102,7 @@ export default function Proposals({
     setProposalsError('')
     Promise.all([
       listProposals(tripId, user.$id),
-      getCoordinatorParticipant(tripId)
+      getCoordinatorParticipant(tripId),
     ])
       .then(([proposalsResult, coordResult]) => {
         if (!mountedRef.current) return
@@ -101,9 +112,14 @@ export default function Proposals({
             coordResult.documents[0].ParticipantUserId === user.$id
         )
       })
-      .catch((err) => { if (mountedRef.current) setProposalsError(err instanceof Error ? err.message : String(err)) })
-      .finally(() => { if (mountedRef.current) setProposalsLoading(false) })
-  }, [tripId, user.$id])
+      .catch((err) => {
+        if (mountedRef.current)
+          setProposalsError(err instanceof Error ? err.message : String(err))
+      })
+      .finally(() => {
+        if (mountedRef.current) setProposalsLoading(false)
+      })
+  }, [tripId, user.$id, listProposals, getCoordinatorParticipant])
 
   const handleCreated = useCallback((proposal: unknown) => {
     setProposals((p) => [proposal as Proposal, ...p])
@@ -153,12 +169,14 @@ export default function Proposals({
         {tripId && (
           <div style={styles.buttons}>
             <button
+              type="button"
               onClick={() => setShowCreateForm((v) => !v)}
               style={styles.actionButton}
             >
               {showCreateForm ? 'Cancel' : '+ New Proposal'}
             </button>
             <button
+              type="button"
               onClick={handleRandomProposal}
               disabled={randomizing}
               style={styles.randomButton}
@@ -180,7 +198,11 @@ export default function Proposals({
       )}
 
       {proposalsLoading && <p style={styles.message}>Loading proposals…</p>}
-      {proposalsError && <p style={{ ...styles.message, color: colors.error }}>{proposalsError}</p>}
+      {proposalsError && (
+        <p style={{ ...styles.message, color: colors.error }}>
+          {proposalsError}
+        </p>
+      )}
 
       {!proposalsLoading && !proposalsError && (
         <ProposalsTable
@@ -191,7 +213,7 @@ export default function Proposals({
           onDeleted={handleDeleted}
           onSubmitted={handleSubmitted}
           onRejected={handleRejected}
-          emptyMessage='No proposals yet. Create one above.'
+          emptyMessage="No proposals yet. Create one above."
           updateProposal={updateProposal}
           deleteProposal={deleteProposal}
           submitProposal={submitProposal}
@@ -207,21 +229,21 @@ const styles = {
     padding: '40px 48px',
     maxWidth: '960px',
     margin: '0 auto',
-    fontFamily: fonts.body
+    fontFamily: fonts.body,
   },
   message: {
     color: colors.textSecondary,
     fontFamily: fonts.body,
     padding: '80px',
     textAlign: 'center',
-    fontSize: '15px'
+    fontSize: '15px',
   },
   promptMessage: {
     color: colors.textSecondary,
     fontFamily: fonts.body,
     padding: '40px',
     textAlign: 'center',
-    fontSize: '15px'
+    fontSize: '15px',
   },
   toolbar: {
     display: 'flex',
@@ -229,7 +251,7 @@ const styles = {
     justifyContent: 'space-between',
     marginBottom: '28px',
     paddingBottom: '20px',
-    borderBottom: borders.subtle
+    borderBottom: borders.subtle,
   },
   heading: {
     fontFamily: fonts.display,
@@ -237,11 +259,11 @@ const styles = {
     fontWeight: '600',
     color: colors.textPrimary,
     margin: 0,
-    letterSpacing: '-0.01em'
+    letterSpacing: '-0.01em',
   },
   buttons: {
     display: 'flex',
-    gap: '10px'
+    gap: '10px',
   },
   actionButton: {
     padding: '9px 22px',
@@ -253,7 +275,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
   },
   randomButton: {
     padding: '9px 22px',
@@ -265,6 +287,6 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
-    letterSpacing: '0.02em'
-  }
+    letterSpacing: '0.02em',
+  },
 } as const

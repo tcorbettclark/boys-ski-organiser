@@ -4,11 +4,15 @@ import userEvent from '@testing-library/user-event'
 import JoinTripForm from './JoinTripForm'
 
 const noop = () => {}
-const testUser = { $id: 'user-1', name: 'Test User', email: 'test@example.com' }
+const testUser = {
+  $id: 'user-1',
+  name: 'Test User',
+  email: 'test@example.com',
+}
 const ownTrip = { $id: 'trip-1', code: 'abc-def-ghi', name: 'My Trip' }
 const otherTrip = { $id: 'trip-2', code: 'xyz-uvw-rst', name: 'Other Trip' }
 
-function renderForm (props = {}) {
+function renderForm(props = {}) {
   return render(
     <JoinTripForm
       user={testUser}
@@ -55,7 +59,7 @@ describe('JoinTripForm', () => {
     const handleDismiss = mock(() => {})
     renderForm({
       getTripByCode: () => Promise.resolve({ documents: [otherTrip] }),
-      onDismiss: handleDismiss
+      onDismiss: handleDismiss,
     })
 
     await user.type(screen.getByRole('textbox'), 'xyz-uvw-rst')
@@ -73,7 +77,7 @@ describe('JoinTripForm', () => {
     renderForm({
       getTripByCode: () => Promise.resolve({ documents: [ownTrip] }),
       joinTrip: mockJoin,
-      onJoined: handleJoined
+      onJoined: handleJoined,
     })
 
     await user.type(screen.getByRole('textbox'), 'abc-def-ghi')
@@ -93,7 +97,9 @@ describe('JoinTripForm', () => {
     await user.click(screen.getByRole('button', { name: /join trip/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('No trip found with that code.')).toBeInTheDocument()
+      expect(
+        screen.getByText('No trip found with that code.')
+      ).toBeInTheDocument()
     })
   })
 
@@ -101,14 +107,17 @@ describe('JoinTripForm', () => {
     const user = userEvent.setup()
     renderForm({
       getTripByCode: () => Promise.resolve({ documents: [otherTrip] }),
-      joinTrip: () => Promise.reject(new Error('You have already joined this trip.'))
+      joinTrip: () =>
+        Promise.reject(new Error('You have already joined this trip.')),
     })
 
     await user.type(screen.getByRole('textbox'), 'xyz-uvw-rst')
     await user.click(screen.getByRole('button', { name: /join trip/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('You have already joined this trip.')).toBeInTheDocument()
+      expect(
+        screen.getByText('You have already joined this trip.')
+      ).toBeInTheDocument()
     })
   })
 })

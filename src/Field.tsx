@@ -21,14 +21,17 @@ export default function Field({
   required,
   placeholder,
   variant = 'default',
-  minLength
+  minLength,
 }: FieldProps) {
   const styles = fieldStyles[variant] || fieldStyles.default
 
   return (
     <div style={styles.field}>
-      <label style={styles.label}>{label}</label>
+      <label htmlFor={name} style={styles.label}>
+        {label}
+      </label>
       <input
+        id={name}
         type={type}
         name={name}
         value={value}

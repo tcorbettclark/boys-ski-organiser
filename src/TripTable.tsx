@@ -10,14 +10,16 @@ interface TripTableProps {
   trips: Trip[]
   onSelectTrip: (tripId: string) => void
   emptyMessage?: string
-  getCoordinatorParticipant?: (tripId: string) => Promise<{ documents: Array<{ ParticipantUserName: string }> }>
+  getCoordinatorParticipant?: (
+    tripId: string
+  ) => Promise<{ documents: Array<{ ParticipantUserName: string }> }>
 }
 
 export default function TripTable({
   trips,
   onSelectTrip,
   emptyMessage = 'No trips yet. Add one above.',
-  getCoordinatorParticipant
+  getCoordinatorParticipant,
 }: TripTableProps) {
   if (trips.length === 0) {
     return <p style={styles.empty}>{emptyMessage}</p>
@@ -52,13 +54,13 @@ const styles = {
     padding: '60px 40px',
     textAlign: 'center',
     fontSize: '15px',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     fontFamily: fonts.body,
-    fontSize: '14px'
+    fontSize: '14px',
   },
   th: {
     textAlign: 'left',
@@ -70,6 +72,6 @@ const styles = {
     fontWeight: '500',
     color: colors.textSecondary,
     letterSpacing: '0.1em',
-    textTransform: 'uppercase'
-  }
+    textTransform: 'uppercase',
+  },
 } as const

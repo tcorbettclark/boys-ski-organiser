@@ -25,7 +25,7 @@ interface ProposalViewerProps {
 export default function ProposalViewer({
   proposals,
   initialIndex,
-  onClose
+  onClose,
 }: ProposalViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
@@ -62,14 +62,18 @@ export default function ProposalViewer({
 
   return (
     <div
-      role='dialog'
-      aria-modal='true'
-      aria-labelledby='viewer-title'
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="viewer-title"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose()
+      }}
       style={styles.backdrop}
     >
       <button
-        aria-label='Previous proposal'
+        type="button"
+        aria-label="Previous proposal"
         onClick={(e) => {
           e.stopPropagation()
           setCurrentIndex((i) => Math.max(0, i - 1))
@@ -77,14 +81,17 @@ export default function ProposalViewer({
         disabled={isFirst}
         style={{
           ...styles.arrowButton,
-          ...(isFirst ? styles.arrowDisabled : {})
+          ...(isFirst ? styles.arrowDisabled : {}),
         }}
       >
         ‹
       </button>
 
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: stops click propagation from backdrop */}
       <div
+        role="presentation"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         style={styles.card}
@@ -94,7 +101,9 @@ export default function ProposalViewer({
             <div style={styles.counter}>
               {currentIndex + 1} of {proposals.length}
             </div>
-            <div id='viewer-title' style={styles.resortName}>{proposal.resortName || '—'}</div>
+            <div id="viewer-title" style={styles.resortName}>
+              {proposal.resortName || '—'}
+            </div>
             <div style={styles.subHeader}>
               <span>{proposal.country || '—'}</span>
               {proposal.country && proposal.state && ' · '}
@@ -104,7 +113,8 @@ export default function ProposalViewer({
             </div>
           </div>
           <button
-            aria-label='Close'
+            type="button"
+            aria-label="Close"
             onClick={onClose}
             style={styles.closeButton}
           >
@@ -113,10 +123,10 @@ export default function ProposalViewer({
         </div>
 
         <div style={styles.grid}>
-          <Field label='Altitude Range' value={proposal.altitudeRange} />
-          <Field label='Nearest Airport' value={proposal.nearestAirport} />
-          <Field label='Transfer Time' value={proposal.transferTime} />
-          <Field label='Approx. Cost' value={proposal.approximateCost} />
+          <Field label="Altitude Range" value={proposal.altitudeRange} />
+          <Field label="Nearest Airport" value={proposal.nearestAirport} />
+          <Field label="Transfer Time" value={proposal.transferTime} />
+          <Field label="Approx. Cost" value={proposal.approximateCost} />
           <div style={{ gridColumn: '1/-1' }}>
             <div style={styles.fieldLabel}>Accommodation</div>
             <div style={styles.fieldValue}>
@@ -126,8 +136,8 @@ export default function ProposalViewer({
                   {' '}
                   <a
                     href={proposal.accommodationUrl}
-                    target='_blank'
-                    rel='noopener noreferrer'
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={styles.link}
                   >
                     ↗ link
@@ -137,7 +147,7 @@ export default function ProposalViewer({
             </div>
           </div>
           <div style={{ gridColumn: '1/-1' }}>
-            <Field label='Description' value={proposal.description} />
+            <Field label="Description" value={proposal.description} />
           </div>
           <div style={{ gridColumn: '1/-1' }}>
             <div style={styles.fieldLabel}>Proposed By</div>
@@ -148,10 +158,10 @@ export default function ProposalViewer({
         </div>
 
         <div style={styles.dots}>
-          {proposals.map((_, i) => (
+          {proposals.map((proposal, i) => (
             <div
-              key={i}
-              aria-hidden='true'
+              key={proposal.$id}
+              aria-hidden="true"
               style={i === currentIndex ? styles.dotActive : styles.dotInactive}
             />
           ))}
@@ -159,7 +169,8 @@ export default function ProposalViewer({
       </div>
 
       <button
-        aria-label='Next proposal'
+        type="button"
+        aria-label="Next proposal"
         onClick={(e) => {
           e.stopPropagation()
           setCurrentIndex((i) => Math.min(proposals.length - 1, i + 1))
@@ -167,7 +178,7 @@ export default function ProposalViewer({
         disabled={isLast}
         style={{
           ...styles.arrowButton,
-          ...(isLast ? styles.arrowDisabled : {})
+          ...(isLast ? styles.arrowDisabled : {}),
         }}
       >
         ›
@@ -194,7 +205,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
-    gap: '16px'
+    gap: '16px',
   },
   arrowButton: {
     background: 'rgba(13,30,48,0.9)',
@@ -209,11 +220,11 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-    fontFamily: fonts.body
+    fontFamily: fonts.body,
   },
   arrowDisabled: {
     opacity: 0.25,
-    cursor: 'default'
+    cursor: 'default',
   },
   card: {
     background: colors.bgCard,
@@ -224,13 +235,13 @@ const styles = {
     maxWidth: '560px',
     maxHeight: '90vh',
     overflowY: 'auto',
-    boxShadow: '0 24px 80px rgba(0,0,0,0.6)'
+    boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
   },
   headerRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '20px'
+    marginBottom: '20px',
   },
   counter: {
     fontFamily: fonts.body,
@@ -238,19 +249,19 @@ const styles = {
     color: colors.textSecondary,
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
-    marginBottom: '6px'
+    marginBottom: '6px',
   },
   resortName: {
     fontFamily: fonts.display,
     fontSize: '24px',
     fontWeight: '600',
-    color: colors.textPrimary
+    color: colors.textPrimary,
   },
   subHeader: {
     fontFamily: fonts.body,
     fontSize: '13px',
     color: colors.textSecondary,
-    marginTop: '4px'
+    marginTop: '4px',
   },
   closeButton: {
     background: 'none',
@@ -260,13 +271,13 @@ const styles = {
     cursor: 'pointer',
     lineHeight: 1,
     padding: '4px',
-    fontFamily: fonts.body
+    fontFamily: fonts.body,
   },
   grid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: '16px 24px',
-    marginBottom: '20px'
+    marginBottom: '20px',
   },
   fieldLabel: {
     fontFamily: fonts.body,
@@ -274,36 +285,36 @@ const styles = {
     color: colors.textSecondary,
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
-    marginBottom: '4px'
+    marginBottom: '4px',
   },
   fieldValue: {
     fontFamily: fonts.body,
     fontSize: '14px',
     color: colors.textData,
-    lineHeight: '1.5'
+    lineHeight: '1.5',
   },
   link: {
     color: colors.accent,
     fontSize: '12px',
-    textDecoration: 'none'
+    textDecoration: 'none',
   },
   dots: {
     display: 'flex',
     justifyContent: 'center',
     gap: '8px',
-    paddingTop: '4px'
+    paddingTop: '4px',
   },
   dotActive: {
     width: '7px',
     height: '7px',
     borderRadius: '50%',
-    background: colors.accent
+    background: colors.accent,
   },
   dotInactive: {
     width: '7px',
     height: '7px',
     borderRadius: '50%',
-    background: 'rgba(59,189,232,0.25)'
+    background: 'rgba(59,189,232,0.25)',
   },
   badgeDraft: {
     display: 'inline-block',
@@ -314,7 +325,7 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.textSecondary,
     background: 'rgba(106,148,174,0.15)',
-    border: '1px solid rgba(106,148,174,0.2)'
+    border: '1px solid rgba(106,148,174,0.2)',
   },
   badgeSubmitted: {
     display: 'inline-block',
@@ -325,6 +336,6 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.accent,
     background: 'rgba(59,189,232,0.12)',
-    border: '1px solid rgba(59,189,232,0.25)'
-  }
+    border: '1px solid rgba(59,189,232,0.25)',
+  },
 } as const

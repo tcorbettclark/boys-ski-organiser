@@ -3,11 +3,16 @@ import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import TripRow from './TripRow'
 
-const sampleTrip = { $id: 'trip-1', code: 'ABC12', name: 'Ski Alps', description: 'A great trip' }
+const sampleTrip = {
+  $id: 'trip-1',
+  code: 'ABC12',
+  name: 'Ski Alps',
+  description: 'A great trip',
+}
 
 const noop = () => {}
 
-async function renderRow (trip, props = {}) {
+async function renderRow(trip, props = {}) {
   await act(async () => {
     render(
       <table>
@@ -16,7 +21,15 @@ async function renderRow (trip, props = {}) {
             trip={trip}
             onSelectTrip={props.onSelectTrip || noop}
             getCoordinatorParticipant={() =>
-              Promise.resolve({ documents: [{ ParticipantUserId: props.coordinatorUserId || 'user-1', ParticipantUserName: 'Test User' }] })}
+              Promise.resolve({
+                documents: [
+                  {
+                    ParticipantUserId: props.coordinatorUserId || 'user-1',
+                    ParticipantUserName: 'Test User',
+                  },
+                ],
+              })
+            }
           />
         </tbody>
       </table>

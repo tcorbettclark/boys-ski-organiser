@@ -10,12 +10,18 @@ interface Participant {
 
 interface ParticipantListProps {
   tripId: string
-  listTripParticipants?: (tripId: string) => Promise<{ documents: Array<{ $id: string; ParticipantUserName: string; role: 'coordinator' | 'participant' }> }>
+  listTripParticipants?: (tripId: string) => Promise<{
+    documents: Array<{
+      $id: string
+      ParticipantUserName: string
+      role: 'coordinator' | 'participant'
+    }>
+  }>
 }
 
 export default function ParticipantList({
   tripId,
-  listTripParticipants = _listTripParticipants
+  listTripParticipants = _listTripParticipants,
 }: ParticipantListProps) {
   const [participants, setParticipants] = useState<Participant[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,7 +36,7 @@ export default function ParticipantList({
           documents.map((p) => ({
             id: p.$id,
             name: p.ParticipantUserName,
-            role: p.role
+            role: p.role,
           }))
         )
       } catch (err) {
@@ -40,7 +46,7 @@ export default function ParticipantList({
       }
     }
     load()
-  }, [tripId])
+  }, [tripId, listTripParticipants])
 
   if (error) throw error
 
@@ -62,7 +68,7 @@ const styles = {
   loading: {
     color: colors.textSecondary,
     fontSize: '14px',
-    margin: 0
+    margin: 0,
   },
   list: {
     listStyle: 'none',
@@ -70,24 +76,24 @@ const styles = {
     padding: 0,
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px'
+    gap: '8px',
   },
   item: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '8px 0',
-    borderBottom: borders.subtle
+    borderBottom: borders.subtle,
   },
   name: {
     fontFamily: fonts.body,
     fontSize: '14px',
-    color: colors.textData
+    color: colors.textData,
   },
   role: {
     fontFamily: fonts.body,
     fontSize: '12px',
     color: colors.textSecondary,
-    textTransform: 'capitalize'
-  }
+    textTransform: 'capitalize',
+  },
 } as const

@@ -3,15 +3,23 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import EditTripForm from './EditTripForm'
 
-const sampleTrip = { $id: 'trip-1', name: 'Ski Alps', description: 'A great trip' }
-const defaultUpdated = { $id: 'trip-1', description: 'Updated', code: 'aaa-bbb-ccc' }
+const sampleTrip = {
+  $id: 'trip-1',
+  name: 'Ski Alps',
+  description: 'A great trip',
+}
+const defaultUpdated = {
+  $id: 'trip-1',
+  description: 'Updated',
+  code: 'aaa-bbb-ccc',
+}
 const noop = () => {}
 
-function renderForm (props = {}) {
+function renderForm(props = {}) {
   return render(
     <EditTripForm
       trip={sampleTrip}
-      userId='user-1'
+      userId="user-1"
       onUpdated={noop}
       onDeleted={noop}
       onCancel={noop}
@@ -40,9 +48,13 @@ describe('EditTripForm', () => {
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
     await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalledWith('trip-1', {
-        description: 'Updated description'
-      }, 'user-1')
+      expect(mockUpdate).toHaveBeenCalledWith(
+        'trip-1',
+        {
+          description: 'Updated description',
+        },
+        'user-1'
+      )
       expect(handleUpdated).toHaveBeenCalledWith(defaultUpdated)
     })
   })

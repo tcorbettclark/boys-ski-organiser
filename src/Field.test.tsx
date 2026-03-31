@@ -4,8 +4,10 @@ import Field from './Field'
 
 const noop = () => {}
 
-function renderField (props = {}) {
-  return render(<Field label='Name' name='name' value='' onChange={noop} {...props} />)
+function renderField(props = {}) {
+  return render(
+    <Field label="Name" name="name" value="" onChange={noop} {...props} />
+  )
 }
 
 describe('Field', () => {
@@ -22,7 +24,9 @@ describe('Field', () => {
   it('calls onChange when the input changes', () => {
     const handleChange = mock(() => {})
     renderField({ onChange: handleChange })
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Chamonix', name: 'name' } })
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'Chamonix', name: 'name' },
+    })
     expect(handleChange).toHaveBeenCalledTimes(1)
   })
 

@@ -4,7 +4,7 @@ import {
   updateProposal as _updateProposal,
   deleteProposal as _deleteProposal,
   submitProposal as _submitProposal,
-  rejectProposal as _rejectProposal
+  rejectProposal as _rejectProposal,
 } from './backend'
 import { colors, fonts, borders } from './theme'
 
@@ -26,7 +26,11 @@ interface ProposalsRowProps {
   onSubmitted: (proposal: unknown) => void
   onRejected?: (proposal: unknown) => void
   onView: () => void
-  updateProposal?: (proposalId: string, userId: string, data: Partial<Proposal>) => Promise<unknown>
+  updateProposal?: (
+    proposalId: string,
+    userId: string,
+    data: Partial<Proposal>
+  ) => Promise<unknown>
   deleteProposal?: (proposalId: string, userId: string) => Promise<void>
   submitProposal?: (proposalId: string, userId: string) => Promise<unknown>
   rejectProposal?: (proposalId: string, userId: string) => Promise<unknown>
@@ -44,7 +48,7 @@ export default function ProposalsRow({
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
   submitProposal = _submitProposal,
-  rejectProposal = _rejectProposal
+  rejectProposal = _rejectProposal,
 }: ProposalsRowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -95,7 +99,10 @@ export default function ProposalsRow({
               onUpdated(updated)
               setIsEditing(false)
             }}
-            onDeleted={() => { setIsEditing(false); onDeleted(proposal.$id) }}
+            onDeleted={() => {
+              setIsEditing(false)
+              onDeleted(proposal.$id)
+            }}
             onCancel={() => setIsEditing(false)}
             updateProposal={updateProposal}
             deleteProposal={deleteProposal}
@@ -108,7 +115,9 @@ export default function ProposalsRow({
   return (
     <tr style={styles.tr}>
       <td style={styles.td}>{proposal.resortName || '—'}</td>
-      <td style={{ ...styles.td, color: colors.textSecondary }}>{proposal.country || '—'}</td>
+      <td style={{ ...styles.td, color: colors.textSecondary }}>
+        {proposal.country || '—'}
+      </td>
       <td style={{ ...styles.td, color: colors.textSecondary }}>
         {proposal.ProposerUserName || '—'}
       </td>
@@ -128,15 +137,24 @@ export default function ProposalsRow({
       <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
         {!isRejected && (
           <div style={styles.actions}>
-            <button onClick={onView} style={styles.viewButton}>
+            <button type="button" onClick={onView} style={styles.viewButton}>
               View
             </button>
             {canAct && (
               <>
-                <button onClick={() => setIsEditing(true)} style={styles.editButton}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  style={styles.editButton}
+                >
                   Edit
                 </button>
-                <button onClick={handleSubmit} disabled={submitting} style={styles.submitButton}>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  style={styles.submitButton}
+                >
                   {submitting ? 'Submitting…' : 'Submit'}
                 </button>
                 {submitError && <p style={styles.errorText}>{submitError}</p>}
@@ -144,7 +162,12 @@ export default function ProposalsRow({
             )}
             {canReject && (
               <>
-                <button onClick={handleReject} disabled={rejecting} style={styles.rejectButton}>
+                <button
+                  type="button"
+                  onClick={handleReject}
+                  disabled={rejecting}
+                  style={styles.rejectButton}
+                >
                   {rejecting ? 'Rejecting…' : 'Reject'}
                 </button>
                 {rejectError && <p style={styles.errorText}>{rejectError}</p>}
@@ -159,7 +182,7 @@ export default function ProposalsRow({
 
 const styles = {
   tr: {
-    borderBottom: '1px solid rgba(100,190,230,0.07)'
+    borderBottom: '1px solid rgba(100,190,230,0.07)',
   },
   td: {
     padding: '14px 16px',
@@ -167,23 +190,23 @@ const styles = {
     verticalAlign: 'top',
     fontFamily: fonts.body,
     fontSize: '14px',
-    lineHeight: '1.5'
+    lineHeight: '1.5',
   },
   editingTr: {
     borderBottom: '1px solid rgba(59,189,232,0.2)',
     borderTop: '1px solid rgba(59,189,232,0.2)',
-    background: 'rgba(59,189,232,0.04)'
+    background: 'rgba(59,189,232,0.04)',
   },
   editingTd: {
     padding: '20px 24px',
     verticalAlign: 'top',
-    borderLeft: `2px solid ${colors.accent}`
+    borderLeft: `2px solid ${colors.accent}`,
   },
   actions: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
   },
   viewButton: {
     padding: '5px 16px',
@@ -195,7 +218,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em'
+    letterSpacing: '0.03em',
   },
   editButton: {
     padding: '5px 16px',
@@ -207,7 +230,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em'
+    letterSpacing: '0.03em',
   },
   submitButton: {
     padding: '5px 16px',
@@ -219,7 +242,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em'
+    letterSpacing: '0.03em',
   },
   rejectButton: {
     padding: '5px 16px',
@@ -231,7 +254,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em'
+    letterSpacing: '0.03em',
   },
   badgeDraft: {
     display: 'inline-block',
@@ -242,7 +265,7 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.textSecondary,
     background: 'rgba(106,148,174,0.15)',
-    border: '1px solid rgba(106,148,174,0.2)'
+    border: '1px solid rgba(106,148,174,0.2)',
   },
   badgeSubmitted: {
     display: 'inline-block',
@@ -253,7 +276,7 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.accent,
     background: 'rgba(59,189,232,0.12)',
-    border: '1px solid rgba(59,189,232,0.25)'
+    border: '1px solid rgba(59,189,232,0.25)',
   },
   badgeRejected: {
     display: 'inline-block',
@@ -264,13 +287,13 @@ const styles = {
     letterSpacing: '0.08em',
     color: colors.error,
     background: 'rgba(255,107,107,0.12)',
-    border: '1px solid rgba(255,107,107,0.25)'
+    border: '1px solid rgba(255,107,107,0.25)',
   },
   errorText: {
     color: colors.error,
     fontFamily: fonts.body,
     fontSize: '11px',
     margin: '4px 0 0',
-    whiteSpace: 'normal'
-  }
+    whiteSpace: 'normal',
+  },
 } as const

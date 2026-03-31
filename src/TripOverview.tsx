@@ -4,7 +4,7 @@ import {
   getCoordinatorParticipant as _getCoordinatorParticipant,
   updateTrip as _updateTrip,
   deleteTrip as _deleteTrip,
-  leaveTrip as _leaveTrip
+  leaveTrip as _leaveTrip,
 } from './backend'
 import type { Models } from 'appwrite'
 import EditTripForm from './EditTripForm'
@@ -20,9 +20,24 @@ interface Trip {
 interface TripOverviewProps {
   trip: Trip
   user: Models.User
-  listTripParticipants?: (tripId: string) => Promise<{ documents: Array<{ $id: string; ParticipantUserName: string; role: 'coordinator' | 'participant' }> }>
-  getCoordinatorParticipant?: (tripId: string) => Promise<{ documents: Array<{ ParticipantUserId: string; ParticipantUserName: string }> }>
-  updateTrip?: (tripId: string, data: { description: string }, userId: string) => Promise<unknown>
+  listTripParticipants?: (tripId: string) => Promise<{
+    documents: Array<{
+      $id: string
+      ParticipantUserName: string
+      role: 'coordinator' | 'participant'
+    }>
+  }>
+  getCoordinatorParticipant?: (tripId: string) => Promise<{
+    documents: Array<{
+      ParticipantUserId: string
+      ParticipantUserName: string
+    }>
+  }>
+  updateTrip?: (
+    tripId: string,
+    data: { description: string },
+    userId: string
+  ) => Promise<unknown>
   deleteTrip?: (tripId: string, userId: string) => Promise<void>
   leaveTrip?: (userId: string, tripId: string) => Promise<void>
   onLeft?: () => void
@@ -40,7 +55,7 @@ export default function TripOverview({
   leaveTrip = _leaveTrip,
   onLeft,
   onUpdated,
-  onDeleted
+  onDeleted,
 }: TripOverviewProps) {
   const [coordinator, setCoordinator] = useState<{ name: string } | null>(null)
   const [isCoordinator, setIsCoordinator] = useState(false)
@@ -53,7 +68,9 @@ export default function TripOverview({
 
   useEffect(() => {
     mountedRef.current = true
-    return () => { mountedRef.current = false }
+    return () => {
+      mountedRef.current = false
+    }
   }, [])
 
   useEffect(() => {
@@ -68,19 +85,24 @@ export default function TripOverview({
         }
       })
       .catch((err) => console.error('Failed to load coordinator:', err))
-  }, [trip, user.$id])
+  }, [trip, user.$id, getCoordinatorParticipant])
 
   function handleCopyCode() {
     if (!trip.code) return
-    navigator.clipboard.writeText(trip.code).then(() => {
-      if (!mountedRef.current) return
-      setCodeCopied(true)
-      setCodeCopyError('')
-      setTimeout(() => { if (mountedRef.current) setCodeCopied(false) }, 1500)
-    }).catch(() => {
-      if (!mountedRef.current) return
-      setCodeCopyError('Failed to copy')
-    })
+    navigator.clipboard
+      .writeText(trip.code)
+      .then(() => {
+        if (!mountedRef.current) return
+        setCodeCopied(true)
+        setCodeCopyError('')
+        setTimeout(() => {
+          if (mountedRef.current) setCodeCopied(false)
+        }, 1500)
+      })
+      .catch(() => {
+        if (!mountedRef.current) return
+        setCodeCopyError('Failed to copy')
+      })
   }
 
   async function handleLeave() {
@@ -105,7 +127,10 @@ export default function TripOverview({
           <EditTripForm
             trip={trip}
             userId={user.$id}
-            onUpdated={(updated) => { setIsEditing(false); onUpdated?.(updated) }}
+            onUpdated={(updated) => {
+              setIsEditing(false)
+              onUpdated?.(updated)
+            }}
             onDeleted={() => onDeleted?.()}
             onCancel={() => setIsEditing(false)}
             updateTrip={updateTrip}
@@ -123,12 +148,21 @@ export default function TripOverview({
           <h3 style={styles.cardTitle}>Trip Details</h3>
           <div style={styles.actions}>
             {!isCoordinator && (
-              <button onClick={handleLeave} disabled={leaving} style={styles.leaveButton}>
+              <button
+                type="button"
+                onClick={handleLeave}
+                disabled={leaving}
+                style={styles.leaveButton}
+              >
                 {leaving ? 'Leaving…' : 'Leave Trip'}
               </button>
             )}
             {isCoordinator && (
-              <button onClick={() => setIsEditing(true)} style={styles.editButton}>
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                style={styles.editButton}
+              >
                 Edit
               </button>
             )}
@@ -145,9 +179,7 @@ export default function TripOverview({
           <div style={styles.detailRow}>
             <span style={styles.detailLabel}>Coordinator</span>
             <span style={styles.detailValue}>
-              {coordinator
-                ? `${coordinator.name}`
-                : '…'}
+              {coordinator ? `${coordinator.name}` : '…'}
             </span>
           </div>
           {trip.code && (
@@ -156,15 +188,19 @@ export default function TripOverview({
               <span style={styles.codeWithCopy}>
                 <span style={styles.mono}>{trip.code}</span>
                 <button
+                  type="button"
                   onClick={handleCopyCode}
                   style={styles.copyButton}
-                  title='Copy invite code'
-                  aria-label='Copy invite code'
+                  title="Copy invite code"
+                  aria-label="Copy invite code"
                 >
                   {codeCopied ? '✓' : '⧉'}
                 </button>
                 <span style={styles.copyFeedback}>
-                  {codeCopied ? 'Copied!' : codeCopyError || '(share this code with others so they can join)'}
+                  {codeCopied
+                    ? 'Copied!'
+                    : codeCopyError ||
+                      '(share this code with others so they can join)'}
                 </span>
               </span>
             </div>
@@ -174,7 +210,10 @@ export default function TripOverview({
 
       <div style={styles.card}>
         <h3 style={styles.cardTitle}>Participants</h3>
-        <ParticipantList tripId={trip.$id} listTripParticipants={listTripParticipants} />
+        <ParticipantList
+          tripId={trip.$id}
+          listTripParticipants={listTripParticipants}
+        />
       </div>
     </div>
   )
@@ -188,30 +227,30 @@ const styles = {
     fontFamily: fonts.body,
     display: 'flex',
     flexDirection: 'column',
-    gap: '24px'
+    gap: '24px',
   },
   card: {
     background: colors.bgCard,
     border: borders.card,
     borderRadius: '12px',
-    padding: '24px'
+    padding: '24px',
   },
   cardHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '20px'
+    marginBottom: '20px',
   },
   actions: {
     display: 'flex',
-    gap: '8px'
+    gap: '8px',
   },
   cardTitle: {
     fontFamily: fonts.display,
     fontSize: '18px',
     fontWeight: '600',
     color: colors.textPrimary,
-    margin: 0
+    margin: 0,
   },
   editButton: {
     padding: '6px 16px',
@@ -223,7 +262,7 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em'
+    letterSpacing: '0.03em',
   },
   leaveButton: {
     padding: '6px 16px',
@@ -235,23 +274,23 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.03em'
+    letterSpacing: '0.03em',
   },
   leaveError: {
     color: colors.error,
     fontFamily: fonts.body,
     fontSize: '12px',
-    margin: '0 0 12px'
+    margin: '0 0 12px',
   },
   details: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px'
+    gap: '12px',
   },
   detailRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px'
+    gap: '16px',
   },
   detailLabel: {
     fontFamily: fonts.body,
@@ -260,24 +299,24 @@ const styles = {
     color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
-    minWidth: '100px'
+    minWidth: '100px',
   },
   detailValue: {
     fontFamily: fonts.body,
     fontSize: '14px',
-    color: colors.textData
+    color: colors.textData,
   },
   mono: {
     fontFamily: fonts.mono,
     fontSize: '13px',
     color: colors.accent,
-    letterSpacing: '0.05em'
+    letterSpacing: '0.05em',
   },
   codeWithCopy: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    flex: 1
+    flex: 1,
   },
   copyButton: {
     background: 'none',
@@ -287,7 +326,7 @@ const styles = {
     fontSize: '14px',
     padding: '0 2px',
     lineHeight: 1,
-    opacity: 0.7
+    opacity: 0.7,
   },
   copyFeedback: {
     fontFamily: fonts.body,
@@ -295,7 +334,7 @@ const styles = {
     color: colors.textSecondary,
     marginLeft: '4px',
     textAlign: 'right',
-    flex: 1
+    flex: 1,
   },
   participantList: {
     listStyle: 'none',
@@ -303,28 +342,28 @@ const styles = {
     padding: 0,
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px'
+    gap: '8px',
   },
   participantItem: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '8px 0',
-    borderBottom: borders.subtle
+    borderBottom: borders.subtle,
   },
   participantName: {
     fontFamily: fonts.body,
     fontSize: '14px',
-    color: colors.textData
+    color: colors.textData,
   },
   participantRole: {
     fontFamily: fonts.body,
     fontSize: '12px',
     color: colors.textSecondary,
-    textTransform: 'capitalize'
+    textTransform: 'capitalize',
   },
   loading: {
     color: colors.textSecondary,
-    fontSize: '14px'
-  }
+    fontSize: '14px',
+  },
 } as const

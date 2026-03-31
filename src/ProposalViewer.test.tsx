@@ -1,10 +1,4 @@
-import {
-  render,
-  screen,
-  waitFor,
-  act,
-  fireEvent
-} from '@testing-library/react'
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, mock } from 'bun:test'
 import ProposalViewer from './ProposalViewer'
@@ -22,7 +16,7 @@ const p1 = {
   accommodationName: 'Chalet Belle Vue',
   accommodationUrl: 'https://example.com/chalet',
   approximateCost: '£1200pp',
-  description: 'Great powder skiing'
+  description: 'Great powder skiing',
 }
 
 const p2 = {
@@ -38,7 +32,7 @@ const p2 = {
   accommodationName: 'Hotel Mont Blanc',
   accommodationUrl: '',
   approximateCost: '£1500pp',
-  description: 'World famous resort'
+  description: 'World famous resort',
 }
 
 const p3 = {
@@ -54,16 +48,16 @@ const p3 = {
   accommodationName: 'Le Chalet',
   accommodationUrl: '',
   approximateCost: '£2000pp',
-  description: 'Challenging off-piste terrain'
+  description: 'Challenging off-piste terrain',
 }
 
-async function renderViewer (props = {}) {
+async function renderViewer(props = {}) {
   const defaults = {
     proposals: [p1, p2, p3],
     initialIndex: 0,
-    onClose: mock(() => {})
+    onClose: mock(() => {}),
   }
-  let result
+  let result: ReturnType<typeof render> | undefined
   await act(async () => {
     result = render(<ProposalViewer {...defaults} {...props} />)
   })

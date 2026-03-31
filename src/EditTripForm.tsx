@@ -14,7 +14,11 @@ interface EditTripFormProps {
   onUpdated: (trip: unknown) => void
   onDeleted: () => void
   onCancel: () => void
-  updateTrip?: (tripId: string, data: { description: string }, userId: string) => Promise<unknown>
+  updateTrip?: (
+    tripId: string,
+    data: { description: string },
+    userId: string
+  ) => Promise<unknown>
   deleteTrip?: (tripId: string, userId: string) => Promise<void>
 }
 
@@ -25,10 +29,10 @@ export default function EditTripForm({
   onDeleted,
   onCancel,
   updateTrip = _updateTrip,
-  deleteTrip = _deleteTrip
+  deleteTrip = _deleteTrip,
 }: EditTripFormProps) {
   const [form, setForm] = useState({
-    description: trip.description || ''
+    description: trip.description || '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -65,22 +69,22 @@ export default function EditTripForm({
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <Field
-        label='Description'
-        name='description'
+        label="Description"
+        name="description"
         value={form.description}
         onChange={handleChange}
         required
       />
       {error && <p style={formStyles.error}>{error}</p>}
       <div style={styles.actions}>
-        <button type='submit' disabled={saving} style={styles.saveButton}>
+        <button type="submit" disabled={saving} style={styles.saveButton}>
           {saving ? 'Saving…' : 'Save'}
         </button>
-        <button type='button' onClick={onCancel} style={styles.cancelButton}>
+        <button type="button" onClick={onCancel} style={styles.cancelButton}>
           Cancel
         </button>
         <button
-          type='button'
+          type="button"
           onClick={handleDelete}
           disabled={saving}
           style={styles.deleteButton}
@@ -97,12 +101,12 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '14px',
-    padding: '8px 0'
+    padding: '8px 0',
   },
   actions: {
     display: 'flex',
     gap: '8px',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   saveButton: {
     padding: '8px 20px',
@@ -113,7 +117,7 @@ const styles = {
     fontFamily: formStyles.saveButton.fontFamily,
     fontSize: '13px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
   cancelButton: {
     padding: '8px 20px',
@@ -124,7 +128,7 @@ const styles = {
     fontFamily: formStyles.cancelButton.fontFamily,
     fontSize: '13px',
     fontWeight: '500',
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
   deleteButton: {
     padding: '8px 20px',
@@ -136,6 +140,6 @@ const styles = {
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
-    marginLeft: 'auto'
-  }
+    marginLeft: 'auto',
+  },
 } as const

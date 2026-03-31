@@ -3,11 +3,23 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 
-const defaultUser = { $id: 'user-1', name: 'Test User', email: 'test@example.com' }
-const sampleTrip = { $id: 'trip-1', code: 'abc-123', description: 'Alps adventure' }
-const updatedTrip = { $id: 'trip-1', code: 'abc-123', description: 'Dolomites adventure' }
+const defaultUser = {
+  $id: 'user-1',
+  name: 'Test User',
+  email: 'test@example.com',
+}
+const sampleTrip = {
+  $id: 'trip-1',
+  code: 'abc-123',
+  description: 'Alps adventure',
+}
+const updatedTrip = {
+  $id: 'trip-1',
+  code: 'abc-123',
+  description: 'Dolomites adventure',
+}
 
-function renderApp (props = {}) {
+function renderApp(props = {}) {
   return render(
     <App
       accountGet={() => Promise.resolve(defaultUser)}
@@ -19,7 +31,7 @@ function renderApp (props = {}) {
   )
 }
 
-function renderAppWithTrip (props = {}) {
+function renderAppWithTrip(props = {}) {
   return render(
     <App
       accountGet={() => Promise.resolve(defaultUser)}
@@ -35,9 +47,13 @@ function renderAppWithTrip (props = {}) {
 
 describe('App', () => {
   it('shows the login form when not authenticated', async () => {
-    renderApp({ accountGet: () => Promise.reject(new Error('Not authenticated')) })
+    renderApp({
+      accountGet: () => Promise.reject(new Error('Not authenticated')),
+    })
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /sign in/i })
+      ).toBeInTheDocument()
     })
   })
 
@@ -51,40 +67,61 @@ describe('App', () => {
   it('shows the Sign Out button when authenticated', async () => {
     renderApp()
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /sign out/i })
+      ).toBeInTheDocument()
     })
   })
 
   it('shows the signup form when the Sign up link is clicked', async () => {
     const user = userEvent.setup()
-    renderApp({ accountGet: () => Promise.reject(new Error('Not authenticated')) })
+    renderApp({
+      accountGet: () => Promise.reject(new Error('Not authenticated')),
+    })
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /sign in/i })
+      ).toBeInTheDocument()
     })
     await user.click(screen.getByRole('button', { name: /sign up/i }))
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /create account/i })
+      ).toBeInTheDocument()
     })
   })
 
   it('returns to the login form from the signup form', async () => {
     const user = userEvent.setup()
-    renderApp({ accountGet: () => Promise.reject(new Error('Not authenticated')) })
+    renderApp({
+      accountGet: () => Promise.reject(new Error('Not authenticated')),
+    })
 
     await waitFor(() => screen.getByRole('button', { name: /sign up/i }))
     await user.click(screen.getByRole('button', { name: /sign up/i }))
-    await waitFor(() => screen.getByRole('heading', { name: /create account/i }))
+    await waitFor(() =>
+      screen.getByRole('heading', { name: /create account/i })
+    )
     await user.click(screen.getByRole('button', { name: /^sign in$/i }))
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /sign in/i })
+      ).toBeInTheDocument()
     })
   })
 
   it('shows the email when the user has no name', async () => {
-    renderApp({ accountGet: () => Promise.resolve({ $id: 'user-2', name: '', email: 'nameless@example.com' }) })
+    renderApp({
+      accountGet: () =>
+        Promise.resolve({
+          $id: 'user-2',
+          name: '',
+          email: 'nameless@example.com',
+        }),
+    })
     await waitFor(() => {
       expect(screen.getByText('nameless@example.com')).toBeInTheDocument()
     })
@@ -96,13 +133,17 @@ describe('App', () => {
     renderApp({ deleteSession: mockDelete })
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /sign out/i })
+      ).toBeInTheDocument()
     })
     await user.click(screen.getByRole('button', { name: /sign out/i }))
 
     await waitFor(() => {
       expect(mockDelete).toHaveBeenCalledTimes(1)
-      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /sign in/i })
+      ).toBeInTheDocument()
     })
   })
 
@@ -129,7 +170,15 @@ describe('App', () => {
   it('updates the trip description in the detail panel and table after editing', async () => {
     const ue = userEvent.setup()
     const getCoordinatorParticipant = () =>
-      Promise.resolve({ documents: [{ ParticipantUserId: 'user-1', role: 'coordinator', ParticipantUserName: 'Test User' }] })
+      Promise.resolve({
+        documents: [
+          {
+            ParticipantUserId: 'user-1',
+            role: 'coordinator',
+            ParticipantUserName: 'Test User',
+          },
+        ],
+      })
     const listParticipatedTrips = () => Promise.resolve({ documents: [] })
 
     render(
@@ -157,7 +206,9 @@ describe('App', () => {
 
     // Detail panel and header both show the updated description
     await waitFor(() => {
-      expect(screen.getAllByText('Dolomites adventure').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Dolomites adventure').length).toBeGreaterThan(
+        0
+      )
     })
 
     // Navigating back to the list also shows the updated description in the table

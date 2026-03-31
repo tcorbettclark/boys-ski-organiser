@@ -2,14 +2,16 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, mock } from 'bun:test'
 import CreateProposalForm from './CreateProposalForm'
 
-function renderForm (props = {}) {
+function renderForm(props = {}) {
   const defaults = {
     tripId: 'trip-1',
     userId: 'user-1',
     onCreated: mock(() => {}),
     onDismiss: mock(() => {}),
-    createProposal: mock(() => Promise.resolve({ $id: 'p-1', resortName: "Val d'Isère" })),
-    accountGet: () => Promise.resolve({ $id: 'user-1', name: 'Alice' })
+    createProposal: mock(() =>
+      Promise.resolve({ $id: 'p-1', resortName: "Val d'Isère" })
+    ),
+    accountGet: () => Promise.resolve({ $id: 'user-1', name: 'Alice' }),
   }
   const utils = render(<CreateProposalForm {...defaults} {...props} />)
   return { ...utils, ...defaults, ...props }
@@ -30,10 +32,12 @@ describe('CreateProposalForm', () => {
   })
 
   it('calls createProposal with correct args on submit', async () => {
-    const createProposal = mock(() => Promise.resolve({ $id: 'p-1', resortName: "Val d'Isère" }))
+    const createProposal = mock(() =>
+      Promise.resolve({ $id: 'p-1', resortName: "Val d'Isère" })
+    )
     const { container } = renderForm({ createProposal })
 
-    function fill (name, value) {
+    function fill(name, value) {
       const el = container.querySelector(`[name="${name}"]`)
       fireEvent.change(el, { target: { name, value } })
     }
@@ -54,7 +58,8 @@ describe('CreateProposalForm', () => {
       expect(createProposal).toHaveBeenCalledTimes(1)
     })
 
-    const [calledTripId, calledUserId, calledCreatorName, calledData] = createProposal.mock.calls[0]
+    const [calledTripId, calledUserId, calledCreatorName, calledData] =
+      createProposal.mock.calls[0]
     expect(calledTripId).toBe('trip-1')
     expect(calledUserId).toBe('user-1')
     expect(calledCreatorName).toBe('Alice')
@@ -85,7 +90,9 @@ describe('CreateProposalForm', () => {
   })
 
   it('shows error message and does not call onDismiss on error', async () => {
-    const createProposal = mock(() => Promise.reject(new Error('Permission denied')))
+    const createProposal = mock(() =>
+      Promise.reject(new Error('Permission denied'))
+    )
     const onDismiss = mock(() => {})
     const { container } = renderForm({ createProposal, onDismiss })
 
@@ -106,7 +113,7 @@ describe('CreateProposalForm', () => {
   })
 
   it('shows Saving… while submit is in flight', async () => {
-    let resolvePromise
+    let resolvePromise: ((value: unknown) => void) | undefined
     const createProposal = mock(
       () =>
         new Promise((resolve) => {

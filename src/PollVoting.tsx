@@ -39,11 +39,13 @@ export default function PollVoting({
   myVote,
   userId,
   onVoteSaved,
-  upsertVote = _upsertVote
+  upsertVote = _upsertVote,
 }: PollVotingProps) {
   const proposalMap = Object.fromEntries(proposals.map((p) => [p.$id, p]))
   const sortedProposalIds = [...poll.proposalIds].sort((a, b) =>
-    (proposalMap[a]?.resortName || '').localeCompare(proposalMap[b]?.resortName || '')
+    (proposalMap[a]?.resortName || '').localeCompare(
+      proposalMap[b]?.resortName || ''
+    )
   )
 
   const [allocations, setAllocations] = useState<Record<string, number>>(() => {
@@ -71,9 +73,11 @@ export default function PollVoting({
       savedAllocations[id] = myVote.tokenCounts[i] || 0
     })
   }
-  const isUnchanged = myVote && sortedProposalIds.every(
-    (id) => allocations[id] === (savedAllocations[id] || 0)
-  )
+  const isUnchanged =
+    myVote &&
+    sortedProposalIds.every(
+      (id) => allocations[id] === (savedAllocations[id] || 0)
+    )
 
   function handleAdd(proposalId: string) {
     setAllocations((prev) => ({ ...prev, [proposalId]: prev[proposalId] + 1 }))
@@ -115,12 +119,13 @@ export default function PollVoting({
               <span style={styles.proposalName}>{name}</span>
               <div style={styles.stepper}>
                 <button
+                  type="button"
                   aria-label={`Remove vote from ${name}`}
                   onClick={() => handleRemove(proposalId)}
                   disabled={count === 0}
                   style={{
                     ...styles.stepperButton,
-                    ...(count === 0 ? styles.stepperButtonDisabled : {})
+                    ...(count === 0 ? styles.stepperButtonDisabled : {}),
                   }}
                 >
                   −
@@ -132,12 +137,13 @@ export default function PollVoting({
                   {count}
                 </span>
                 <button
+                  type="button"
                   aria-label={`Add vote to ${name}`}
                   onClick={() => handleAdd(proposalId)}
                   disabled={remaining === 0}
                   style={{
                     ...styles.stepperButton,
-                    ...(remaining === 0 ? styles.stepperButtonDisabled : {})
+                    ...(remaining === 0 ? styles.stepperButtonDisabled : {}),
                   }}
                 >
                   +
@@ -153,11 +159,12 @@ export default function PollVoting({
           {totalUsed} of {maxTokens} votes placed
         </span>
         <button
+          type="button"
           onClick={handleSave}
           disabled={saving || !!isUnchanged}
           style={{
             ...styles.saveButton,
-            ...(isUnchanged ? styles.saveButtonDisabled : {})
+            ...(isUnchanged ? styles.saveButtonDisabled : {}),
           }}
         >
           {saving ? 'Saving…' : 'Save Vote'}
@@ -174,7 +181,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
-    marginBottom: '16px'
+    marginBottom: '16px',
   },
   proposalCard: {
     padding: '12px 14px',
@@ -183,7 +190,7 @@ const styles = {
     borderRadius: '10px',
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   proposalName: { fontSize: '14px', color: colors.textData },
   stepper: { display: 'flex', alignItems: 'center', gap: '10px' },
@@ -200,32 +207,32 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     lineHeight: '1',
-    fontFamily: fonts.body
+    fontFamily: fonts.body,
   },
   stepperButtonDisabled: {
     opacity: 0.3,
-    cursor: 'default'
+    cursor: 'default',
   },
   count: {
     fontSize: '14px',
     color: colors.accent,
     fontWeight: '600',
     minWidth: '16px',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   countZero: {
     fontSize: '14px',
     color: 'rgba(106,148,174,0.4)',
     fontWeight: '600',
     minWidth: '16px',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   footer: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: '14px',
-    borderTop: borders.subtle
+    borderTop: borders.subtle,
   },
   footerText: { fontSize: '12px', color: colors.textSecondary },
   saveButton: {
@@ -237,16 +244,16 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '13px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
   saveButtonDisabled: {
     opacity: 0.4,
-    cursor: 'default'
+    cursor: 'default',
   },
   errorText: {
     color: colors.error,
     fontFamily: fonts.body,
     fontSize: '12px',
-    margin: '8px 0 0'
-  }
+    margin: '8px 0 0',
+  },
 } as const

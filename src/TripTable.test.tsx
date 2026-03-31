@@ -4,18 +4,24 @@ import TripTable from './TripTable'
 
 const sampleTrips = [
   { $id: '1', name: 'Ski Alps', description: 'Alpine trip' },
-  { $id: '2', name: 'Whistler', description: 'Canada trip' }
+  { $id: '2', name: 'Whistler', description: 'Canada trip' },
 ]
 
 const noop = () => {}
 
-async function renderTable (trips, props = {}) {
+async function renderTable(trips, props = {}) {
   await act(async () => {
     render(
       <TripTable
         trips={trips}
         onSelectTrip={noop}
-        getCoordinatorParticipant={() => Promise.resolve({ documents: [{ ParticipantUserId: 'user-1', ParticipantUserName: 'Test User' }] })}
+        getCoordinatorParticipant={() =>
+          Promise.resolve({
+            documents: [
+              { ParticipantUserId: 'user-1', ParticipantUserName: 'Test User' },
+            ],
+          })
+        }
         {...props}
       />
     )
@@ -45,7 +51,11 @@ describe('TripTable', () => {
   })
 
   it('shows a custom empty message when provided', async () => {
-    await renderTable([], { emptyMessage: "You haven't joined any trips yet." })
-    expect(screen.getByText("You haven't joined any trips yet.")).toBeInTheDocument()
+    await renderTable([], {
+      emptyMessage: "You haven't joined any trips yet.",
+    })
+    expect(
+      screen.getByText("You haven't joined any trips yet.")
+    ).toBeInTheDocument()
   })
 })

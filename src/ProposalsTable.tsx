@@ -5,7 +5,7 @@ import {
   updateProposal as _updateProposal,
   deleteProposal as _deleteProposal,
   submitProposal as _submitProposal,
-  rejectProposal as _rejectProposal
+  rejectProposal as _rejectProposal,
 } from './backend'
 import { colors, fonts, borders } from './theme'
 
@@ -30,7 +30,11 @@ interface ProposalsTableProps {
   onSubmitted: (proposal: unknown) => void
   onRejected?: (proposal: unknown) => void
   emptyMessage?: string
-  updateProposal?: (proposalId: string, userId: string, data: Partial<Proposal>) => Promise<unknown>
+  updateProposal?: (
+    proposalId: string,
+    userId: string,
+    data: Partial<Proposal>
+  ) => Promise<unknown>
   deleteProposal?: (proposalId: string, userId: string) => Promise<void>
   submitProposal?: (proposalId: string, userId: string) => Promise<unknown>
   rejectProposal?: (proposalId: string, userId: string) => Promise<unknown>
@@ -48,7 +52,7 @@ export default function ProposalsTable({
   updateProposal = _updateProposal,
   deleteProposal = _deleteProposal,
   submitProposal = _submitProposal,
-  rejectProposal = _rejectProposal
+  rejectProposal = _rejectProposal,
 }: ProposalsTableProps) {
   const [viewingIndex, setViewingIndex] = useState<number | null>(null)
 
@@ -106,13 +110,13 @@ const styles = {
     padding: '60px 40px',
     textAlign: 'center',
     fontSize: '15px',
-    fontStyle: 'italic'
+    fontStyle: 'italic',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     fontFamily: fonts.body,
-    fontSize: '14px'
+    fontSize: '14px',
   },
   th: {
     textAlign: 'left',
@@ -124,6 +128,6 @@ const styles = {
     fontWeight: '500',
     color: colors.textSecondary,
     letterSpacing: '0.1em',
-    textTransform: 'uppercase'
-  }
+    textTransform: 'uppercase',
+  },
 } as const

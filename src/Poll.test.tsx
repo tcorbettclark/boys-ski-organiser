@@ -1,30 +1,25 @@
-import {
-  render,
-  screen,
-  waitFor,
-  act
-} from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, mock } from 'bun:test'
 import Poll from './Poll'
 
 const user = { $id: 'user-1', name: 'Alice' }
 const sampleProposals = [
-  { $id: 'p-1', state: 'SUBMITTED', resortName: 'Chamonix' }
+  { $id: 'p-1', state: 'SUBMITTED', resortName: 'Chamonix' },
 ]
 const openPoll = {
   $id: 'poll-1',
   tripId: 'trip-1',
   state: 'OPEN',
-  proposalIds: ['p-1']
+  proposalIds: ['p-1'],
 }
 const closedPoll = {
   $id: 'poll-2',
   tripId: 'trip-1',
   state: 'CLOSED',
-  proposalIds: ['p-1']
+  proposalIds: ['p-1'],
 }
 
-function renderPoll (props = {}) {
+function renderPoll(props = {}) {
   const defaults = {
     user,
     tripId: 'trip-1',
@@ -34,7 +29,7 @@ function renderPoll (props = {}) {
     createPoll: mock(() => Promise.resolve(openPoll)),
     closePoll: mock(() => Promise.resolve(closedPoll)),
     upsertVote: mock(() => Promise.resolve({ $id: 'v-new' })),
-    getCoordinatorParticipant: mock(() => Promise.resolve({ documents: [] }))
+    getCoordinatorParticipant: mock(() => Promise.resolve({ documents: [] })),
   }
   return render(<Poll {...defaults} {...props} />)
 }
@@ -45,12 +40,16 @@ describe('Poll', () => {
       renderPoll({
         tripId: 'trip-1',
         getCoordinatorParticipant: mock(() =>
-          Promise.resolve({ documents: [{ $id: 'part-1', ParticipantUserId: 'user-1' }] })
-        )
+          Promise.resolve({
+            documents: [{ $id: 'part-1', ParticipantUserId: 'user-1' }],
+          })
+        ),
       })
     })
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /create poll/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /create poll/i })
+      ).toBeInTheDocument()
     })
   })
 
@@ -58,11 +57,15 @@ describe('Poll', () => {
     await act(async () => {
       renderPoll({
         tripId: 'trip-1',
-        getCoordinatorParticipant: mock(() => Promise.resolve({ documents: [] }))
+        getCoordinatorParticipant: mock(() =>
+          Promise.resolve({ documents: [] })
+        ),
       })
     })
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /create poll/i })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /create poll/i })
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -70,7 +73,7 @@ describe('Poll', () => {
     await act(async () => {
       renderPoll({
         tripId: 'trip-1',
-        listPolls: mock(() => Promise.resolve({ documents: [openPoll] }))
+        listPolls: mock(() => Promise.resolve({ documents: [openPoll] })),
       })
     })
     await waitFor(() => {
@@ -84,12 +87,16 @@ describe('Poll', () => {
         tripId: 'trip-1',
         listPolls: mock(() => Promise.resolve({ documents: [openPoll] })),
         getCoordinatorParticipant: mock(() =>
-          Promise.resolve({ documents: [{ $id: 'part-1', ParticipantUserId: 'user-1' }] })
-        )
+          Promise.resolve({
+            documents: [{ $id: 'part-1', ParticipantUserId: 'user-1' }],
+          })
+        ),
       })
     })
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /close poll/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /close poll/i })
+      ).toBeInTheDocument()
     })
   })
 
@@ -98,11 +105,15 @@ describe('Poll', () => {
       renderPoll({
         tripId: 'trip-1',
         listPolls: mock(() => Promise.resolve({ documents: [openPoll] })),
-        getCoordinatorParticipant: mock(() => Promise.resolve({ documents: [] }))
+        getCoordinatorParticipant: mock(() =>
+          Promise.resolve({ documents: [] })
+        ),
       })
     })
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /close poll/i })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /close poll/i })
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -110,7 +121,7 @@ describe('Poll', () => {
     await act(async () => {
       renderPoll({
         tripId: 'trip-1',
-        listPolls: mock(() => Promise.resolve({ documents: [closedPoll] }))
+        listPolls: mock(() => Promise.resolve({ documents: [closedPoll] })),
       })
     })
     await waitFor(() => {

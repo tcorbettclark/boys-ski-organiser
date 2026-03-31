@@ -4,17 +4,35 @@ import userEvent from '@testing-library/user-event'
 import TripOverview from './TripOverview'
 
 const trip = { $id: 'trip-1', code: 'abc-123', description: 'Old description' }
-const currentUser = { $id: 'user-1', name: 'Alice', email: 'alice@example.com' }
-const updatedTrip = { $id: 'trip-1', code: 'abc-123', description: 'New description' }
+const currentUser = {
+  $id: 'user-1',
+  name: 'Alice',
+  email: 'alice@example.com',
+}
+const updatedTrip = {
+  $id: 'trip-1',
+  code: 'abc-123',
+  description: 'New description',
+}
 
 const noop = () => {}
 
-async function renderOverview (props = {}) {
+async function renderOverview(props = {}) {
   render(
     <TripOverview
       trip={trip}
       user={currentUser}
-      getCoordinatorParticipant={() => Promise.resolve({ documents: [{ ParticipantUserId: 'user-1', role: 'coordinator', ParticipantUserName: 'Alice' }] })}
+      getCoordinatorParticipant={() =>
+        Promise.resolve({
+          documents: [
+            {
+              ParticipantUserId: 'user-1',
+              role: 'coordinator',
+              ParticipantUserName: 'Alice',
+            },
+          ],
+        })
+      }
       listTripParticipants={() => Promise.resolve({ documents: [] })}
       updateTrip={() => Promise.resolve(updatedTrip)}
       deleteTrip={() => Promise.resolve()}
@@ -24,7 +42,9 @@ async function renderOverview (props = {}) {
       {...props}
     />
   )
-  await waitFor(() => expect(screen.queryByText('Loading participants…')).not.toBeInTheDocument())
+  await waitFor(() =>
+    expect(screen.queryByText('Loading participants…')).not.toBeInTheDocument()
+  )
 }
 
 describe('TripOverview', () => {
@@ -70,7 +90,9 @@ describe('TripOverview', () => {
     await ue.click(screen.getByRole('button', { name: /^save$/i }))
 
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /^save$/i })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /^save$/i })
+      ).not.toBeInTheDocument()
     })
   })
 })

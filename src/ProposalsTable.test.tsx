@@ -16,10 +16,10 @@ const sampleProposal = {
   accommodationName: 'Chalet Belle Vue',
   accommodationUrl: '',
   approximateCost: '£1200pp',
-  description: 'Great powder skiing'
+  description: 'Great powder skiing',
 }
 
-async function renderProposalsTable (props = {}) {
+async function renderProposalsTable(props = {}) {
   const defaults = {
     proposals: [],
     userId: 'user-1',
@@ -31,9 +31,9 @@ async function renderProposalsTable (props = {}) {
     updateProposal: mock(() => Promise.resolve()),
     deleteProposal: mock(() => Promise.resolve()),
     submitProposal: mock(() => Promise.resolve()),
-    rejectProposal: mock(() => Promise.resolve())
+    rejectProposal: mock(() => Promise.resolve()),
   }
-  let result
+  let result: ReturnType<typeof render> | undefined
   await act(async () => {
     result = render(<ProposalsTable {...defaults} {...props} />)
   })
@@ -43,7 +43,9 @@ async function renderProposalsTable (props = {}) {
 describe('ProposalsTable', () => {
   it('shows the empty message when there are no proposals', async () => {
     await renderProposalsTable()
-    expect(screen.getByText('No proposals yet. Create one above.')).toBeInTheDocument()
+    expect(
+      screen.getByText('No proposals yet. Create one above.')
+    ).toBeInTheDocument()
   })
 
   it('shows a custom empty message when provided', async () => {
@@ -53,8 +55,8 @@ describe('ProposalsTable', () => {
 
   it('renders a row for each proposal', async () => {
     const proposals = [
-      { ...sampleProposal, $id: 'p-1', resortName: 'Val d\'Isère' },
-      { ...sampleProposal, $id: 'p-2', resortName: 'Chamonix' }
+      { ...sampleProposal, $id: 'p-1', resortName: "Val d'Isère" },
+      { ...sampleProposal, $id: 'p-2', resortName: 'Chamonix' },
     ]
     await renderProposalsTable({ proposals })
     expect(screen.getByText("Val d'Isère")).toBeInTheDocument()
@@ -77,7 +79,7 @@ describe('ProposalsTable', () => {
     const user = userEvent.setup()
     const proposals = [
       { ...sampleProposal, $id: 'p-1', resortName: "Val d'Isère" },
-      { ...sampleProposal, $id: 'p-2', resortName: 'Chamonix' }
+      { ...sampleProposal, $id: 'p-2', resortName: 'Chamonix' },
     ]
     await renderProposalsTable({ proposals })
     const viewButtons = screen.getAllByRole('button', { name: /^view$/i })
@@ -93,24 +95,26 @@ describe('ProposalsTable', () => {
     const submittedProposal = {
       ...sampleProposal,
       $id: 'p-1',
-      state: 'SUBMITTED'
+      state: 'SUBMITTED',
     }
     await renderProposalsTable({
       proposals: [submittedProposal],
-      isCoordinator: true
+      isCoordinator: true,
     })
-    expect(screen.getByRole('button', { name: /^reject$/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /^reject$/i })
+    ).toBeInTheDocument()
   })
 
   it('does not show Reject button when isCoordinator is false', async () => {
     const submittedProposal = {
       ...sampleProposal,
       $id: 'p-1',
-      state: 'SUBMITTED'
+      state: 'SUBMITTED',
     }
     await renderProposalsTable({
       proposals: [submittedProposal],
-      isCoordinator: false
+      isCoordinator: false,
     })
     expect(
       screen.queryByRole('button', { name: /^reject$/i })
@@ -119,7 +123,9 @@ describe('ProposalsTable', () => {
 
   it('closing the viewer hides it', async () => {
     const user = userEvent.setup()
-    const proposals = [{ ...sampleProposal, $id: 'p-1', resortName: "Val d'Isère" }]
+    const proposals = [
+      { ...sampleProposal, $id: 'p-1', resortName: "Val d'Isère" },
+    ]
     await renderProposalsTable({ proposals })
     await act(async () => {
       await user.click(screen.getByRole('button', { name: /^view$/i }))

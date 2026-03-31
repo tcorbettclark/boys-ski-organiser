@@ -6,22 +6,22 @@ import PollVoting from './PollVoting'
 const poll = {
   $id: 'poll-1',
   tripId: 'trip-1',
-  proposalIds: ['p-1', 'p-2', 'p-3']
+  proposalIds: ['p-1', 'p-2', 'p-3'],
 }
 const proposals = [
   { $id: 'p-1', resortName: 'Chamonix' },
   { $id: 'p-2', resortName: 'Verbier' },
-  { $id: 'p-3', resortName: 'Zermatt' }
+  { $id: 'p-3', resortName: 'Zermatt' },
 ]
 
-function renderPollVoting (props = {}) {
+function renderPollVoting(props = {}) {
   const defaults = {
     poll,
     proposals,
     myVote: null,
     userId: 'user-1',
     onVoteSaved: mock(() => {}),
-    upsertVote: mock(() => Promise.resolve({ $id: 'v-new' }))
+    upsertVote: mock(() => Promise.resolve({ $id: 'v-new' })),
   }
   return render(<PollVoting {...defaults} {...props} />)
 }
@@ -135,7 +135,7 @@ describe('PollVoting', () => {
   it('shows error on failure', async () => {
     const user = userEvent.setup()
     renderPollVoting({
-      upsertVote: mock(() => Promise.reject(new Error('Vote failed')))
+      upsertVote: mock(() => Promise.reject(new Error('Vote failed'))),
     })
     await user.click(screen.getByRole('button', { name: /save vote/i }))
     await waitFor(() => {
@@ -156,19 +156,21 @@ describe('PollVoting', () => {
     await user.click(
       screen.getByRole('button', { name: /add vote to Verbier/i })
     )
-    expect(screen.getByRole('button', { name: /save vote/i })).not.toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: /save vote/i })
+    ).not.toBeDisabled()
   })
 
   it('displays proposals in alphabetical order regardless of proposalIds order', () => {
     const pollOutOfOrder = {
       $id: 'poll-1',
       tripId: 'trip-1',
-      proposalIds: ['p-3', 'p-1', 'p-2']
+      proposalIds: ['p-3', 'p-1', 'p-2'],
     }
     const proposalsOutOfOrder = [
       { $id: 'p-1', resortName: 'Chamonix' },
       { $id: 'p-2', resortName: 'Verbier' },
-      { $id: 'p-3', resortName: 'Zermatt' }
+      { $id: 'p-3', resortName: 'Zermatt' },
     ]
     renderPollVoting({ poll: pollOutOfOrder, proposals: proposalsOutOfOrder })
     const resortNames = screen.getAllByText(/Chamonix|Verbier|Zermatt/)
@@ -184,7 +186,9 @@ describe('PollVoting', () => {
     await user.click(
       screen.getByRole('button', { name: /add vote to Chamonix/i })
     )
-    expect(screen.getByRole('button', { name: /save vote/i })).not.toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: /save vote/i })
+    ).not.toBeDisabled()
     await user.click(
       screen.getByRole('button', { name: /remove vote from Chamonix/i })
     )

@@ -21,7 +21,7 @@ export default function CreateTripForm({
   onCreated,
   onDismiss,
   createTrip = _createTrip,
-  accountGet = _account.get.bind(_account)
+  accountGet = _account.get.bind(_account),
 }: CreateTripFormProps) {
   const [form, setForm] = useState({ description: '' })
   const [saving, setSaving] = useState(false)
@@ -51,8 +51,8 @@ export default function CreateTripForm({
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <Field
-        label='Description'
-        name='description'
+        label="Description"
+        name="description"
         value={form.description}
         onChange={handleChange}
         placeholder="e.g. 5 days in Val d'Isère, late February, intermediate+ skiers"
@@ -60,10 +60,14 @@ export default function CreateTripForm({
       />
       {error && <p style={formStyles.error}>{error}</p>}
       <div style={styles.actions}>
-        <button type='submit' disabled={saving} style={formStyles.saveButton}>
+        <button type="submit" disabled={saving} style={formStyles.saveButton}>
           {saving ? 'Saving…' : 'Save Trip'}
         </button>
-        <button type='button' onClick={onDismiss} style={formStyles.cancelButton}>
+        <button
+          type="button"
+          onClick={onDismiss}
+          style={formStyles.cancelButton}
+        >
           Cancel
         </button>
       </div>
@@ -80,11 +84,11 @@ const styles = {
     marginBottom: '32px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px'
+    gap: '20px',
   },
   actions: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px'
-  }
+    gap: '12px',
+  },
 } as const

@@ -14,18 +14,20 @@ const sampleProposal = {
   accommodationName: 'Chalet Belle Vue',
   accommodationUrl: 'https://example.com',
   approximateCost: '£1200pp',
-  description: 'Great powder skiing'
+  description: 'Great powder skiing',
 }
 
-function renderForm (props = {}) {
+function renderForm(props = {}) {
   const defaults = {
     proposal: sampleProposal,
     userId: 'user-1',
     onUpdated: mock(() => {}),
     onDeleted: mock(() => {}),
     onCancel: mock(() => {}),
-    updateProposal: mock(() => Promise.resolve({ $id: 'p-1', resortName: 'Updated' })),
-    deleteProposal: mock(() => Promise.resolve())
+    updateProposal: mock(() =>
+      Promise.resolve({ $id: 'p-1', resortName: 'Updated' })
+    ),
+    deleteProposal: mock(() => Promise.resolve()),
   }
   return render(<EditProposalForm {...defaults} {...props} />)
 }
@@ -39,10 +41,14 @@ describe('EditProposalForm', () => {
 
   it('calls updateProposal with correct args and then onUpdated on submit', async () => {
     const onUpdated = mock(() => {})
-    const updateProposal = mock(() => Promise.resolve({ $id: 'p-1', resortName: 'Updated' }))
+    const updateProposal = mock(() =>
+      Promise.resolve({ $id: 'p-1', resortName: 'Updated' })
+    )
     renderForm({ onUpdated, updateProposal })
 
-    fireEvent.submit(screen.getByRole('button', { name: /save/i }).closest('form'))
+    fireEvent.submit(
+      screen.getByRole('button', { name: /save/i }).closest('form')
+    )
 
     await waitFor(() => {
       expect(updateProposal).toHaveBeenCalledTimes(1)
@@ -50,7 +56,10 @@ describe('EditProposalForm', () => {
       expect(proposalId).toBe('p-1')
       expect(userId).toBe('user-1')
       expect(formData.resortName).toBe("Val d'Isère")
-      expect(onUpdated).toHaveBeenCalledWith({ $id: 'p-1', resortName: 'Updated' })
+      expect(onUpdated).toHaveBeenCalledWith({
+        $id: 'p-1',
+        resortName: 'Updated',
+      })
     })
   })
 
@@ -91,10 +100,14 @@ describe('EditProposalForm', () => {
   })
 
   it('shows error message when updateProposal rejects', async () => {
-    const updateProposal = mock(() => Promise.reject(new Error('Update failed')))
+    const updateProposal = mock(() =>
+      Promise.reject(new Error('Update failed'))
+    )
     renderForm({ updateProposal })
 
-    fireEvent.submit(screen.getByRole('button', { name: /save/i }).closest('form'))
+    fireEvent.submit(
+      screen.getByRole('button', { name: /save/i }).closest('form')
+    )
 
     await waitFor(() => {
       expect(screen.getByText('Update failed')).toBeTruthy()
@@ -103,7 +116,9 @@ describe('EditProposalForm', () => {
 
   it('shows error when deleteProposal rejects', async () => {
     global.confirm = mock(() => true)
-    const deleteProposal = mock(() => Promise.reject(new Error('Delete failed')))
+    const deleteProposal = mock(() =>
+      Promise.reject(new Error('Delete failed'))
+    )
     renderForm({ deleteProposal })
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }))

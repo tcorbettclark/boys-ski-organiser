@@ -17,7 +17,7 @@ export default function Header({
   onViewAllTrips,
   onTripDetailTabChange,
   userName,
-  onLogout
+  onLogout,
 }: HeaderProps) {
   if (view === 'tripList') {
     return (
@@ -25,7 +25,7 @@ export default function Header({
         <span style={headerStyles.wordmark}>⛷ Ski Tripper</span>
         <div style={headerStyles.userGroup}>
           <span style={headerStyles.name}>{userName}</span>
-          <button onClick={onLogout} style={headerStyles.button}>
+          <button type="button" onClick={onLogout} style={headerStyles.button}>
             Sign Out
           </button>
         </div>
@@ -35,33 +35,52 @@ export default function Header({
 
   return (
     <header style={headerStyles.bar}>
-      <button onClick={onViewAllTrips} style={headerStyles.backButton}>
+      <button
+        type="button"
+        onClick={onViewAllTrips}
+        style={headerStyles.backButton}
+      >
         ← My Trips
       </button>
       <span style={headerStyles.tripName}>{tripName}</span>
       <nav style={headerStyles.subTabs}>
         <button
+          type="button"
           onClick={() => onTripDetailTabChange('overview')}
-          style={tripDetailTab === 'overview' ? headerStyles.subTabActive : headerStyles.subTab}
+          style={
+            tripDetailTab === 'overview'
+              ? headerStyles.subTabActive
+              : headerStyles.subTab
+          }
         >
           Overview
         </button>
         <button
+          type="button"
           onClick={() => onTripDetailTabChange('proposals')}
-          style={tripDetailTab === 'proposals' ? headerStyles.subTabActive : headerStyles.subTab}
+          style={
+            tripDetailTab === 'proposals'
+              ? headerStyles.subTabActive
+              : headerStyles.subTab
+          }
         >
           Proposals
         </button>
         <button
+          type="button"
           onClick={() => onTripDetailTabChange('poll')}
-          style={tripDetailTab === 'poll' ? headerStyles.subTabActive : headerStyles.subTab}
+          style={
+            tripDetailTab === 'poll'
+              ? headerStyles.subTabActive
+              : headerStyles.subTab
+          }
         >
           Poll
         </button>
       </nav>
       <div style={headerStyles.userGroup}>
         <span style={headerStyles.name}>{userName}</span>
-        <button onClick={onLogout} style={headerStyles.button}>
+        <button type="button" onClick={onLogout} style={headerStyles.button}>
           Sign Out
         </button>
       </div>
@@ -81,14 +100,14 @@ const headerStyles = {
     position: 'sticky',
     top: 0,
     zIndex: 100,
-    gap: '24px'
+    gap: '24px',
   },
   wordmark: {
     fontFamily: fonts.display,
     fontSize: '22px',
     fontWeight: '600',
     color: colors.accent,
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
   },
   backButton: {
     background: 'none',
@@ -99,7 +118,7 @@ const headerStyles = {
     cursor: 'pointer',
     padding: '6px 12px',
     borderRadius: '6px',
-    transition: 'background 0.15s'
+    transition: 'background 0.15s',
   },
   tripName: {
     fontFamily: fonts.display,
@@ -107,11 +126,11 @@ const headerStyles = {
     fontWeight: '600',
     color: colors.textPrimary,
     letterSpacing: '0.01em',
-    flex: 1
+    flex: 1,
   },
   subTabs: {
     display: 'flex',
-    gap: '4px'
+    gap: '4px',
   },
   subTab: {
     padding: '6px 16px',
@@ -123,7 +142,7 @@ const headerStyles = {
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
   },
   subTabActive: {
     padding: '6px 16px',
@@ -135,18 +154,18 @@ const headerStyles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
   },
   userGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: '20px'
+    gap: '20px',
   },
   name: {
     fontFamily: fonts.body,
     fontSize: '13px',
     color: colors.textSecondary,
-    letterSpacing: '0.02em'
+    letterSpacing: '0.02em',
   },
   button: {
     padding: '7px 18px',
@@ -158,6 +177,6 @@ const headerStyles = {
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
-    letterSpacing: '0.02em'
-  }
+    letterSpacing: '0.02em',
+  },
 } as const

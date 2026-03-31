@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { createProposal as _createProposal, account as _account } from './backend'
+import {
+  createProposal as _createProposal,
+  account as _account,
+} from './backend'
 import type { Models } from 'appwrite'
 import Field from './Field'
 import { colors, fonts, borders, formStyles, fieldStyles } from './theme'
@@ -13,7 +16,18 @@ interface CreateProposalFormProps {
     tripId: string,
     userId: string,
     userName: string,
-    data: { title: string; description: string; resortName: string; country: string; altitudeRange: string; nearestAirport: string; transferTime: string; accommodationName: string; accommodationUrl: string; approximateCost: string }
+    data: {
+      title: string
+      description: string
+      resortName: string
+      country: string
+      altitudeRange: string
+      nearestAirport: string
+      transferTime: string
+      accommodationName: string
+      accommodationUrl: string
+      approximateCost: string
+    }
   ) => Promise<unknown>
   accountGet?: () => Promise<Models.User>
 }
@@ -27,7 +41,7 @@ const EMPTY_FORM = {
   accommodationName: '',
   accommodationUrl: '',
   approximateCost: '',
-  description: ''
+  description: '',
 }
 
 export default function CreateProposalForm({
@@ -36,13 +50,15 @@ export default function CreateProposalForm({
   onCreated,
   onDismiss,
   createProposal = _createProposal,
-  accountGet = _account.get.bind(_account)
+  accountGet = _account.get.bind(_account),
 }: CreateProposalFormProps) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
 
@@ -62,7 +78,7 @@ export default function CreateProposalForm({
         transferTime: form.transferTime,
         accommodationName: form.accommodationName,
         accommodationUrl: form.accommodationUrl,
-        approximateCost: form.approximateCost
+        approximateCost: form.approximateCost,
       })
       onCreated(proposal)
       setForm(EMPTY_FORM)
@@ -77,68 +93,71 @@ export default function CreateProposalForm({
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <Field
-        label='Resort Name'
-        name='resortName'
+        label="Resort Name"
+        name="resortName"
         value={form.resortName}
         onChange={handleChange}
         required
       />
       <Field
-        label='Country'
-        name='country'
+        label="Country"
+        name="country"
         value={form.country}
         onChange={handleChange}
         required
       />
       <Field
-        label='Altitude Range'
-        name='altitudeRange'
+        label="Altitude Range"
+        name="altitudeRange"
         value={form.altitudeRange}
         onChange={handleChange}
         required
-        placeholder='e.g. 1800m - 3200m'
+        placeholder="e.g. 1800m - 3200m"
       />
       <Field
-        label='Nearest Airport'
-        name='nearestAirport'
+        label="Nearest Airport"
+        name="nearestAirport"
         value={form.nearestAirport}
         onChange={handleChange}
         required
-        placeholder='e.g. GVA'
+        placeholder="e.g. GVA"
       />
       <Field
-        label='Transfer Time'
-        name='transferTime'
+        label="Transfer Time"
+        name="transferTime"
         value={form.transferTime}
         onChange={handleChange}
         required
-        placeholder='e.g. 1h 30m'
+        placeholder="e.g. 1h 30m"
       />
       <Field
-        label='Accommodation Name'
-        name='accommodationName'
+        label="Accommodation Name"
+        name="accommodationName"
         value={form.accommodationName}
         onChange={handleChange}
         required
       />
       <Field
-        label='Accommodation URL'
-        name='accommodationUrl'
-        type='url'
+        label="Accommodation URL"
+        name="accommodationUrl"
+        type="url"
         value={form.accommodationUrl}
         onChange={handleChange}
       />
       <Field
-        label='Approximate Cost'
-        name='approximateCost'
+        label="Approximate Cost"
+        name="approximateCost"
         value={form.approximateCost}
         onChange={handleChange}
         required
       />
       <div style={fieldStyles.default.field}>
-        <label style={fieldStyles.default.label}>Description</label>
+        <label htmlFor="description" style={fieldStyles.default.label}>
+          Description
+        </label>
         <textarea
-          name='description'
+          id="description"
+          name="description"
           value={form.description}
           onChange={handleChange}
           required
@@ -147,10 +166,14 @@ export default function CreateProposalForm({
       </div>
       {error && <p style={formStyles.error}>{error}</p>}
       <div style={styles.actions}>
-        <button type='submit' disabled={saving} style={formStyles.saveButton}>
+        <button type="submit" disabled={saving} style={formStyles.saveButton}>
           {saving ? 'Saving…' : 'Create Proposal'}
         </button>
-        <button type='button' onClick={onDismiss} style={formStyles.cancelButton}>
+        <button
+          type="button"
+          onClick={onDismiss}
+          style={formStyles.cancelButton}
+        >
           Cancel
         </button>
       </div>
@@ -167,7 +190,7 @@ const styles = {
     marginBottom: '32px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px'
+    gap: '20px',
   },
   textarea: {
     padding: '10px 14px',
@@ -179,11 +202,11 @@ const styles = {
     fontSize: '14px',
     outline: 'none',
     resize: 'vertical',
-    minHeight: '80px'
+    minHeight: '80px',
   },
   actions: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px'
-  }
+    gap: '12px',
+  },
 } as const

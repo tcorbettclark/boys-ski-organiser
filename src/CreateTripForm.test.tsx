@@ -4,10 +4,18 @@ import userEvent from '@testing-library/user-event'
 import CreateTripForm from './CreateTripForm'
 
 const noop = () => {}
-const testUser = { $id: 'user-1', name: 'Test User', email: 'test@example.com' }
-const defaultTrip = { $id: 'new-trip', description: 'New Trip', code: 'aaa-bbb-ccc' }
+const testUser = {
+  $id: 'user-1',
+  name: 'Test User',
+  email: 'test@example.com',
+}
+const defaultTrip = {
+  $id: 'new-trip',
+  description: 'New Trip',
+  code: 'aaa-bbb-ccc',
+}
 
-function renderForm (props = {}) {
+function renderForm(props = {}) {
   return render(
     <CreateTripForm
       user={testUser}
@@ -32,11 +40,16 @@ describe('CreateTripForm', () => {
     const handleCreated = mock(() => {})
     renderForm({ createTrip: mockCreate, onCreated: handleCreated })
 
-    await user.type(screen.getByRole('textbox'), 'A trip to the Alps in February')
+    await user.type(
+      screen.getByRole('textbox'),
+      'A trip to the Alps in February'
+    )
     await user.click(screen.getByRole('button', { name: /save trip/i }))
 
     await waitFor(() => {
-      expect(mockCreate).toHaveBeenCalledWith('user-1', 'Test User', { description: 'A trip to the Alps in February' })
+      expect(mockCreate).toHaveBeenCalledWith('user-1', 'Test User', {
+        description: 'A trip to the Alps in February',
+      })
       expect(handleCreated).toHaveBeenCalledTimes(1)
     })
   })
@@ -46,7 +59,10 @@ describe('CreateTripForm', () => {
     const handleDismiss = mock(() => {})
     renderForm({ onDismiss: handleDismiss })
 
-    await user.type(screen.getByRole('textbox'), 'A trip to the Alps in February')
+    await user.type(
+      screen.getByRole('textbox'),
+      'A trip to the Alps in February'
+    )
     await user.click(screen.getByRole('button', { name: /save trip/i }))
 
     await waitFor(() => {
@@ -67,7 +83,10 @@ describe('CreateTripForm', () => {
     const user = userEvent.setup()
     renderForm({ createTrip: () => Promise.reject(new Error('API error')) })
 
-    await user.type(screen.getByRole('textbox'), 'A trip to the Alps in February')
+    await user.type(
+      screen.getByRole('textbox'),
+      'A trip to the Alps in February'
+    )
     await user.click(screen.getByRole('button', { name: /save trip/i }))
 
     await waitFor(() => {
