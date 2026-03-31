@@ -6,16 +6,14 @@ Use **Bun**: `bun install`, `bun run dev`, `bun run build`, `bun run test`
 
 ## File-Scoped Commands
 
-| Task      | Command                              |
-| --------- | ------------------------------------ |
-| Typecheck | `bun tsc --noEmit path/to/file.ts`   |
-| Lint      | `bun run lint path/to/file.ts`       |
-| Test      | `bun run test path/to/file.test.ts`  |
+| Task | Command |
+|------|---------|
+| Lint | `bun run lint path.to/file.ts` |
+| Test | `bun run test path/to/file.test.ts` |
 
 ## Commit Attribution
 
 AI commits MUST include:
-
 ```
 Co-Authored-By: (agent name and attribution byline)
 ```
