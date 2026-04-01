@@ -1,8 +1,6 @@
 ---
 description: The research equivalent of codebase-analyzer. Use this subagent_type when wanting to deep dive on a research topic. Not commonly needed otherwise.
 mode: subagent
-model: Ollama/MiniMax-M2.7:cloud
-temperature: 0.1
 tools:
   read: true
   grep: true
