@@ -8,9 +8,8 @@ import {
   Role,
   TablesDB,
 } from 'appwrite'
-import adjectives from 'threewords/data/adjectives.json'
-import nouns from 'threewords/data/nouns.json'
 import type { Participant, Poll, Proposal, Trip, Vote } from './types.d'
+import { randomThreeWords } from './utils'
 
 const client = new Client()
   .setEndpoint(process.env.PUBLIC_APPWRITE_ENDPOINT as string)
@@ -37,15 +36,6 @@ async function fetchRows<T>(
 
 async function fetchRow<T>(result: Promise<Models.Row>): Promise<T> {
   return toRow<T>(await result)
-}
-
-function randomThreeWords(): string {
-  const ints = new Uint32Array(3)
-  crypto.getRandomValues(ints)
-  const one = adjectives[ints[0] % adjectives.length]
-  const two = adjectives[ints[1] % adjectives.length]
-  const three = nouns[ints[2] % nouns.length]
-  return `${one}-${two}-${three}`.toLowerCase()
 }
 
 const DATABASE_ID = process.env.PUBLIC_APPWRITE_DATABASE_ID as string
