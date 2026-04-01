@@ -19,7 +19,7 @@ export const account = new Account(client)
 export const tablesDb = new TablesDB(client)
 export default client
 
-interface TripDocument {
+interface TripRow {
   $id: string
   code: string
   description: string
@@ -30,7 +30,7 @@ interface TripDocument {
   $updatedAt: string
 }
 
-interface ParticipantDocument {
+interface ParticipantRow {
   $id: string
   ParticipantUserId: string
   ParticipantUserName: string
@@ -39,7 +39,7 @@ interface ParticipantDocument {
   $createdAt: string
 }
 
-interface ProposalDocument {
+interface ProposalRow {
   $id: string
   tripId: string
   ProposerUserId: string
@@ -50,7 +50,7 @@ interface ProposalDocument {
   $createdAt: string
 }
 
-interface PollDocument {
+interface PollRow {
   $id: string
   tripId: string
   PollCreatorUserId: string
@@ -60,7 +60,7 @@ interface PollDocument {
   $createdAt: string
 }
 
-interface VoteDocument {
+interface VoteRow {
   $id: string
   pollId: string
   tripId: string
@@ -70,23 +70,23 @@ interface VoteDocument {
   $createdAt: string
 }
 
-function cast<T>(row: Models.Row): T {
-  return row as unknown as T
+function toRow<T>(row: Models.Row): T {
+  return row as T
 }
 
-function castList<T>(rows: Models.Row[]): T[] {
-  return rows as unknown as T[]
+function toRows<T>(rows: Models.Row[]): T[] {
+  return rows as T[]
 }
 
-async function castDocumentList<T>(
+async function fetchRows<T>(
   result: Promise<{ rows: Models.Row[] }>
 ): Promise<{ documents: T[] }> {
   const { rows } = await result
-  return { documents: castList<T>(rows) }
+  return { documents: toRows<T>(rows) }
 }
 
-async function castSingle<T>(result: Promise<Models.Row>): Promise<T> {
-  return cast<T>(await result)
+async function fetchRow<T>(result: Promise<Models.Row>): Promise<T> {
+  return toRow<T>(await result)
 }
 
 function randomThreeWords(): string {
@@ -110,8 +110,8 @@ const VOTES_TABLE_ID = process.env.PUBLIC_APPWRITE_VOTES_TABLE_ID as string
 export async function getCoordinatorParticipant(
   tripId: string,
   db: TablesDB = tablesDb
-): Promise<{ documents: ParticipantDocument[] }> {
-  return castDocumentList<ParticipantDocument>(
+): Promise<{ documents: ParticipantRow[] }> {
+  return fetchRows<ParticipantRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -127,8 +127,8 @@ export async function getCoordinatorParticipant(
 export async function listTripParticipants(
   tripId: string,
   db: TablesDB = tablesDb
-): Promise<{ documents: ParticipantDocument[] }> {
-  return castDocumentList<ParticipantDocument>(
+): Promise<{ documents: ParticipantRow[] }> {
+  return fetchRows<ParticipantRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -145,11 +145,11 @@ export async function listTrips(
   ParticipantUserId: string,
   db: TablesDB = tablesDb
 ): Promise<{
-  documents: TripDocument[]
+  documents: TripRow[]
   coordinatorUserIds: Record<string, string>
 }> {
   const { documents: coordinatorParticipants } =
-    await castDocumentList<ParticipantDocument>(
+    await fetchRows<ParticipantRow>(
       db.listRows({
         databaseId: DATABASE_ID,
         tableId: PARTICIPANTS_TABLE_ID,
@@ -169,7 +169,7 @@ export async function listTrips(
   const coordinatorUserIds = Object.fromEntries(
     coordinatorParticipants.map((p) => [p.tripId, p.ParticipantUserId])
   )
-  const { documents: trips } = await castDocumentList<TripDocument>(
+  const { documents: trips } = await fetchRows<TripRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: TRIPS_TABLE_ID,
@@ -184,8 +184,8 @@ export async function listTrips(
 export async function getTrip(
   tripId: string,
   db: TablesDB = tablesDb
-): Promise<TripDocument> {
-  return castSingle<TripDocument>(
+): Promise<TripRow> {
+  return fetchRow<TripRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: TRIPS_TABLE_ID,
@@ -197,8 +197,8 @@ export async function getTrip(
 export async function getTripByCode(
   code: string,
   db: TablesDB = tablesDb
-): Promise<{ documents: TripDocument[] }> {
-  return castDocumentList<TripDocument>(
+): Promise<{ documents: TripRow[] }> {
+  return fetchRows<TripRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: TRIPS_TABLE_ID,
@@ -210,7 +210,7 @@ export async function getTripByCode(
 async function findUniqueCode(db: TablesDB = tablesDb): Promise<string> {
   for (let attempt = 0; attempt < 100; attempt++) {
     const code = randomThreeWords()
-    const { documents } = await castDocumentList<TripDocument>(
+    const { documents } = await fetchRows<TripRow>(
       db.listRows({
         databaseId: DATABASE_ID,
         tableId: TRIPS_TABLE_ID,
@@ -225,11 +225,11 @@ async function findUniqueCode(db: TablesDB = tablesDb): Promise<string> {
 export async function createTrip(
   ParticipantUserId: string,
   ParticipantUserName: string,
-  data: Partial<TripDocument>,
+  data: Partial<TripRow>,
   db: TablesDB = tablesDb
-): Promise<TripDocument> {
+): Promise<TripRow> {
   const code = await findUniqueCode(db)
-  const trip = await castSingle<TripDocument>(
+  const trip = await fetchRow<TripRow>(
     db.createRow({
       databaseId: DATABASE_ID,
       tableId: TRIPS_TABLE_ID,
@@ -264,10 +264,10 @@ export async function createTrip(
 
 export async function updateTrip(
   tripId: string,
-  data: Partial<TripDocument>,
+  data: Partial<TripRow>,
   ParticipantUserId: string,
   db: TablesDB = tablesDb
-): Promise<TripDocument> {
+): Promise<TripRow> {
   const { documents } = await getCoordinatorParticipant(tripId, db)
   if (
     documents.length === 0 ||
@@ -275,7 +275,7 @@ export async function updateTrip(
   ) {
     throw new Error('Only the coordinator can edit this trip.')
   }
-  return castSingle<TripDocument>(
+  return fetchRow<TripRow>(
     db.updateRow({
       databaseId: DATABASE_ID,
       tableId: TRIPS_TABLE_ID,
@@ -300,7 +300,7 @@ export async function deleteTrip(
   ) {
     throw new Error('Only the coordinator can delete this trip.')
   }
-  const { documents } = await castDocumentList<ParticipantDocument>(
+  const { documents } = await fetchRows<ParticipantRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -326,8 +326,8 @@ export async function deleteTrip(
 export async function listParticipatedTrips(
   ParticipantUserId: string,
   db: TablesDB = tablesDb
-): Promise<{ documents: TripDocument[] }> {
-  const { documents } = await castDocumentList<ParticipantDocument>(
+): Promise<{ documents: TripRow[] }> {
+  const { documents } = await fetchRows<ParticipantRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -340,7 +340,7 @@ export async function listParticipatedTrips(
   )
   if (documents.length === 0) return { documents: [] }
   const tripIds = documents.map((p) => p.tripId)
-  const { documents: trips } = await castDocumentList<TripDocument>(
+  const { documents: trips } = await fetchRows<TripRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: TRIPS_TABLE_ID,
@@ -355,7 +355,7 @@ export async function joinTrip(
   ParticipantUserName: string,
   tripId: string,
   db: TablesDB = tablesDb
-): Promise<ParticipantDocument> {
+): Promise<ParticipantRow> {
   try {
     await db.getRow({
       databaseId: DATABASE_ID,
@@ -365,7 +365,7 @@ export async function joinTrip(
   } catch {
     throw new Error('Trip not found.')
   }
-  const { documents } = await castDocumentList<ParticipantDocument>(
+  const { documents } = await fetchRows<ParticipantRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -378,7 +378,7 @@ export async function joinTrip(
   )
   if (documents.length > 0)
     throw new Error('You have already joined this trip.')
-  return castSingle<ParticipantDocument>(
+  return fetchRow<ParticipantRow>(
     db.createRow({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -402,7 +402,7 @@ export async function leaveTrip(
   tripId: string,
   db: TablesDB = tablesDb
 ): Promise<void> {
-  const { documents } = await castDocumentList<ParticipantDocument>(
+  const { documents } = await fetchRows<ParticipantRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -426,7 +426,7 @@ async function _verifyParticipant(
   ParticipantUserId: string,
   db: TablesDB
 ): Promise<void> {
-  const { documents } = await castDocumentList<ParticipantDocument>(
+  const { documents } = await fetchRows<ParticipantRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PARTICIPANTS_TABLE_ID,
@@ -458,9 +458,9 @@ export async function createProposal(
     approximateCost?: string
   },
   db: TablesDB = tablesDb
-): Promise<ProposalDocument> {
+): Promise<ProposalRow> {
   await _verifyParticipant(tripId, ProposerUserId, db)
-  return castSingle<ProposalDocument>(
+  return fetchRow<ProposalRow>(
     db.createRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -484,9 +484,9 @@ export async function listProposals(
   tripId: string,
   ParticipantUserId: string,
   db: TablesDB = tablesDb
-): Promise<{ documents: ProposalDocument[] }> {
+): Promise<{ documents: ProposalRow[] }> {
   await _verifyParticipant(tripId, ParticipantUserId, db)
-  return castDocumentList<ProposalDocument>(
+  return fetchRows<ProposalRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -503,8 +503,8 @@ export async function getProposal(
   proposalId: string,
   ParticipantUserId: string,
   db: TablesDB = tablesDb
-): Promise<ProposalDocument> {
-  const proposal = await castSingle<ProposalDocument>(
+): Promise<ProposalRow> {
+  const proposal = await fetchRow<ProposalRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -518,10 +518,10 @@ export async function getProposal(
 export async function updateProposal(
   proposalId: string,
   ProposerUserId: string,
-  data: Partial<ProposalDocument>,
+  data: Partial<ProposalRow>,
   db: TablesDB = tablesDb
-): Promise<ProposalDocument> {
-  const proposal = await castSingle<ProposalDocument>(
+): Promise<ProposalRow> {
+  const proposal = await fetchRow<ProposalRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -538,7 +538,7 @@ export async function updateProposal(
     ProposerUserId: _ProposerUserId,
     ...safeData
   } = data
-  return castSingle<ProposalDocument>(
+  return fetchRow<ProposalRow>(
     db.updateRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -553,7 +553,7 @@ export async function deleteProposal(
   ProposerUserId: string,
   db: TablesDB = tablesDb
 ): Promise<void> {
-  const proposal = await castSingle<ProposalDocument>(
+  const proposal = await fetchRow<ProposalRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -575,8 +575,8 @@ export async function submitProposal(
   proposalId: string,
   ProposerUserId: string,
   db: TablesDB = tablesDb
-): Promise<ProposalDocument> {
-  const proposal = await castSingle<ProposalDocument>(
+): Promise<ProposalRow> {
+  const proposal = await fetchRow<ProposalRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -587,7 +587,7 @@ export async function submitProposal(
     throw new Error('Only the creator can submit this proposal.')
   if (proposal.state !== 'DRAFT')
     throw new Error('Only draft proposals can be submitted.')
-  return castSingle<ProposalDocument>(
+  return fetchRow<ProposalRow>(
     db.updateRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -601,8 +601,8 @@ export async function rejectProposal(
   proposalId: string,
   PollCreatorUserId: string,
   db: TablesDB = tablesDb
-): Promise<ProposalDocument> {
-  const proposal = await castSingle<ProposalDocument>(
+): Promise<ProposalRow> {
+  const proposal = await fetchRow<ProposalRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -619,7 +619,7 @@ export async function rejectProposal(
   ) {
     throw new Error('Only the coordinator can reject this proposal.')
   }
-  return castSingle<ProposalDocument>(
+  return fetchRow<ProposalRow>(
     db.updateRow({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -634,7 +634,7 @@ export async function createPoll(
   PollCreatorUserId: string,
   PollCreatorUserName: string,
   db: TablesDB = tablesDb
-): Promise<PollDocument> {
+): Promise<PollRow> {
   const { documents: coordDocs } = await getCoordinatorParticipant(tripId, db)
   if (
     coordDocs.length === 0 ||
@@ -642,7 +642,7 @@ export async function createPoll(
   ) {
     throw new Error('Only the coordinator can create a poll.')
   }
-  const { documents: openPolls } = await castDocumentList<PollDocument>(
+  const { documents: openPolls } = await fetchRows<PollRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: POLLS_TABLE_ID,
@@ -656,7 +656,7 @@ export async function createPoll(
   if (openPolls.length > 0) {
     throw new Error('A poll is already open for this trip.')
   }
-  const { documents: proposals } = await castDocumentList<ProposalDocument>(
+  const { documents: proposals } = await fetchRows<ProposalRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: PROPOSALS_TABLE_ID,
@@ -671,7 +671,7 @@ export async function createPoll(
     throw new Error('No submitted proposals to poll on.')
   }
   const proposalIds = proposals.map((p) => p.$id)
-  return castSingle<PollDocument>(
+  return fetchRow<PollRow>(
     db.createRow({
       databaseId: DATABASE_ID,
       tableId: POLLS_TABLE_ID,
@@ -695,8 +695,8 @@ export async function closePoll(
   pollId: string,
   PollCreatorUserId: string,
   db: TablesDB = tablesDb
-): Promise<PollDocument> {
-  const poll = await castSingle<PollDocument>(
+): Promise<PollRow> {
+  const poll = await fetchRow<PollRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: POLLS_TABLE_ID,
@@ -711,7 +711,7 @@ export async function closePoll(
   ) {
     throw new Error('Only the coordinator can close a poll.')
   }
-  return castSingle<PollDocument>(
+  return fetchRow<PollRow>(
     db.updateRow({
       databaseId: DATABASE_ID,
       tableId: POLLS_TABLE_ID,
@@ -725,9 +725,9 @@ export async function listPolls(
   tripId: string,
   ParticipantUserId: string,
   db: TablesDB = tablesDb
-): Promise<{ documents: PollDocument[] }> {
+): Promise<{ documents: PollRow[] }> {
   await _verifyParticipant(tripId, ParticipantUserId, db)
-  return castDocumentList<PollDocument>(
+  return fetchRows<PollRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: POLLS_TABLE_ID,
@@ -747,9 +747,9 @@ export async function upsertVote(
   proposalIds: string[],
   tokenCounts: number[],
   db: TablesDB = tablesDb
-): Promise<VoteDocument> {
+): Promise<VoteRow> {
   await _verifyParticipant(tripId, VoterUserId, db)
-  const poll = await castSingle<PollDocument>(
+  const poll = await fetchRow<PollRow>(
     db.getRow({
       databaseId: DATABASE_ID,
       tableId: POLLS_TABLE_ID,
@@ -763,7 +763,7 @@ export async function upsertVote(
   if (total > poll.proposalIds.length) {
     throw new Error(`Total tokens cannot exceed ${poll.proposalIds.length}.`)
   }
-  const { documents } = await castDocumentList<VoteDocument>(
+  const { documents } = await fetchRows<VoteRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: VOTES_TABLE_ID,
@@ -775,7 +775,7 @@ export async function upsertVote(
     })
   )
   if (documents.length > 0) {
-    return castSingle<VoteDocument>(
+    return fetchRow<VoteRow>(
       db.updateRow({
         databaseId: DATABASE_ID,
         tableId: VOTES_TABLE_ID,
@@ -784,7 +784,7 @@ export async function upsertVote(
       })
     )
   }
-  return castSingle<VoteDocument>(
+  return fetchRow<VoteRow>(
     db.createRow({
       databaseId: DATABASE_ID,
       tableId: VOTES_TABLE_ID,
@@ -806,9 +806,9 @@ export async function listVotes(
   tripId: string,
   ParticipantUserId: string,
   db: TablesDB = tablesDb
-): Promise<{ documents: VoteDocument[] }> {
+): Promise<{ documents: VoteRow[] }> {
   await _verifyParticipant(tripId, ParticipantUserId, db)
-  return castDocumentList<VoteDocument>(
+  return fetchRows<VoteRow>(
     db.listRows({
       databaseId: DATABASE_ID,
       tableId: VOTES_TABLE_ID,
