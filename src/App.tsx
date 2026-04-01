@@ -19,8 +19,10 @@ import TripOverview from './TripOverview'
 import Trips from './Trips'
 import { colors, fonts } from './theme'
 
+import type { Trip } from './types.d.ts'
+
 interface ListTripsResult {
-  trips: Array<{ $id: string; description?: string; code?: string }>
+  trips: Trip[]
   coordinatorUserIds: Record<string, string>
 }
 
@@ -29,7 +31,7 @@ interface AppProps {
   deleteSession?: () => Promise<unknown>
   listTrips?: (userId: string) => Promise<ListTripsResult>
   listParticipatedTrips?: (userId: string) => Promise<{
-    trips: Array<{ $id: string; description?: string; code?: string }>
+    trips: Trip[]
   }>
   listTripParticipants?: (tripId: string) => Promise<{
     participants: Array<{
@@ -87,9 +89,7 @@ export default function App({
   const [tripDetailTab, setTripDetailTab] = useState<
     'overview' | 'proposals' | 'poll'
   >('overview')
-  const [trips, setTrips] = useState<
-    Array<{ $id: string; description?: string; code?: string }>
-  >([])
+  const [trips, setTrips] = useState<Trip[]>([])
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
   const [refreshProposalsKey, setRefreshProposalsKey] = useState(0)
 
