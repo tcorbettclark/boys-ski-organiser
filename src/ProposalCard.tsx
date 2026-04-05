@@ -13,6 +13,7 @@ interface ProposalCardProps {
   proposal: Proposal
   userId: string
   isCoordinator?: boolean
+  previewMode?: boolean
   onUpdated: (proposal: unknown) => void
   onDeleted: (proposalId: string) => void
   onSubmitted: (proposal: unknown) => void
@@ -31,6 +32,7 @@ export default function ProposalCard({
   proposal,
   userId,
   isCoordinator = false,
+  previewMode = false,
   onUpdated,
   onDeleted,
   onSubmitted,
@@ -86,6 +88,54 @@ export default function ProposalCard({
     } catch (_err) {
       // Errors propagate to ErrorBoundary
     }
+  }
+
+  if (previewMode) {
+    return (
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <div>
+            <h3 style={styles.resortName}>
+              {proposal.resortName || '—'}
+              {proposal.accommodationName &&
+                ` (at ${proposal.accommodationName})`}
+            </h3>
+            <div style={styles.subHeader}>
+              <span>{proposal.country || '—'}</span>
+              <span style={getBadgeStyle(proposal.state)}>
+                {proposal.state}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.grid}>
+          <Field label="Altitude Range" value={proposal.altitudeRange} />
+          <Field label="Nearest Airport" value={proposal.nearestAirport} />
+          <Field label="Transfer Time" value={proposal.transferTime} />
+          <Field label="Approx. Cost" value={proposal.approximateCost} />
+          <div style={{ gridColumn: '1/-1' }}>
+            <Field label="Accommodation" value={proposal.accommodationName} />
+            {proposal.accommodationUrl && (
+              <a
+                href={proposal.accommodationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={styles.link}
+              >
+                ↗ link
+              </a>
+            )}
+          </div>
+          <div style={{ gridColumn: '1/-1' }}>
+            <Field label="Description" value={proposal.description} />
+          </div>
+          <div style={{ gridColumn: '1/-1' }}>
+            <Field label="Proposed By" value={proposal.proposerUserName} />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (isEditing) {

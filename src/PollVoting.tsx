@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { upsertVote as _upsertVote } from './backend'
+import ProposalCard from './ProposalCard'
 import { borders, colors, fonts } from './theme'
 import type { Poll, Proposal, Vote } from './types.d.ts'
 
@@ -104,41 +105,15 @@ export default function PollVoting({
               : proposal.resortName
             : proposalId
           return (
-            <div key={proposalId} style={styles.proposalCard}>
-              <span style={styles.proposalName}>{name}</span>
-              <div style={styles.stepper}>
-                <button
-                  type="button"
-                  aria-label={`Remove vote from ${name}`}
-                  onClick={() => handleRemove(proposalId)}
-                  disabled={count === 0}
-                  style={{
-                    ...styles.stepperButton,
-                    ...(count === 0 ? styles.stepperButtonDisabled : {}),
-                  }}
-                >
-                  −
-                </button>
-                <span
-                  data-testid={`count-${proposalId}`}
-                  style={count > 0 ? styles.count : styles.countZero}
-                >
-                  {count}
-                </span>
-                <button
-                  type="button"
-                  aria-label={`Add vote to ${name}`}
-                  onClick={() => handleAdd(proposalId)}
-                  disabled={remaining === 0}
-                  style={{
-                    ...styles.stepperButton,
-                    ...(remaining === 0 ? styles.stepperButtonDisabled : {}),
-                  }}
-                >
-                  +
-                </button>
-              </div>
-            </div>
+            <ProposalRow
+              key={proposalId}
+              proposal={proposal}
+              name={name}
+              count={count}
+              remaining={remaining}
+              onAdd={handleAdd}
+              onRemove={handleRemove}
+            />
           )
         })}
       </div>
@@ -164,6 +139,154 @@ export default function PollVoting({
   )
 }
 
+function ProposalRow({
+  proposal,
+  name,
+  count,
+  remaining,
+  onAdd,
+  onRemove,
+}: {
+  proposal?: Proposal
+  name: string
+  count: number
+  remaining: number
+  onAdd: (id: string) => void
+  onRemove: (id: string) => void
+}) {
+  const [showPopup, setShowPopup] = useState(false)
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 })
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
+
+  if (!proposal) return null
+
+  function handleMouseEnter(e: React.MouseEvent) {
+    const x = e.clientX
+    const y = e.clientY
+    const spaceRight = window.innerWidth - x
+    const spaceBelow = window.innerHeight - y
+    setPopupPosition({
+      x: spaceRight < 420 ? x - 420 : x + 10,
+      y: spaceBelow < 500 ? y - 10 : y + 20,
+    })
+    setShowPopup(true)
+  }
+
+  function handleMouseLeave() {
+    setShowPopup(false)
+  }
+
+  function handleTouchShow() {
+    setIsTouchDevice(true)
+    setPopupPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+    setShowPopup(true)
+  }
+
+  function closePopup() {
+    setShowPopup(false)
+  }
+
+  return (
+    <div style={styles.proposalCard}>
+      <span style={styles.proposalName}>{name}</span>
+      <div style={styles.actions}>
+        <button
+          type="button"
+          aria-label={`View details for ${name}`}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchShow}
+          style={styles.infoButton}
+        >
+          ⓘ
+        </button>
+        <div style={styles.stepper}>
+          <button
+            type="button"
+            aria-label={`Remove vote from ${name}`}
+            onClick={() => onRemove(proposal.$id)}
+            disabled={count === 0}
+            style={{
+              ...styles.stepperButton,
+              ...(count === 0 ? styles.stepperButtonDisabled : {}),
+            }}
+          >
+            −
+          </button>
+          <span
+            data-testid={`count-${proposal.$id}`}
+            style={count > 0 ? styles.count : styles.countZero}
+          >
+            {count}
+          </span>
+          <button
+            type="button"
+            aria-label={`Add vote to ${name}`}
+            onClick={() => onAdd(proposal.$id)}
+            disabled={remaining === 0}
+            style={{
+              ...styles.stepperButton,
+              ...(remaining === 0 ? styles.stepperButtonDisabled : {}),
+            }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {showPopup && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={
+            isTouchDevice
+              ? popupStyles.touchBackdrop
+              : popupStyles.popoverBackdrop
+          }
+          onClick={isTouchDevice ? closePopup : undefined}
+          onMouseLeave={isTouchDevice ? undefined : () => setShowPopup(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') closePopup()
+          }}
+        >
+          <div
+            role="document"
+            style={{
+              ...popupStyles.popup,
+              ...(isTouchDevice
+                ? {}
+                : {
+                    left: popupPosition.x,
+                    top: popupPosition.y,
+                    transform: 'none',
+                  }),
+            }}
+          >
+            {isTouchDevice && (
+              <button
+                type="button"
+                onClick={closePopup}
+                style={popupStyles.closeButton}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            )}
+            <ProposalCard
+              proposal={proposal}
+              userId=""
+              previewMode
+              onUpdated={() => {}}
+              onDeleted={() => {}}
+              onSubmitted={() => {}}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const styles = {
   container: { fontFamily: fonts.body },
   proposals: {
@@ -182,6 +305,17 @@ const styles = {
     alignItems: 'center',
   },
   proposalName: { fontSize: '14px', color: colors.textData },
+  actions: { display: 'flex', alignItems: 'center', gap: '8px' },
+  infoButton: {
+    background: 'none',
+    border: 'none',
+    color: colors.textSecondary,
+    fontSize: '16px',
+    cursor: 'pointer',
+    padding: '4px',
+    opacity: 0.6,
+    transition: 'opacity 0.15s',
+  },
   stepper: { display: 'flex', alignItems: 'center', gap: '10px' },
   stepperButton: {
     width: '28px',
@@ -244,5 +378,50 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '12px',
     margin: '8px 0 0',
+  },
+} as const
+
+const popupStyles = {
+  popoverBackdrop: {
+    position: 'fixed' as const,
+    inset: 0,
+    background: 'transparent',
+    pointerEvents: 'none' as const,
+    zIndex: 1000,
+  },
+  touchBackdrop: {
+    position: 'fixed' as const,
+    inset: 0,
+    background: 'rgba(4,12,24,0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  popup: {
+    position: 'fixed' as const,
+    background: colors.bgCard,
+    border: borders.card,
+    borderRadius: '14px',
+    padding: '20px 24px',
+    maxWidth: '400px',
+    width: '90%',
+    maxHeight: '70vh',
+    overflow: 'auto',
+    boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+    pointerEvents: 'auto' as const,
+  },
+  closeButton: {
+    position: 'absolute' as const,
+    top: '12px',
+    right: '16px',
+    background: 'none',
+    border: 'none',
+    color: colors.textSecondary,
+    fontSize: '24px',
+    cursor: 'pointer',
+    lineHeight: '1',
+    padding: '0',
+    zIndex: 1,
   },
 } as const
