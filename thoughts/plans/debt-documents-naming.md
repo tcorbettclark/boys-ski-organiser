@@ -233,4 +233,4 @@ Update all mock returns and assertions in test files to use new property names:
 ## References
 
 - Original ticket: `thoughts/tickets/debt-documents-naming.md`
-- Research: `thoughts/research/2026-04-01_debt-documents-naming.md`
+- Research: `thoughts/research/debt-documents-naming.md`

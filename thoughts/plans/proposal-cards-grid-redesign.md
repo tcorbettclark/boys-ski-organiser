@@ -1270,7 +1270,7 @@ rm src/ProposalsTable.tsx src/ProposalsRow.tsx src/ProposalViewer.tsx
 ## References
 
 - Original ticket: `thoughts/tickets/feature_proposal_cards_grid.md`
-- Research: `thoughts/research/2026-04-04_proposal_cards_grid_redesign.md`
+- Research: `thoughts/research/proposal_cards_grid_redesign.md`
 - Permission logic: `src/ProposalsRow.tsx:51-55`
 - Badge styles: `src/ProposalsRow.tsx:251-286`
 - Card styling: `src/ProposalViewer.tsx:216-218`
