@@ -315,34 +315,37 @@ function PastPoll({
     userId: string
   ) => Promise<{ votes: Vote[] }>
 }) {
-  const [expanded, setExpanded] = useState(false)
   const [votes, setVotes] = useState<Vote[]>([])
   const [loading, setLoading] = useState(false)
 
-  async function handleToggle() {
-    if (!expanded && votes.length === 0) {
-      setLoading(true)
-      try {
-        const result = await listVotes(poll.$id, tripId, userId)
-        setVotes(result.votes)
-      } finally {
-        setLoading(false)
-      }
-    }
-    setExpanded((v) => !v)
+  useEffect(() => {
+    setLoading(true)
+    listVotes(poll.$id, tripId, userId)
+      .then((result) => setVotes(result.votes))
+      .finally(() => setLoading(false))
+  }, [poll.$id, tripId, userId, listVotes])
+
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
   }
 
   return (
     <div style={pastStyles.container}>
-      <button type="button" onClick={handleToggle} style={pastStyles.toggle}>
-        Poll · CLOSED {expanded ? '▲' : '▼'}
-      </button>
-      {expanded &&
-        (loading ? (
-          <p style={pastStyles.loading}>Loading…</p>
-        ) : (
-          <PollResults poll={poll} proposals={proposals} votes={votes} />
-        ))}
+      <div style={pastStyles.header}>
+        <span style={pastStyles.status}>Poll · CLOSED</span>
+        <span style={pastStyles.dates}>
+          {formatDate(poll.startDate)} – {formatDate(poll.endDate)}
+        </span>
+      </div>
+      {loading ? (
+        <p style={pastStyles.loading}>Loading…</p>
+      ) : (
+        <PollResults poll={poll} proposals={proposals} votes={votes} />
+      )}
     </div>
   )
 }
@@ -507,6 +510,25 @@ const pastStyles = {
     border: borders.subtle,
     borderRadius: '8px',
     padding: '14px',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '12px',
+  },
+  status: {
+    fontFamily: fonts.body,
+    fontSize: '13px',
+    fontWeight: '600',
+    color: colors.textSecondary,
+    letterSpacing: '0.05em',
+    textTransform: 'uppercase',
+  },
+  dates: {
+    fontFamily: fonts.body,
+    fontSize: '13px',
+    color: colors.textSecondary,
   },
   toggle: {
     background: 'none',

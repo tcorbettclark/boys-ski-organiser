@@ -35,11 +35,20 @@ function createMockProposal(overrides: Record<string, unknown> = {}) {
 }
 
 function createMockPoll(overrides: Record<string, unknown> = {}) {
+  const now = new Date()
+  const startDate = new Date(
+    now.getTime() - 7 * 24 * 60 * 60 * 1000
+  ).toISOString()
+  const endDate = new Date(
+    now.getTime() - 1 * 24 * 60 * 60 * 1000
+  ).toISOString()
   return {
     $id: TEST_IDS.POLL_OPEN,
     tripId: TEST_IDS.TRIP,
     state: 'OPEN',
     proposalIds: [TEST_IDS.PROPOSAL_1],
+    startDate,
+    endDate,
     ...overrides,
   }
 }
@@ -498,7 +507,7 @@ describe('Poll', () => {
       })
     })
 
-    it('shows toggle button for past poll', async () => {
+    it('shows past poll expanded by default with dates', async () => {
       await act(async () => {
         renderPoll({
           listPolls: mock(() =>
@@ -508,16 +517,19 @@ describe('Poll', () => {
               ],
             })
           ),
+          listVotes: mock(() => Promise.resolve({ votes: [createMockVote()] })),
         })
       })
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /Poll · CLOSED/i })
-        ).toBeInTheDocument()
+        expect(screen.getByText(/Past Polls/i)).toBeInTheDocument()
+        expect(screen.getByText(/Poll · CLOSED/i)).toBeInTheDocument()
+        expect(screen.getByText(/29 Mar 2026/i)).toBeInTheDocument()
+        expect(screen.getByText(/04 Apr 2026/i)).toBeInTheDocument()
+        expect(screen.getByText(/1 vote/i)).toBeInTheDocument()
       })
     })
 
-    it('expands past poll and fetches votes when clicked', async () => {
+    it('fetches votes on mount for past poll', async () => {
       const listVotes = mock(() =>
         Promise.resolve({
           votes: [createMockVote({ pollId: TEST_IDS.POLL_CLOSED })],
@@ -536,16 +548,6 @@ describe('Poll', () => {
         })
       })
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /Poll · CLOSED/i })
-        ).toBeInTheDocument()
-      })
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: /Poll · CLOSED/i }))
-      })
-
-      await waitFor(() => {
         expect(listVotes).toHaveBeenCalledWith(
           TEST_IDS.POLL_CLOSED,
           TEST_IDS.TRIP,
@@ -554,14 +556,15 @@ describe('Poll', () => {
       })
     })
 
-    it('toggles expanded state when past poll button is clicked twice', async () => {
+    it('displays multiple past polls expanded by default', async () => {
       const listVotes = mock(() => Promise.resolve({ votes: [] }))
       await act(async () => {
         renderPoll({
           listPolls: mock(() =>
             Promise.resolve({
               polls: [
-                createMockPoll({ $id: TEST_IDS.POLL_CLOSED, state: 'CLOSED' }),
+                createMockPoll({ $id: 'poll-closed-1', state: 'CLOSED' }),
+                createMockPoll({ $id: 'poll-closed-2', state: 'CLOSED' }),
               ],
             })
           ),
@@ -569,29 +572,8 @@ describe('Poll', () => {
         })
       })
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /Poll · CLOSED/i })
-        ).toBeInTheDocument()
-      })
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: /Poll · CLOSED/i }))
-      })
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /Poll · CLOSED ▲/i })
-        ).toBeInTheDocument()
-      })
-
-      await act(async () => {
-        fireEvent.click(
-          screen.getByRole('button', { name: /Poll · CLOSED ▲/i })
-        )
-      })
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /Poll · CLOSED ▼/i })
-        ).toBeInTheDocument()
+        expect(screen.getByText(/Past Polls/i)).toBeInTheDocument()
+        expect(screen.getAllByText(/Poll · CLOSED/i)).toHaveLength(2)
       })
     })
   })
@@ -715,14 +697,12 @@ describe('Poll', () => {
               ],
             })
           ),
+          listVotes: mock(() => Promise.resolve({ votes: [] })),
         })
       })
       await waitFor(() => {
         expect(screen.getByText(/Past Polls/i)).toBeInTheDocument()
-        const pastPollButtons = screen.getAllByRole('button', {
-          name: /Poll · CLOSED/i,
-        })
-        expect(pastPollButtons).toHaveLength(2)
+        expect(screen.getAllByText(/Poll · CLOSED/i)).toHaveLength(2)
       })
     })
 
