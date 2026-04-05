@@ -47,6 +47,8 @@ export interface Poll {
   state: 'OPEN' | 'CLOSED'
   tripId: string
   proposalIds: string[]
+  startDate: string
+  endDate: string
 }
 
 export interface Vote {

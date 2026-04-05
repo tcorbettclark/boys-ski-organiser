@@ -837,7 +837,7 @@ describe('createPoll', () => {
         Promise.resolve({ rows: [{ $id: 'prop-1' }, { $id: 'prop-2' }] })
       )
     const db = createMockDb({ listRows })
-    await createPoll('trip-1', 'coord-1', 'Coordinator Name', db)
+    await createPoll('trip-1', 'coord-1', 'Coordinator Name', 7, db)
     expect(db.createRow).toHaveBeenCalledTimes(1)
     const [{ data }] = db.createRow.mock.calls[0]
     expect(data.state).toBe('OPEN')
@@ -845,6 +845,8 @@ describe('createPoll', () => {
     expect(data.tripId).toBe('trip-1')
     expect(data.pollCreatorUserId).toBe('coord-1')
     expect(data.pollCreatorUserName).toBe('Coordinator Name')
+    expect(data.startDate).toBeDefined()
+    expect(data.endDate).toBeDefined()
   })
 
   it('throws when caller is not the coordinator', async () => {
@@ -854,7 +856,7 @@ describe('createPoll', () => {
       })
     )
     const db = createMockDb({ listRows })
-    expect(createPoll('trip-1', 'user-1', 'User Name', db)).rejects.toThrow(
+    expect(createPoll('trip-1', 'user-1', 'User Name', 7, db)).rejects.toThrow(
       'Only the coordinator can create a poll.'
     )
     expect(db.createRow).not.toHaveBeenCalled()
@@ -872,7 +874,7 @@ describe('createPoll', () => {
       )
     const db = createMockDb({ listRows })
     expect(
-      createPoll('trip-1', 'coord-1', 'Coordinator Name', db)
+      createPoll('trip-1', 'coord-1', 'Coordinator Name', 7, db)
     ).rejects.toThrow('A poll is already open for this trip.')
     expect(db.createRow).not.toHaveBeenCalled()
   })
@@ -888,7 +890,7 @@ describe('createPoll', () => {
       .mockImplementationOnce(() => Promise.resolve({ rows: [] }))
     const db = createMockDb({ listRows })
     expect(
-      createPoll('trip-1', 'coord-1', 'Coordinator Name', db)
+      createPoll('trip-1', 'coord-1', 'Coordinator Name', 7, db)
     ).rejects.toThrow('No submitted proposals to poll on.')
     expect(db.createRow).not.toHaveBeenCalled()
   })

@@ -30,7 +30,8 @@ interface PollComponentProps {
   createPoll?: (
     tripId: string,
     userId: string,
-    userName: string
+    userName: string,
+    durationDays: number
   ) => Promise<PollType>
   closePoll?: (pollId: string, userId: string) => Promise<PollType>
   upsertVote?: (
@@ -66,6 +67,7 @@ export default function Poll({
   const [pollsError, setPollsError] = useState('')
   const [creatingPoll, setCreatingPoll] = useState(false)
   const [createError, setCreateError] = useState('')
+  const [pollDuration, setPollDuration] = useState(7)
   const [closingPoll, setClosingPoll] = useState(false)
   const [closeError, setCloseError] = useState('')
   const mountedRef = useRef(true)
@@ -141,7 +143,12 @@ export default function Poll({
     setCreatingPoll(true)
     setCreateError('')
     try {
-      const poll = await createPoll(tripId, user.$id, user.name || '')
+      const poll = await createPoll(
+        tripId,
+        user.$id,
+        user.name || '',
+        pollDuration
+      )
       setActivePoll(poll)
       setVotes([])
     } catch (err: unknown) {
@@ -169,6 +176,21 @@ export default function Poll({
   const hasSubmittedProposals = proposals.some((p) => p.state === 'SUBMITTED')
   const myVote = votes.find((v) => v.voterUserId === user.$id) || null
 
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  function getDaysRemaining(endDate: string) {
+    const end = new Date(endDate).getTime()
+    const now = Date.now()
+    const days = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
+    return days > 0 ? days : 0
+  }
+
   if (loading) return <p style={styles.message}>Loading…</p>
 
   return (
@@ -187,7 +209,14 @@ export default function Poll({
           {activePoll ? (
             <div style={styles.pollPanel}>
               <div style={styles.pollHeader}>
-                <span style={styles.pollStatus}>Active Poll · OPEN</span>
+                <div>
+                  <span style={styles.pollStatus}>Active Poll · OPEN</span>
+                  <p style={styles.pollDates}>
+                    {formatDate(activePoll.startDate)} –{' '}
+                    {formatDate(activePoll.endDate)} ·{' '}
+                    {getDaysRemaining(activePoll.endDate)} days left
+                  </p>
+                </div>
                 {isCoordinator && (
                   <div>
                     <button
@@ -221,14 +250,29 @@ export default function Poll({
             </div>
           ) : isCoordinator && hasSubmittedProposals ? (
             <div style={styles.createSection}>
-              <button
-                type="button"
-                onClick={handleCreatePoll}
-                disabled={creatingPoll}
-                style={styles.createButton}
-              >
-                {creatingPoll ? 'Creating…' : 'Create Poll'}
-              </button>
+              <div style={styles.durationRow}>
+                <label style={styles.label} htmlFor="pollDuration">
+                  Poll duration:
+                </label>
+                <input
+                  id="pollDuration"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={pollDuration}
+                  onChange={(e) => setPollDuration(Number(e.target.value))}
+                  style={styles.durationInput}
+                />
+                <span style={styles.daysLabel}>days</span>
+                <button
+                  type="button"
+                  onClick={handleCreatePoll}
+                  disabled={creatingPoll}
+                  style={styles.createButton}
+                >
+                  {creatingPoll ? 'Creating…' : 'Create Poll'}
+                </button>
+              </div>
               {createError && <p style={styles.errorText}>{createError}</p>}
             </div>
           ) : null}
@@ -361,6 +405,12 @@ const styles = {
     letterSpacing: '0.05em',
     textTransform: 'uppercase',
   },
+  pollDates: {
+    fontFamily: fonts.body,
+    fontSize: '13px',
+    color: colors.textSecondary,
+    margin: '4px 0 0',
+  },
   closePollButton: {
     padding: '7px 18px',
     borderRadius: '6px',
@@ -393,6 +443,32 @@ const styles = {
   },
   createSection: {
     marginBottom: '24px',
+  },
+  durationRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  durationInput: {
+    width: '60px',
+    padding: '8px 10px',
+    borderRadius: '6px',
+    border: borders.subtle,
+    fontFamily: fonts.body,
+    fontSize: '14px',
+    textAlign: 'center',
+  },
+  daysLabel: {
+    fontFamily: fonts.body,
+    fontSize: '14px',
+    color: colors.textSecondary,
+    marginRight: '16px',
+  },
+  label: {
+    fontFamily: fonts.body,
+    fontSize: '14px',
+    color: colors.textPrimary,
+    marginRight: '8px',
   },
   createButton: {
     padding: '10px 28px',

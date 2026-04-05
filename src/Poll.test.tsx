@@ -231,7 +231,8 @@ describe('Poll', () => {
       expect(createPoll).toHaveBeenCalledWith(
         TEST_IDS.TRIP,
         TEST_IDS.USER,
-        TEST_IDS.USER_NAME
+        TEST_IDS.USER_NAME,
+        7
       )
     })
 

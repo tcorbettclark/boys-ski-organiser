@@ -656,6 +656,7 @@ export async function createPoll(
   tripId: string,
   pollCreatorUserId: string,
   pollCreatorUserName: string,
+  durationDays: number,
   db: TablesDB = tablesDb
 ): Promise<Poll> {
   const { participants: coordDocs } = await getCoordinatorParticipant(
@@ -697,6 +698,11 @@ export async function createPoll(
     throw new Error('No submitted proposals to poll on.')
   }
   const proposalIds = proposals.map((p) => p.$id)
+  const now = new Date()
+  const startDate = now.toISOString()
+  const endDate = new Date(
+    now.getTime() + durationDays * 24 * 60 * 60 * 1000
+  ).toISOString()
   return fetchRow<Poll>(
     db.createRow({
       databaseId: DATABASE_ID,
@@ -708,6 +714,8 @@ export async function createPoll(
         pollCreatorUserName,
         state: 'OPEN',
         proposalIds,
+        startDate,
+        endDate,
       } as Record<string, unknown>,
       permissions: [
         Permission.read(Role.users()),
