@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, describe, expect, it, mock } from 'bun:test'
 import {
   act,
   cleanup,
@@ -133,7 +133,7 @@ describe('Poll', () => {
 
       // Resolve to clear loading state
       await act(async () => {
-        resolvePolls!({ polls: [] })
+        resolvePolls?.({ polls: [] })
       })
 
       await waitFor(() => {
