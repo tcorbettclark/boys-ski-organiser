@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { updateProposal as _updateProposal } from './backend'
+import { COUNTRIES } from './countries'
 import Field from './Field'
 import { borders, colors, fieldStyles, fonts, formStyles } from './theme'
 import type { Proposal } from './types.d.ts'
@@ -40,7 +41,9 @@ export default function EditProposalForm({
   const [error, setError] = useState('')
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
@@ -73,6 +76,7 @@ export default function EditProposalForm({
         value={form.country}
         onChange={handleChange}
         required
+        options={COUNTRIES}
       />
       <Field
         label="Altitude Range"

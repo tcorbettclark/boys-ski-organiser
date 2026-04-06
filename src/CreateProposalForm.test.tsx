@@ -21,7 +21,7 @@ describe('CreateProposalForm', () => {
   it('renders all 9 field labels', () => {
     renderForm()
     expect(screen.getByText(/resort name/i)).toBeTruthy()
-    expect(screen.getByText(/country/i)).toBeTruthy()
+    expect(screen.getByLabelText(/country/i)).toBeTruthy()
     expect(screen.getByText(/altitude range/i)).toBeTruthy()
     expect(screen.getByText(/nearest airport/i)).toBeTruthy()
     expect(screen.getByText(/transfer time/i)).toBeTruthy()

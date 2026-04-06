@@ -4,6 +4,7 @@ import {
   account as _account,
   createProposal as _createProposal,
 } from './backend'
+import { COUNTRIES } from './countries'
 import Field from './Field'
 import { borders, colors, fieldStyles, fonts, formStyles } from './theme'
 
@@ -61,7 +62,9 @@ export default function CreateProposalForm({
   const [error, setError] = useState('')
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
@@ -111,6 +114,7 @@ export default function CreateProposalForm({
         value={form.country}
         onChange={handleChange}
         required
+        options={COUNTRIES}
       />
       <Field
         label="Altitude Range"

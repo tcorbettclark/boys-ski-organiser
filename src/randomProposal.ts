@@ -374,6 +374,27 @@ const PROPOSALS: Proposal[] = [
   },
 ]
 
-export function randomProposal(): Proposal {
-  return PROPOSALS[Math.floor(Math.random() * PROPOSALS.length)]
+export function randomProposal(): Proposal & {
+  departureDate: string
+  returnDate: string
+} {
+  const proposal = PROPOSALS[Math.floor(Math.random() * PROPOSALS.length)]
+
+  const departureStart = new Date('2026-12-01')
+  const departureEnd = new Date('2027-04-15')
+  const duration = Math.floor(Math.random() * 7) + 7
+
+  const departDate = new Date(
+    departureStart.getTime() +
+      Math.random() * (departureEnd.getTime() - departureStart.getTime())
+  )
+  const returnDate = new Date(
+    departDate.getTime() + duration * 24 * 60 * 60 * 1000
+  )
+
+  return {
+    ...proposal,
+    departureDate: departDate.toISOString().split('T')[0],
+    returnDate: returnDate.toISOString().split('T')[0],
+  }
 }

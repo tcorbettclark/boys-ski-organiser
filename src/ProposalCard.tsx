@@ -6,6 +6,7 @@ import {
   submitProposal as _submitProposal,
   updateProposal as _updateProposal,
 } from './backend'
+import { getCountryFlagUrl } from './countries'
 import EditProposalForm from './EditProposalForm'
 import { borders, colors, fonts } from './theme'
 import type { Proposal } from './types.d.ts'
@@ -122,7 +123,17 @@ export default function ProposalCard({
                 ` (at ${proposal.accommodationName})`}
             </h3>
             <div style={styles.subHeader}>
-              <span>{proposal.country || '—'}</span>
+              <span>
+                {proposal.country &&
+                  getCountryFlagUrl(proposal.country) !== undefined && (
+                    <img
+                      src={getCountryFlagUrl(proposal.country)}
+                      alt={proposal.country}
+                      style={styles.flag}
+                    />
+                  )}
+                {proposal.country || '—'}
+              </span>
               <span style={getBadgeStyle(proposal.state)}>
                 {proposal.state}
               </span>
@@ -187,7 +198,17 @@ export default function ProposalCard({
                 ` (at ${proposal.accommodationName})`}
             </h3>
             <div style={styles.subHeader}>
-              <span>{proposal.country || '—'}</span>
+              <span>
+                {proposal.country &&
+                  getCountryFlagUrl(proposal.country) !== undefined && (
+                    <img
+                      src={getCountryFlagUrl(proposal.country)}
+                      alt={proposal.country}
+                      style={styles.flag}
+                    />
+                  )}
+                {proposal.country || '—'}
+              </span>
               <span style={getBadgeStyle(proposal.state)}>
                 {proposal.state}
               </span>
@@ -367,6 +388,13 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '13px',
     color: colors.textSecondary,
+  },
+  flag: {
+    display: 'inline-block',
+    width: '20px',
+    height: '14px',
+    verticalAlign: 'middle',
+    marginRight: '6px',
   },
   grid: {
     display: 'grid',

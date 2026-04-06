@@ -180,4 +180,66 @@ describe('ProposalCard', () => {
       screen.queryByRole('button', { name: 'Move back to Submitted' })
     ).toBeNull()
   })
+
+  it('displays flag image for supported countries', () => {
+    const franceProposal = { ...baseProposal, country: 'France' }
+    render(
+      <ProposalCard
+        proposal={franceProposal}
+        userId="user-1"
+        onUpdated={() => {}}
+        onDeleted={() => {}}
+        onSubmitted={() => {}}
+        updateProposal={mockUpdateProposal}
+        deleteProposal={mockDeleteProposal}
+        submitProposal={mockSubmitProposal}
+        rejectProposal={mockRejectProposal}
+      />
+    )
+
+    const flagImg = screen.getByRole('img', { name: 'France' })
+    expect(flagImg).toBeDefined()
+    expect(flagImg).toHaveAttribute('src', 'https://flagcdn.com/w20/fr.png')
+  })
+
+  it('does not display flag for unsupported countries', () => {
+    const unknownProposal = { ...baseProposal, country: 'Unknown Land' }
+    render(
+      <ProposalCard
+        proposal={unknownProposal}
+        userId="user-1"
+        onUpdated={() => {}}
+        onDeleted={() => {}}
+        onSubmitted={() => {}}
+        updateProposal={mockUpdateProposal}
+        deleteProposal={mockDeleteProposal}
+        submitProposal={mockSubmitProposal}
+        rejectProposal={mockRejectProposal}
+      />
+    )
+
+    expect(screen.queryByRole('img', { name: 'Unknown Land' })).toBeNull()
+  })
+
+  it('displays flag in preview mode', () => {
+    const japanProposal = { ...baseProposal, country: 'Japan' }
+    render(
+      <ProposalCard
+        proposal={japanProposal}
+        userId="user-1"
+        previewMode={true}
+        onUpdated={() => {}}
+        onDeleted={() => {}}
+        onSubmitted={() => {}}
+        updateProposal={mockUpdateProposal}
+        deleteProposal={mockDeleteProposal}
+        submitProposal={mockSubmitProposal}
+        rejectProposal={mockRejectProposal}
+      />
+    )
+
+    const flagImg = screen.getByRole('img', { name: 'Japan' })
+    expect(flagImg).toBeDefined()
+    expect(flagImg).toHaveAttribute('src', 'https://flagcdn.com/w20/jp.png')
+  })
 })

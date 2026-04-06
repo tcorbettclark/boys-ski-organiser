@@ -4,12 +4,17 @@ interface FieldProps {
   label: string
   name?: string
   value: string
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onChange: (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => void
   type?: string
   required?: boolean
   placeholder?: string
   variant?: 'default' | 'auth'
   minLength?: number
+  options?: string[]
 }
 
 export default function Field({
@@ -22,8 +27,34 @@ export default function Field({
   placeholder,
   variant = 'default',
   minLength,
+  options,
 }: FieldProps) {
   const styles = fieldStyles[variant] || fieldStyles.default
+
+  if (options) {
+    return (
+      <div style={styles.field}>
+        <label htmlFor={name} style={styles.label}>
+          {label}
+        </label>
+        <select
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          required={required}
+          style={styles.input}
+        >
+          <option value="">Select a country…</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      </div>
+    )
+  }
 
   return (
     <div style={styles.field}>
