@@ -35,12 +35,12 @@ function createMockProposal(overrides: Record<string, unknown> = {}) {
 }
 
 function createMockPoll(overrides: Record<string, unknown> = {}) {
-  const now = new Date()
+  const baseDate = new Date('2026-04-05T00:00:00.000Z')
   const startDate = new Date(
-    now.getTime() - 7 * 24 * 60 * 60 * 1000
+    baseDate.getTime() - 7 * 24 * 60 * 60 * 1000
   ).toISOString()
   const endDate = new Date(
-    now.getTime() - 1 * 24 * 60 * 60 * 1000
+    baseDate.getTime() - 1 * 24 * 60 * 60 * 1000
   ).toISOString()
   return {
     $id: TEST_IDS.POLL_OPEN,
