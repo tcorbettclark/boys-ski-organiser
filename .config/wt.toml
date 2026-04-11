@@ -90,8 +90,8 @@ copy = "wt step copy-from-main --yes"
 # Project-config aliases require command approval on first run.
 #
 [aliases]
-merge-and-continue = "wt merge --no-commit --no-remove && wt step copy-to-main"
-sync-all-from-main = "wt step for-each -- 'git rebase main && wt step copy-from-main'"
+merge-and-continue = "wt merge --no-commit --no-remove && wt step copy-to-main --yes"
+sync-all-from-main = "wt step for-each -- 'git rebase main && wt step copy-from-main --yes'"
 copy-to-main = "wt step copy-ignored --from {{ branch }} --to {{ default_branch }}"
 copy-from-main = "wt step copy-ignored --from {{ default_branch }} --to {{ branch }}"
 
