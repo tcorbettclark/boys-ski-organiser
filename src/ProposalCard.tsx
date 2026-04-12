@@ -193,37 +193,32 @@ export default function ProposalCard({
         {accommodations.length > 0 && (
           <div style={styles.accommodationsSection}>
             <h4 style={styles.accommodationsTitle}>Accommodations</h4>
-            <table style={styles.accommodationsTable}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Cost</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {accommodations.map((acc) => (
-                  <tr key={acc.$id}>
-                    <td>
-                      {acc.url ? (
-                        <a
-                          href={acc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={styles.accommodationLink}
-                        >
-                          {acc.name} ↗
-                        </a>
-                      ) : (
-                        acc.name
-                      )}
-                    </td>
-                    <td>{acc.cost}</td>
-                    <td>{acc.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {accommodations.map((acc, i) => (
+              <div key={acc.$id}>
+                {i > 0 && <hr style={styles.accommodationDivider} />}
+                <div style={styles.grid}>
+                  <Field
+                    label="Name"
+                    value={acc.url ? undefined : acc.name || '—'}
+                  >
+                    {acc.url && (
+                      <a
+                        href={acc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={styles.accommodationLink}
+                      >
+                        {acc.name || '—'} ↗
+                      </a>
+                    )}
+                  </Field>
+                  <Field label="Cost" value={acc.cost} />
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <Field label="Description" value={acc.description} />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -332,11 +327,19 @@ export default function ProposalCard({
   )
 }
 
-function Field({ label, value }: { label: string; value?: string }) {
+function Field({
+  label,
+  value,
+  children,
+}: {
+  label: string
+  value?: string
+  children?: React.ReactNode
+}) {
   return (
     <div>
       <div style={styles.fieldLabel}>{label}</div>
-      <div style={styles.fieldValue}>{value || '—'}</div>
+      <div style={styles.fieldValue}>{children ?? (value || '—')}</div>
     </div>
   )
 }
@@ -401,27 +404,24 @@ const styles = {
   },
   accommodationsSection: {
     marginBottom: '20px',
-    padding: '16px',
-    background: colors.bgInput,
-    borderRadius: '8px',
   },
   accommodationsTitle: {
     fontFamily: fonts.body,
     fontSize: '12px',
-    fontWeight: '600',
+    fontWeight: '600' as const,
     color: colors.textSecondary,
     letterSpacing: '0.08em',
-    textTransform: 'uppercase',
+    textTransform: 'uppercase' as const,
     marginBottom: '12px',
-  },
-  accommodationsTable: {
-    width: '100%',
-    borderCollapse: 'collapse' as const,
-    fontSize: '13px',
   },
   accommodationLink: {
     color: colors.accent,
     textDecoration: 'none',
+  },
+  accommodationDivider: {
+    border: 'none',
+    borderTop: borders.subtle,
+    margin: '16px 0',
   },
   actions: {
     display: 'flex',
