@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { upsertVote as _upsertVote } from './backend'
 import ProposalCard from './ProposalCard'
 import { borders, colors, fonts } from './theme'
-import type { Poll, Proposal, Vote } from './types.d.ts'
+import type { Accommodation, Poll, Proposal, Vote } from './types.d.ts'
 
 interface PollVotingProps {
   poll: Poll
   proposals: Proposal[]
+  accommodations?: Record<string, Accommodation[]>
   myVote: Vote | null
   userId: string
   onVoteSaved: (vote: unknown) => void
@@ -22,6 +23,7 @@ interface PollVotingProps {
 export default function PollVoting({
   poll,
   proposals,
+  accommodations = {},
   myVote,
   userId,
   onVoteSaved,
@@ -107,6 +109,7 @@ export default function PollVoting({
               name={name}
               count={count}
               remaining={remaining}
+              accommodations={accommodations[proposalId] || []}
               onAdd={handleAdd}
               onRemove={handleRemove}
             />
@@ -140,6 +143,7 @@ function ProposalRow({
   name,
   count,
   remaining,
+  accommodations,
   onAdd,
   onRemove,
 }: {
@@ -147,6 +151,7 @@ function ProposalRow({
   name: string
   count: number
   remaining: number
+  accommodations: Accommodation[]
   onAdd: (id: string) => void
   onRemove: (id: string) => void
 }) {
@@ -272,6 +277,7 @@ function ProposalRow({
               proposal={proposal}
               userId=""
               previewMode
+              accommodations={accommodations}
               onUpdated={() => {}}
               onDeleted={() => {}}
               onSubmitted={() => {}}
