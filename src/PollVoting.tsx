@@ -189,8 +189,7 @@ function ProposalRow({
 
   return (
     <div style={styles.proposalCard}>
-      <span style={styles.proposalName}>{name}</span>
-      <div style={styles.actions}>
+      <div style={styles.infoButtonWrap}>
         <button
           type="button"
           aria-label={`View details for ${name}`}
@@ -201,38 +200,39 @@ function ProposalRow({
         >
           ⓘ
         </button>
-        <div style={styles.stepper}>
-          <button
-            type="button"
-            aria-label={`Remove vote from ${name}`}
-            onClick={() => onRemove(proposal.$id)}
-            disabled={count === 0}
-            style={{
-              ...styles.stepperButton,
-              ...(count === 0 ? styles.stepperButtonDisabled : {}),
-            }}
-          >
-            −
-          </button>
-          <span
-            data-testid={`count-${proposal.$id}`}
-            style={count > 0 ? styles.count : styles.countZero}
-          >
-            {count}
-          </span>
-          <button
-            type="button"
-            aria-label={`Add vote to ${name}`}
-            onClick={() => onAdd(proposal.$id)}
-            disabled={remaining === 0}
-            style={{
-              ...styles.stepperButton,
-              ...(remaining === 0 ? styles.stepperButtonDisabled : {}),
-            }}
-          >
-            +
-          </button>
-        </div>
+        <span style={styles.proposalName}>{name}</span>
+      </div>
+      <div style={styles.stepper}>
+        <button
+          type="button"
+          aria-label={`Remove vote from ${name}`}
+          onClick={() => onRemove(proposal.$id)}
+          disabled={count === 0}
+          style={{
+            ...styles.stepperButton,
+            ...(count === 0 ? styles.stepperButtonDisabled : {}),
+          }}
+        >
+          −
+        </button>
+        <span
+          data-testid={`count-${proposal.$id}`}
+          style={count > 0 ? styles.count : styles.countZero}
+        >
+          {count}
+        </span>
+        <button
+          type="button"
+          aria-label={`Add vote to ${name}`}
+          onClick={() => onAdd(proposal.$id)}
+          disabled={remaining === 0}
+          style={{
+            ...styles.stepperButton,
+            ...(remaining === 0 ? styles.stepperButtonDisabled : {}),
+          }}
+        >
+          +
+        </button>
       </div>
 
       {showPopup && (
@@ -306,7 +306,7 @@ const styles = {
     alignItems: 'center',
   },
   proposalName: { fontSize: '14px', color: colors.textData },
-  actions: { display: 'flex', alignItems: 'center', gap: '8px' },
+  infoButtonWrap: { display: 'flex', alignItems: 'center', gap: '4px' },
   infoButton: {
     background: 'none',
     border: 'none',
