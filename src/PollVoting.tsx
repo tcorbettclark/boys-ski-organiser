@@ -167,8 +167,8 @@ function ProposalRow({
     const spaceRight = window.innerWidth - x
     const spaceBelow = window.innerHeight - y
     setPopupPosition({
-      x: spaceRight < 420 ? x - 420 : x + 10,
-      y: spaceBelow < 500 ? y - 10 : y + 20,
+      x: spaceRight < 315 ? x - 315 : x + 10,
+      y: spaceBelow < 375 ? y - 10 : y + 20,
     })
     setShowPopup(true)
   }
@@ -255,11 +255,10 @@ function ProposalRow({
             style={{
               ...popupStyles.popup,
               ...(isTouchDevice
-                ? {}
+                ? { transformOrigin: 'center center' }
                 : {
                     left: popupPosition.x,
                     top: popupPosition.y,
-                    transform: 'none',
                   }),
             }}
           >
@@ -412,6 +411,8 @@ const popupStyles = {
     overflow: 'auto',
     boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
     pointerEvents: 'auto' as const,
+    transform: 'scale(0.75)',
+    transformOrigin: 'top left',
   },
   closeButton: {
     position: 'absolute' as const,
