@@ -17,4 +17,9 @@ copy-from-main = "wt step copy-ignored --from {{ default_branch }} --to {{ branc
 dev-server = "bun run dev --port={{ branch | hash_port }}"
 
 [list]
+# Include development server port in `wt list` output.
 url = "http://localhost:{{ branch | hash_port }}"
+
+[pre-remove]
+# Kill the development server process when a worktree is removed.
+server = "lsof -ti :{{ branch | hash_port }} -sTCP:LISTEN | xargs kill 2>/dev/null || true"
