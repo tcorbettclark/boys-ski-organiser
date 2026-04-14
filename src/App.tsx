@@ -1,5 +1,5 @@
 import type { Models } from 'appwrite'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import AuthForm from './AuthForm'
 import {
   account as _account,
@@ -7,6 +7,7 @@ import {
   getCoordinatorParticipant as _getCoordinatorParticipant,
   leaveTrip as _leaveTrip,
   listParticipatedTrips as _listParticipatedTrips,
+  listPolls as _listPolls,
   listTripParticipants as _listTripParticipants,
   listTrips as _listTrips,
   updateTrip as _updateTrip,
@@ -15,7 +16,7 @@ import ErrorBoundary from './ErrorBoundary'
 import Header from './Header'
 import Poll from './Poll'
 import Proposals from './Proposals'
-import TripOverview from './TripOverview'
+import TripInfo from './TripInfo'
 import Trips from './Trips'
 import { colors, fonts } from './theme'
 
@@ -39,6 +40,12 @@ interface AppProps {
       participantUserName: string
       role: 'coordinator' | 'participant'
     }>
+  }>
+  listPolls?: (
+    tripId: string,
+    userId: string
+  ) => Promise<{
+    polls: Array<{ state: string }>
   }>
   updateTrip?: (
     tripId: string,
@@ -64,6 +71,7 @@ const defaultListParticipatedTrips = _listParticipatedTrips.bind(
 const defaultListTripParticipants = _listTripParticipants.bind(
   _listTripParticipants
 )
+const defaultListPolls = _listPolls.bind(_listPolls)
 const defaultUpdateTrip = _updateTrip.bind(_updateTrip)
 const defaultDeleteTrip = _deleteTrip.bind(_deleteTrip)
 const defaultLeaveTrip = _leaveTrip.bind(_leaveTrip)
@@ -71,12 +79,15 @@ const defaultGetCoordinatorParticipant = _getCoordinatorParticipant.bind(
   _getCoordinatorParticipant
 )
 
+type TripDetailTab = 'proposals' | 'poll'
+
 export default function App({
   accountGet = defaultAccountGet,
   deleteSession = defaultDeleteSession,
   listTrips = defaultListTrips,
   listParticipatedTrips = defaultListParticipatedTrips,
   listTripParticipants = defaultListTripParticipants,
+  listPolls = defaultListPolls,
   updateTrip = defaultUpdateTrip,
   deleteTrip = defaultDeleteTrip,
   leaveTrip = defaultLeaveTrip,
@@ -86,31 +97,38 @@ export default function App({
   const [checking, setChecking] = useState(true)
   const [page, setPage] = useState<'login' | 'signup'>('login')
   const [view, setView] = useState<'tripList' | 'tripDetail'>('tripList')
-  const [tripDetailTab, setTripDetailTab] = useState<
-    'overview' | 'proposals' | 'poll'
-  >('overview')
+  const [tripDetailTab, setTripDetailTab] = useState<TripDetailTab>('proposals')
   const [trips, setTrips] = useState<Trip[]>([])
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null)
   const [refreshProposalsKey, setRefreshProposalsKey] = useState(0)
+  const [showTripInfo, setShowTripInfo] = useState(false)
+  const autoSelectedRef = useRef(false)
+
+  const loadTrips = useCallback(
+    (userId: string) => {
+      Promise.all([listTrips(userId), listParticipatedTrips(userId)])
+        .then(([ownRes, participatedRes]) => {
+          const coordinatedIds = new Set(
+            ownRes.trips.map((t: { $id: string }) => t.$id)
+          )
+          const allTrips = [
+            ...ownRes.trips,
+            ...participatedRes.trips.filter(
+              (t: { $id: string }) => !coordinatedIds.has(t.$id)
+            ),
+          ]
+          setTrips(allTrips)
+        })
+        .catch(() => {})
+    },
+    [listTrips, listParticipatedTrips]
+  )
 
   const handleJoinedTrip = useCallback(() => {
     if (!user) return
-    Promise.all([listTrips(user.$id), listParticipatedTrips(user.$id)])
-      .then(([ownRes, participatedRes]) => {
-        const coordinatedIds = new Set(
-          ownRes.trips.map((t: { $id: string }) => t.$id)
-        )
-        const allTrips = [
-          ...ownRes.trips,
-          ...participatedRes.trips.filter(
-            (t: { $id: string }) => !coordinatedIds.has(t.$id)
-          ),
-        ]
-        setTrips(allTrips)
-      })
-      .catch((err) => console.error('Failed to load trips:', err))
+    loadTrips(user.$id)
     setRefreshProposalsKey((k) => k + 1)
-  }, [user, listTrips, listParticipatedTrips])
+  }, [user, loadTrips])
 
   useEffect(() => {
     accountGet()
@@ -121,21 +139,26 @@ export default function App({
 
   useEffect(() => {
     if (!user) return
-    Promise.all([listTrips(user.$id), listParticipatedTrips(user.$id)])
-      .then(([ownRes, participatedRes]) => {
-        const coordinatedIds = new Set(
-          ownRes.trips.map((t: { $id: string }) => t.$id)
-        )
-        const allTrips = [
-          ...ownRes.trips,
-          ...participatedRes.trips.filter(
-            (t: { $id: string }) => !coordinatedIds.has(t.$id)
-          ),
-        ]
-        setTrips(allTrips)
-      })
-      .catch((err) => console.error('Failed to load trips:', err))
-  }, [user, listTrips, listParticipatedTrips])
+    loadTrips(user.$id)
+  }, [user, loadTrips])
+
+  useEffect(() => {
+    if (trips.length !== 1 || !user || autoSelectedRef.current) return
+    if (view === 'tripList') {
+      autoSelectedRef.current = true
+      const trip = trips[0]
+      setSelectedTripId(trip.$id)
+      listPolls(trip.$id, user.$id)
+        .then(({ polls }) => {
+          const hasActivePoll = polls.some((p) => p.state === 'OPEN')
+          setTripDetailTab(hasActivePoll ? 'poll' : 'proposals')
+        })
+        .catch(() => {
+          setTripDetailTab('proposals')
+        })
+      setView('tripDetail')
+    }
+  }, [trips, user, view, listPolls])
 
   async function handleLogout() {
     await deleteSession()
@@ -143,15 +166,25 @@ export default function App({
   }
 
   function handleSelectTrip(tripId: string) {
+    if (!user) return
     setSelectedTripId(tripId)
     setView('tripDetail')
-    setTripDetailTab('overview')
+    setShowTripInfo(false)
+    listPolls(tripId, user.$id)
+      .then(({ polls }) => {
+        const hasActivePoll = polls.some((p) => p.state === 'OPEN')
+        setTripDetailTab(hasActivePoll ? 'poll' : 'proposals')
+      })
+      .catch(() => {
+        setTripDetailTab('proposals')
+      })
   }
 
   function handleViewAllTrips() {
     setView('tripList')
     setSelectedTripId(null)
-    setTripDetailTab('overview')
+    setTripDetailTab('proposals')
+    setShowTripInfo(false)
   }
 
   const selectedTrip = trips.find((t) => t.$id === selectedTripId) || null
@@ -181,9 +214,8 @@ export default function App({
         tripName={selectedTrip?.description || selectedTrip?.code || ''}
         tripDetailTab={tripDetailTab}
         onViewAllTrips={handleViewAllTrips}
-        onTripDetailTabChange={(tab) =>
-          setTripDetailTab(tab as 'overview' | 'proposals' | 'poll')
-        }
+        onTripDetailTabChange={(tab) => setTripDetailTab(tab as TripDetailTab)}
+        onShowTripInfo={() => setShowTripInfo(true)}
         userName={user.name || user.email}
         onLogout={handleLogout}
       />
@@ -202,33 +234,6 @@ export default function App({
 
       {view === 'tripDetail' && selectedTripId && selectedTrip && (
         <>
-          {tripDetailTab === 'overview' && (
-            <ErrorBoundary>
-              <TripOverview
-                trip={selectedTrip}
-                user={user}
-                listTripParticipants={listTripParticipants}
-                updateTrip={updateTrip}
-                deleteTrip={deleteTrip}
-                leaveTrip={leaveTrip}
-                getCoordinatorParticipant={getCoordinatorParticipant}
-                onLeft={() => {
-                  setTrips((ts) => ts.filter((t) => t.$id !== selectedTripId))
-                  handleViewAllTrips()
-                }}
-                onDeleted={() => {
-                  setTrips((ts) => ts.filter((t) => t.$id !== selectedTripId))
-                  handleViewAllTrips()
-                }}
-                onUpdated={(updated) => {
-                  const u = updated as { $id: string }
-                  setTrips((ts) =>
-                    ts.map((t) => (t.$id === u.$id ? (u as typeof t) : t))
-                  )
-                }}
-              />
-            </ErrorBoundary>
-          )}
           {tripDetailTab === 'proposals' && (
             <ErrorBoundary>
               <Proposals
@@ -244,6 +249,31 @@ export default function App({
               <Poll user={user} tripId={selectedTripId} />
             </ErrorBoundary>
           )}
+          <TripInfo
+            trip={selectedTrip}
+            user={user}
+            open={showTripInfo}
+            onClose={() => setShowTripInfo(false)}
+            listTripParticipants={listTripParticipants}
+            updateTrip={updateTrip}
+            deleteTrip={deleteTrip}
+            leaveTrip={leaveTrip}
+            getCoordinatorParticipant={getCoordinatorParticipant}
+            onLeft={() => {
+              setTrips((ts) => ts.filter((t) => t.$id !== selectedTripId))
+              handleViewAllTrips()
+            }}
+            onDeleted={() => {
+              setTrips((ts) => ts.filter((t) => t.$id !== selectedTripId))
+              handleViewAllTrips()
+            }}
+            onUpdated={(updated) => {
+              const u = updated as { $id: string }
+              setTrips((ts) =>
+                ts.map((t) => (t.$id === u.$id ? (u as typeof t) : t))
+              )
+            }}
+          />
         </>
       )}
     </div>

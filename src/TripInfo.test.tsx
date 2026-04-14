@@ -2,7 +2,7 @@ import { describe, expect, it, mock } from 'bun:test'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Models } from 'appwrite'
-import TripOverview from './TripOverview'
+import TripInfo from './TripInfo'
 
 const trip = {
   $id: 'trip-1',
@@ -30,11 +30,13 @@ const updatedTrip = {
 
 const noop = () => {}
 
-async function renderOverview(props = {}) {
+async function renderInfo(props: Record<string, unknown> = {}) {
   render(
-    <TripOverview
+    <TripInfo
       trip={trip}
       user={currentUser}
+      open={true}
+      onClose={noop}
       getCoordinatorParticipant={() =>
         Promise.resolve({
           participants: [
@@ -60,20 +62,54 @@ async function renderOverview(props = {}) {
   )
 }
 
-describe('TripOverview', () => {
+describe('TripInfo', () => {
   it('shows the trip description', async () => {
-    await renderOverview()
+    await renderInfo()
     expect(screen.getByText('Old description'))
   })
 
+  it('shows the invite code', async () => {
+    await renderInfo()
+    expect(screen.getByText('abc-123'))
+  })
+
+  it('does not render when open is false', () => {
+    render(
+      <TripInfo
+        trip={trip}
+        user={currentUser}
+        open={false}
+        onClose={noop}
+        getCoordinatorParticipant={() => Promise.resolve({ participants: [] })}
+        listTripParticipants={() => Promise.resolve({ participants: [] })}
+      />
+    )
+    expect(screen.queryByText('Trip Info')).toBeNull()
+  })
+
   it('shows the Edit button for the coordinator', async () => {
-    await renderOverview()
+    await renderInfo()
     expect(screen.getByRole('button', { name: /^edit$/i }))
+  })
+
+  it('shows the Leave Trip button for participants', async () => {
+    await renderInfo({
+      getCoordinatorParticipant: () =>
+        Promise.resolve({
+          participants: [
+            {
+              participantUserId: 'other-user',
+              participantUserName: 'Bob',
+            },
+          ],
+        }),
+    })
+    expect(screen.getByRole('button', { name: /leave trip/i }))
   })
 
   it('shows EditTripForm when Edit is clicked', async () => {
     const ue = userEvent.setup()
-    await renderOverview()
+    await renderInfo()
     await ue.click(screen.getByRole('button', { name: /^edit$/i }))
     expect(screen.getByRole('button', { name: /^save$/i }))
   })
@@ -81,7 +117,7 @@ describe('TripOverview', () => {
   it('calls onUpdated with the updated trip after saving', async () => {
     const ue = userEvent.setup()
     const handleUpdated = mock(() => {})
-    await renderOverview({ onUpdated: handleUpdated })
+    await renderInfo({ onUpdated: handleUpdated })
 
     await ue.click(screen.getByRole('button', { name: /^edit$/i }))
 
@@ -95,15 +131,31 @@ describe('TripOverview', () => {
     })
   })
 
-  it('exits edit mode after saving', async () => {
-    const ue = userEvent.setup()
-    await renderOverview()
+  it('shows the Delete Trip button for the coordinator', async () => {
+    await renderInfo()
+    expect(screen.getByRole('button', { name: /delete trip/i }))
+  })
 
-    await ue.click(screen.getByRole('button', { name: /^edit$/i }))
-    await ue.click(screen.getByRole('button', { name: /^save$/i }))
-
-    await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /^save$/i })).toBeNull()
+  it('does not show the Delete Trip button for participants', async () => {
+    await renderInfo({
+      getCoordinatorParticipant: () =>
+        Promise.resolve({
+          participants: [
+            {
+              participantUserId: 'other-user',
+              participantUserName: 'Bob',
+            },
+          ],
+        }),
     })
+    expect(screen.queryByRole('button', { name: /delete trip/i })).toBeNull()
+  })
+
+  it('calls onClose when the close button is clicked', async () => {
+    const ue = userEvent.setup()
+    const handleClose = mock(() => {})
+    await renderInfo({ onClose: handleClose })
+    await ue.click(screen.getByRole('button', { name: 'Close' }))
+    expect(handleClose).toHaveBeenCalledTimes(1)
   })
 })

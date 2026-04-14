@@ -12,9 +12,11 @@ import ParticipantList from './ParticipantList'
 import { borders, colors, fonts } from './theme'
 import type { Trip } from './types.d.ts'
 
-interface TripOverviewProps {
+interface TripInfoProps {
   trip: Trip
   user: Models.User
+  open: boolean
+  onClose: () => void
   listTripParticipants?: (tripId: string) => Promise<{
     participants: Array<{
       $id: string
@@ -40,9 +42,11 @@ interface TripOverviewProps {
   onDeleted?: () => void
 }
 
-export default function TripOverview({
+export default function TripInfo({
   trip,
   user,
+  open,
+  onClose,
   listTripParticipants = _listTripParticipants,
   getCoordinatorParticipant = _getCoordinatorParticipant,
   updateTrip = _updateTrip,
@@ -51,7 +55,7 @@ export default function TripOverview({
   onLeft,
   onUpdated,
   onDeleted,
-}: TripOverviewProps) {
+}: TripInfoProps) {
   const [coordinator, setCoordinator] = useState<{ name: string } | null>(null)
   const [isCoordinator, setIsCoordinator] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -59,6 +63,8 @@ export default function TripOverview({
   const [leaveError, setLeaveError] = useState('')
   const [codeCopied, setCodeCopied] = useState(false)
   const [codeCopyError, setCodeCopyError] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const mountedRef = useRef(true)
 
   useEffect(() => {
@@ -79,8 +85,15 @@ export default function TripOverview({
           setCoordinator({ name: participants[0].participantUserName })
         }
       })
-      .catch((err) => console.error('Failed to load coordinator:', err))
+      .catch(() => {})
   }, [trip, user.$id, getCoordinatorParticipant])
+
+  useEffect(() => {
+    if (!open) {
+      setIsEditing(false)
+      setLeaveError('')
+    }
+  }, [open])
 
   function handleCopyCode() {
     if (!trip.code) return
@@ -112,13 +125,49 @@ export default function TripOverview({
     }
   }
 
-  if (!trip) return null
+  async function handleDelete() {
+    if (!window.confirm('Delete this trip?')) return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      await deleteTrip(trip.$id, user.$id)
+      onDeleted?.()
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : String(err))
+      setDeleting(false)
+    }
+  }
+
+  if (!open || !trip) return null
 
   if (isEditing) {
     return (
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Edit Trip</h3>
+      <div
+        role="dialog"
+        aria-modal="true"
+        style={styles.overlay}
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onClose()
+        }}
+      >
+        <div
+          role="document"
+          style={styles.panel}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <div style={styles.panelHeader}>
+            <h3 style={styles.panelTitle}>Edit Trip</h3>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              style={styles.closeButton}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
           <EditTripForm
             trip={trip}
             userId={user.$id}
@@ -126,10 +175,8 @@ export default function TripOverview({
               setIsEditing(false)
               onUpdated?.(updated)
             }}
-            onDeleted={() => onDeleted?.()}
             onCancel={() => setIsEditing(false)}
             updateTrip={updateTrip}
-            deleteTrip={deleteTrip}
           />
         </div>
       </div>
@@ -137,33 +184,33 @@ export default function TripOverview({
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.cardHeader}>
-          <h3 style={styles.cardTitle}>Trip Details</h3>
-          <div style={styles.actions}>
-            {!isCoordinator && (
-              <button
-                type="button"
-                onClick={handleLeave}
-                disabled={leaving}
-                style={styles.leaveButton}
-              >
-                {leaving ? 'Leaving…' : 'Leave Trip'}
-              </button>
-            )}
-            {isCoordinator && (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                style={styles.editButton}
-              >
-                Edit
-              </button>
-            )}
-          </div>
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={styles.overlay}
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose()
+      }}
+    >
+      <div
+        role="document"
+        style={styles.panel}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <div style={styles.panelHeader}>
+          <h3 style={styles.panelTitle}>Trip Info</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            style={styles.closeButton}
+            aria-label="Close"
+          >
+            ✕
+          </button>
         </div>
-        {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
+
         <div style={styles.details}>
           {trip.description && (
             <div style={styles.detailRow}>
@@ -174,12 +221,12 @@ export default function TripOverview({
           <div style={styles.detailRow}>
             <span style={styles.detailLabel}>Coordinator</span>
             <span style={styles.detailValue}>
-              {coordinator ? `${coordinator.name}` : '…'}
+              {coordinator ? coordinator.name : '…'}
             </span>
           </div>
           {trip.code && (
             <div style={styles.detailRow}>
-              <span style={styles.detailLabel}>Code</span>
+              <span style={styles.detailLabel}>Invite Code</span>
               <span style={styles.codeWithCopy}>
                 <span style={styles.mono}>{trip.code}</span>
                 <button
@@ -191,61 +238,120 @@ export default function TripOverview({
                 >
                   {codeCopied ? '✓' : '⧉'}
                 </button>
-                <span style={styles.copyFeedback}>
-                  {codeCopied
-                    ? 'Copied!'
-                    : codeCopyError ||
-                      '(share this code with others so they can join)'}
-                </span>
+                {codeCopied && <span style={styles.copyFeedback}>Copied!</span>}
+                {codeCopyError && (
+                  <span style={styles.copyFeedback}>{codeCopyError}</span>
+                )}
               </span>
             </div>
           )}
+          {!isCoordinator && (
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel} />
+              <button
+                type="button"
+                onClick={handleLeave}
+                disabled={leaving}
+                style={styles.leaveButton}
+              >
+                {leaving ? 'Leaving…' : 'Leave Trip'}
+              </button>
+            </div>
+          )}
+          {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
+          {deleteError && <p style={styles.leaveError}>{deleteError}</p>}
+          <div style={styles.detailRow}>
+            <span style={styles.detailLabel}>Participants</span>
+            <span style={styles.participantsCell}>
+              <ParticipantList
+                tripId={trip.$id}
+                listTripParticipants={listTripParticipants}
+              />
+            </span>
+          </div>
+          {isCoordinator && (
+            <div style={styles.bottomActions}>
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                style={styles.editButton}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                style={styles.deleteButton}
+              >
+                {deleting ? 'Deleting…' : 'Delete Trip'}
+              </button>
+            </div>
+          )}
         </div>
-      </div>
-
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Participants</h3>
-        <ParticipantList
-          tripId={trip.$id}
-          listTripParticipants={listTripParticipants}
-        />
       </div>
     </div>
   )
 }
 
 const styles = {
-  container: {
-    padding: '40px 48px',
-    maxWidth: '960px',
-    margin: '0 auto',
-    fontFamily: fonts.body,
+  overlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0,0,0,0.5)',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 200,
   },
-  card: {
+  panel: {
     background: colors.bgCard,
     border: borders.card,
     borderRadius: '12px',
-    padding: '24px',
+    padding: '28px',
+    width: '100%',
+    maxWidth: '440px',
+    maxHeight: '80vh',
+    overflowY: 'auto' as const,
+    boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
   },
-  cardHeader: {
+  panelHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '20px',
   },
-  actions: {
-    display: 'flex',
-    gap: '8px',
-  },
-  cardTitle: {
+  panelTitle: {
     fontFamily: fonts.display,
     fontSize: '18px',
     fontWeight: '600',
     color: colors.textPrimary,
     margin: 0,
+  },
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    color: colors.textSecondary,
+    fontSize: '18px',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    lineHeight: 1,
+  },
+  details: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  participantsCell: {
+    flex: 1,
+  },
+  bottomActions: {
+    display: 'flex',
+    gap: '8px',
+    marginTop: '4px',
   },
   editButton: {
     padding: '6px 16px',
@@ -253,6 +359,18 @@ const styles = {
     border: borders.muted,
     background: 'transparent',
     color: colors.textSecondary,
+    fontFamily: fonts.body,
+    fontSize: '12px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    letterSpacing: '0.03em',
+  },
+  deleteButton: {
+    padding: '6px 16px',
+    borderRadius: '5px',
+    border: '1px solid rgba(255,107,107,0.3)',
+    background: 'transparent',
+    color: colors.error,
     fontFamily: fonts.body,
     fontSize: '12px',
     fontWeight: '500',
@@ -275,16 +393,11 @@ const styles = {
     color: colors.error,
     fontFamily: fonts.body,
     fontSize: '12px',
-    margin: '0 0 12px',
-  },
-  details: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
+    margin: '8px 0 0',
   },
   detailRow: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: '16px',
   },
   detailLabel: {
@@ -292,9 +405,9 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     color: colors.textSecondary,
-    textTransform: 'uppercase',
+    textTransform: 'uppercase' as const,
     letterSpacing: '0.08em',
-    minWidth: '100px',
+    minWidth: '110px',
   },
   detailValue: {
     fontFamily: fonts.body,
@@ -303,7 +416,7 @@ const styles = {
   },
   mono: {
     fontFamily: fonts.mono,
-    fontSize: '13px',
+    fontSize: '11px',
     color: colors.accent,
     letterSpacing: '0.05em',
   },
@@ -328,37 +441,5 @@ const styles = {
     fontSize: '11px',
     color: colors.textSecondary,
     marginLeft: '4px',
-    textAlign: 'right',
-    flex: 1,
-  },
-  participantList: {
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  participantItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '8px 0',
-    borderBottom: borders.subtle,
-  },
-  participantName: {
-    fontFamily: fonts.body,
-    fontSize: '14px',
-    color: colors.textData,
-  },
-  participantRole: {
-    fontFamily: fonts.body,
-    fontSize: '12px',
-    color: colors.textSecondary,
-    textTransform: 'capitalize',
-  },
-  loading: {
-    color: colors.textSecondary,
-    fontSize: '14px',
   },
 } as const

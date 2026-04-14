@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { deleteTrip as _deleteTrip, updateTrip as _updateTrip } from './backend'
+import { updateTrip as _updateTrip } from './backend'
 import Field from './Field'
 import { borders, colors, formStyles } from './theme'
 import type { Trip } from './types.d.ts'
@@ -8,24 +8,20 @@ interface EditTripFormProps {
   trip: Trip
   userId: string
   onUpdated: (trip: unknown) => void
-  onDeleted: () => void
   onCancel: () => void
   updateTrip?: (
     tripId: string,
     data: { description: string },
     userId: string
   ) => Promise<unknown>
-  deleteTrip?: (tripId: string, userId: string) => Promise<void>
 }
 
 export default function EditTripForm({
   trip,
   userId,
   onUpdated,
-  onDeleted,
   onCancel,
   updateTrip = _updateTrip,
-  deleteTrip = _deleteTrip,
 }: EditTripFormProps) {
   const [form, setForm] = useState({
     description: trip.description || '',
@@ -54,18 +50,6 @@ export default function EditTripForm({
     }
   }
 
-  async function handleDelete() {
-    if (!window.confirm('Delete this trip?')) return
-    setSaving(true)
-    try {
-      await deleteTrip(trip.$id, userId)
-      onDeleted()
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err))
-      setSaving(false)
-    }
-  }
-
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <Field
@@ -82,14 +66,6 @@ export default function EditTripForm({
         </button>
         <button type="button" onClick={onCancel} style={styles.cancelButton}>
           Cancel
-        </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={saving}
-          style={styles.deleteButton}
-        >
-          Delete
         </button>
       </div>
     </form>
@@ -129,17 +105,5 @@ const styles = {
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
-  },
-  deleteButton: {
-    padding: '8px 20px',
-    borderRadius: '6px',
-    border: '1px solid rgba(255,107,107,0.25)',
-    background: 'transparent',
-    color: colors.error,
-    fontFamily: formStyles.cancelButton.fontFamily,
-    fontSize: '13px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    marginLeft: 'auto',
   },
 } as const

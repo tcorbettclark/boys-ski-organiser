@@ -6,6 +6,7 @@ interface HeaderProps {
   tripDetailTab: string
   onViewAllTrips: () => void
   onTripDetailTabChange: (tab: string) => void
+  onShowTripInfo: () => void
   userName: string
   onLogout: () => void
 }
@@ -16,6 +17,7 @@ export default function Header({
   tripDetailTab,
   onViewAllTrips,
   onTripDetailTabChange,
+  onShowTripInfo,
   userName,
   onLogout,
 }: HeaderProps) {
@@ -43,18 +45,15 @@ export default function Header({
         ← My Trips
       </button>
       <span style={headerStyles.tripName}>{tripName}</span>
+      <button
+        type="button"
+        onClick={onShowTripInfo}
+        style={headerStyles.infoButton}
+        aria-label="Trip info"
+      >
+        ⓘ
+      </button>
       <nav style={headerStyles.subTabs}>
-        <button
-          type="button"
-          onClick={() => onTripDetailTabChange('overview')}
-          style={
-            tripDetailTab === 'overview'
-              ? headerStyles.subTabActive
-              : headerStyles.subTab
-          }
-        >
-          Overview
-        </button>
         <button
           type="button"
           onClick={() => onTripDetailTabChange('proposals')}
@@ -97,10 +96,10 @@ const headerStyles = {
     height: '64px',
     borderBottom: borders.subtle,
     background: 'rgba(7,17,31,0.98)',
-    position: 'sticky',
+    position: 'sticky' as const,
     top: 0,
     zIndex: 100,
-    gap: '24px',
+    gap: '12px',
   },
   wordmark: {
     fontFamily: fonts.display,
@@ -119,6 +118,7 @@ const headerStyles = {
     padding: '6px 12px',
     borderRadius: '6px',
     transition: 'background 0.15s',
+    whiteSpace: 'nowrap' as const,
   },
   tripName: {
     fontFamily: fonts.display,
@@ -126,11 +126,26 @@ const headerStyles = {
     fontWeight: '600',
     color: colors.textPrimary,
     letterSpacing: '0.01em',
-    flex: 1,
+  },
+  infoButton: {
+    background: 'none',
+    border: '1px solid rgba(100,190,230,0.2)',
+    borderRadius: '50%',
+    width: '28px',
+    height: '28px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: colors.textSecondary,
+    fontSize: '14px',
+    cursor: 'pointer',
+    padding: 0,
+    lineHeight: 1,
   },
   subTabs: {
     display: 'flex',
     gap: '4px',
+    marginLeft: 'auto',
   },
   subTab: {
     padding: '6px 16px',

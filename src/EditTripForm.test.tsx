@@ -1,4 +1,4 @@
-import { describe, expect, it, mock, spyOn } from 'bun:test'
+import { describe, expect, it, mock } from 'bun:test'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import EditTripForm from './EditTripForm'
@@ -24,10 +24,8 @@ function renderForm(props = {}) {
       trip={sampleTrip}
       userId="user-1"
       onUpdated={noop}
-      onDeleted={noop}
       onCancel={noop}
       updateTrip={() => Promise.resolve(defaultUpdated)}
-      deleteTrip={() => Promise.resolve()}
       {...props}
     />
   )
@@ -64,31 +62,6 @@ describe('EditTripForm', () => {
     })
   })
 
-  it('calls deleteTrip and onDeleted when delete is confirmed', async () => {
-    spyOn(window, 'confirm').mockReturnValue(true)
-    const user = userEvent.setup()
-    const mockDelete = mock(() => Promise.resolve())
-    const handleDeleted = mock(() => {})
-    renderForm({ deleteTrip: mockDelete, onDeleted: handleDeleted })
-
-    await user.click(screen.getByRole('button', { name: /delete/i }))
-
-    await waitFor(() => {
-      expect(mockDelete).toHaveBeenCalledWith('trip-1', 'user-1')
-      expect(handleDeleted).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  it('does not delete when confirm is cancelled', async () => {
-    spyOn(window, 'confirm').mockReturnValue(false)
-    const user = userEvent.setup()
-    const mockDelete = mock(() => Promise.resolve())
-    renderForm({ deleteTrip: mockDelete })
-
-    await user.click(screen.getByRole('button', { name: /delete/i }))
-    expect(mockDelete).not.toHaveBeenCalled()
-  })
-
   it('calls onCancel when Cancel is clicked', async () => {
     const user = userEvent.setup()
     const handleCancel = mock(() => {})
@@ -107,5 +80,10 @@ describe('EditTripForm', () => {
     await waitFor(() => {
       expect(screen.getByText('Save failed'))
     })
+  })
+
+  it('does not render a Delete button', () => {
+    renderForm()
+    expect(screen.queryByRole('button', { name: /delete/i })).toBeNull()
   })
 })
