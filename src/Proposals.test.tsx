@@ -1,5 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import type { Models } from 'appwrite'
 import Proposals from './Proposals'
 
@@ -88,6 +89,7 @@ describe('Proposals', () => {
   })
 
   it('shows create form when "+ New Proposal" is clicked', async () => {
+    const user = userEvent.setup()
     await act(async () => {
       renderProposals({ tripId: 'trip-1' })
     })
@@ -95,9 +97,7 @@ describe('Proposals', () => {
       expect(screen.getByRole('button', { name: /\+ new proposal/i }))
     )
 
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /\+ new proposal/i }))
-    })
+    await user.click(screen.getByRole('button', { name: /\+ new proposal/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /create proposal/i }))
@@ -154,6 +154,7 @@ describe('Proposals', () => {
 
   it('shows Reject button when user is coordinator and proposal is SUBMITTED', async () => {
     const submittedProposal = { ...sampleProposals[0], state: 'SUBMITTED' }
+    const user = userEvent.setup()
     await act(async () => {
       renderProposals({
         tripId: 'trip-1',
@@ -167,6 +168,7 @@ describe('Proposals', () => {
         ),
       })
     })
+    await user.click(screen.getByRole('button', { name: 'SUBMITTED' }))
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /^reject$/i }))
     })
