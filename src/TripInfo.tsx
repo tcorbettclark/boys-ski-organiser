@@ -260,15 +260,11 @@ export default function TripInfo({
           )}
           {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
           {deleteError && <p style={styles.leaveError}>{deleteError}</p>}
-          <div style={styles.detailRow}>
-            <span style={styles.detailLabel}>Participants</span>
-            <span style={styles.participantsCell}>
-              <ParticipantList
-                tripId={trip.$id}
-                listTripParticipants={listTripParticipants}
-              />
-            </span>
-          </div>
+          <span style={styles.sectionLabel}>PARTICIPANTS</span>
+          <ParticipantList
+            tripId={trip.$id}
+            listTripParticipants={listTripParticipants}
+          />
           {isCoordinator && (
             <div style={styles.bottomActions}>
               <button
@@ -413,6 +409,14 @@ const styles = {
     fontFamily: fonts.body,
     fontSize: '14px',
     color: colors.textData,
+  },
+  sectionLabel: {
+    fontFamily: fonts.body,
+    fontSize: '12px',
+    fontWeight: '500',
+    color: colors.textSecondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.08em',
   },
   mono: {
     fontFamily: fonts.mono,

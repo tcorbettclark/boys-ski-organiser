@@ -51,7 +51,7 @@ export default function Header({
         style={headerStyles.infoButton}
         aria-label="Trip info"
       >
-        ⓘ
+        ⚙
       </button>
       <nav style={headerStyles.subTabs}>
         <button
