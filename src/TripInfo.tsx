@@ -245,9 +245,32 @@ export default function TripInfo({
               </span>
             </div>
           )}
-          {!isCoordinator && (
-            <div style={styles.detailRow}>
-              <span style={styles.detailLabel} />
+          <span style={styles.sectionLabel}>PARTICIPANTS</span>
+          <ParticipantList
+            tripId={trip.$id}
+            listTripParticipants={listTripParticipants}
+          />
+          <div style={styles.bottomActions}>
+            {isCoordinator && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  style={styles.deleteButton}
+                >
+                  {deleting ? 'Deleting…' : 'Delete Trip'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  style={styles.editButton}
+                >
+                  Edit Description
+                </button>
+              </>
+            )}
+            {!isCoordinator && (
               <button
                 type="button"
                 onClick={handleLeave}
@@ -256,34 +279,10 @@ export default function TripInfo({
               >
                 {leaving ? 'Leaving…' : 'Leave Trip'}
               </button>
-            </div>
-          )}
+            )}
+          </div>
           {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
           {deleteError && <p style={styles.leaveError}>{deleteError}</p>}
-          <span style={styles.sectionLabel}>PARTICIPANTS</span>
-          <ParticipantList
-            tripId={trip.$id}
-            listTripParticipants={listTripParticipants}
-          />
-          {isCoordinator && (
-            <div style={styles.bottomActions}>
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                style={styles.editButton}
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting}
-                style={styles.deleteButton}
-              >
-                {deleting ? 'Deleting…' : 'Delete Trip'}
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>
