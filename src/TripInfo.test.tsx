@@ -1,5 +1,5 @@
 import { describe, expect, it, mock } from 'bun:test'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Models } from 'appwrite'
 import TripInfo from './TripInfo'
@@ -31,37 +31,37 @@ const updatedTrip = {
 const noop = () => {}
 
 async function renderInfo(props: Record<string, unknown> = {}) {
-  render(
-    <TripInfo
-      trip={trip}
-      user={currentUser}
-      open={true}
-      onClose={noop}
-      getCoordinatorParticipant={() =>
-        Promise.resolve({
-          participants: [
-            {
-              participantUserId: 'user-1',
-              role: 'coordinator',
-              participantUserName: 'Alice',
-            },
-          ],
-        })
-      }
-      listTripParticipants={() => Promise.resolve({ participants: [] })}
-      updateTrip={() => Promise.resolve(updatedTrip)}
-      deleteTrip={() => Promise.resolve()}
-      leaveTrip={() => Promise.resolve()}
-      onLeft={noop}
-      onUpdated={noop}
-      {...props}
-    />
-  )
+  await act(async () => {
+    render(
+      <TripInfo
+        trip={trip}
+        user={currentUser}
+        open={true}
+        onClose={noop}
+        getCoordinatorParticipant={() =>
+          Promise.resolve({
+            participants: [
+              {
+                participantUserId: 'user-1',
+                participantUserName: 'Alice',
+              },
+            ],
+          })
+        }
+        listTripParticipants={() => Promise.resolve({ participants: [] })}
+        updateTrip={() => Promise.resolve(updatedTrip)}
+        deleteTrip={() => Promise.resolve()}
+        leaveTrip={() => Promise.resolve()}
+        onLeft={noop}
+        onUpdated={noop}
+        {...props}
+      />
+    )
+  })
   await waitFor(() =>
     expect(screen.queryByText('Loading participants…')).toBeNull()
   )
 }
-
 describe('TripInfo', () => {
   it('shows the trip description', async () => {
     await renderInfo()

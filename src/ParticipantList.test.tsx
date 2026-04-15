@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import ParticipantList from './ParticipantList'
 
@@ -15,19 +15,25 @@ describe('ParticipantList', () => {
   })
 
   it('renders participant names and roles', async () => {
-    render(
-      <ParticipantList
-        tripId="trip-1"
-        listTripParticipants={() =>
-          Promise.resolve({
-            participants: [
-              { $id: 'p1', participantUserName: 'Alice', role: 'coordinator' },
-              { $id: 'p2', participantUserName: 'Bob', role: 'participant' },
-            ],
-          })
-        }
-      />
-    )
+    await act(async () => {
+      render(
+        <ParticipantList
+          tripId="trip-1"
+          listTripParticipants={() =>
+            Promise.resolve({
+              participants: [
+                {
+                  $id: 'p1',
+                  participantUserName: 'Alice',
+                  role: 'coordinator',
+                },
+                { $id: 'p2', participantUserName: 'Bob', role: 'participant' },
+              ],
+            })
+          }
+        />
+      )
+    })
     await waitFor(() =>
       expect(screen.queryByText('Loading participants…')).toBeNull()
     )
@@ -38,12 +44,14 @@ describe('ParticipantList', () => {
   })
 
   it('renders an empty list when there are no participants', async () => {
-    render(
-      <ParticipantList
-        tripId="trip-1"
-        listTripParticipants={() => Promise.resolve({ participants: [] })}
-      />
-    )
+    await act(async () => {
+      render(
+        <ParticipantList
+          tripId="trip-1"
+          listTripParticipants={() => Promise.resolve({ participants: [] })}
+        />
+      )
+    })
     await waitFor(() =>
       expect(screen.queryByText('Loading participants…')).toBeNull()
     )
@@ -80,14 +88,16 @@ describe('ParticipantList', () => {
     const originalError = console.error
     console.error = () => {}
     try {
-      render(
-        <ErrorBoundary>
-          <ParticipantList
-            tripId="trip-1"
-            listTripParticipants={() => Promise.reject(new Error('boom'))}
-          />
-        </ErrorBoundary>
-      )
+      await act(async () => {
+        render(
+          <ErrorBoundary>
+            <ParticipantList
+              tripId="trip-1"
+              listTripParticipants={() => Promise.reject(new Error('boom'))}
+            />
+          </ErrorBoundary>
+        )
+      })
       await waitFor(() => expect(screen.getByText('caught: boom')))
     } finally {
       console.error = originalError

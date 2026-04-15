@@ -38,6 +38,7 @@ Use **Bun**: `bun install`, `bun run dev`, `bun run build`, `bun run test`
 - `import { describe, it, expect, mock } from 'bun:test'`
 - Use built-in Bun test matchers (`toBeNull`, `toHaveAttribute`, etc.)
 - happy-dom globals in `src/test-setup.ts`
+- `render()` is async and must be awaited in asynchronous tests. For components with async `useEffect` that sets state, wrap `render()` in `act()` to flush React's update queue before `waitFor`. Without this, `waitFor` polls repeatedly waiting for state to settle (slow tests).
 
 ## DO NOT
 
