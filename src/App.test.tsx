@@ -198,9 +198,9 @@ describe('App', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /trip info/i }))
+      expect(screen.getByRole('button', { name: /Alps adventure/i }))
     })
-    await ue.click(screen.getByRole('button', { name: /trip info/i }))
+    await ue.click(screen.getByRole('button', { name: /Alps adventure/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Trip Info'))
@@ -212,9 +212,9 @@ describe('App', () => {
     renderAppWithTrip()
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /trip info/i }))
+      expect(screen.getByRole('button', { name: /Alps adventure/i }))
     })
-    await ue.click(screen.getByRole('button', { name: /trip info/i }))
+    await ue.click(screen.getByRole('button', { name: /Alps adventure/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Invite Code'))
@@ -254,8 +254,8 @@ describe('App', () => {
       />
     )
 
-    await waitFor(() => screen.getByRole('button', { name: /trip info/i }))
-    await ue.click(screen.getByRole('button', { name: /trip info/i }))
+    await waitFor(() => screen.getByRole('button', { name: /Alps adventure/i }))
+    await ue.click(screen.getByRole('button', { name: /Alps adventure/i }))
 
     await waitFor(() => screen.getByText('Trip Info'))
     await ue.click(screen.getByRole('button', { name: 'Edit description' }))

@@ -45,14 +45,12 @@ export default function Header({
         >
           ← My Trips
         </button>
-        <span style={headerStyles.tripName}>{tripName}</span>
         <button
           type="button"
           onClick={onShowTripInfo}
-          style={headerStyles.infoButton}
-          aria-label="Trip info"
+          style={headerStyles.tripName}
         >
-          ⚙
+          {tripName}
         </button>
       </div>
       <nav style={headerStyles.centerTabs}>
@@ -128,21 +126,12 @@ const headerStyles = {
     fontWeight: '600',
     color: colors.textPrimary,
     letterSpacing: '0.01em',
-  },
-  infoButton: {
     background: 'none',
-    border: '1px solid rgba(100,190,230,0.2)',
-    borderRadius: '50%',
-    width: '28px',
-    height: '28px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: colors.textSecondary,
-    fontSize: '14px',
+    border: 'none',
     cursor: 'pointer',
-    padding: 0,
-    lineHeight: 1,
+    padding: '6px 12px',
+    borderRadius: '6px',
+    transition: 'background 0.15s',
   },
   subTabs: {
     display: 'flex',
