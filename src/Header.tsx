@@ -37,23 +37,25 @@ export default function Header({
 
   return (
     <header style={headerStyles.bar}>
-      <button
-        type="button"
-        onClick={onViewAllTrips}
-        style={headerStyles.backButton}
-      >
-        ← My Trips
-      </button>
-      <span style={headerStyles.tripName}>{tripName}</span>
-      <button
-        type="button"
-        onClick={onShowTripInfo}
-        style={headerStyles.infoButton}
-        aria-label="Trip info"
-      >
-        ⚙
-      </button>
-      <nav style={headerStyles.subTabs}>
+      <div style={headerStyles.leftControls}>
+        <button
+          type="button"
+          onClick={onViewAllTrips}
+          style={headerStyles.backButton}
+        >
+          ← My Trips
+        </button>
+        <span style={headerStyles.tripName}>{tripName}</span>
+        <button
+          type="button"
+          onClick={onShowTripInfo}
+          style={headerStyles.infoButton}
+          aria-label="Trip info"
+        >
+          ⚙
+        </button>
+      </div>
+      <nav style={headerStyles.centerTabs}>
         <button
           type="button"
           onClick={() => onTripDetailTabChange('proposals')}
@@ -146,6 +148,15 @@ const headerStyles = {
     display: 'flex',
     gap: '4px',
     marginLeft: 'auto',
+  },
+  leftControls: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  centerTabs: {
+    display: 'flex',
+    gap: '4px',
   },
   subTab: {
     padding: '6px 16px',
