@@ -245,9 +245,37 @@ export default function TripInfo({
               </span>
             </div>
           )}
+<<<<<<< HEAD
           <span style={styles.sectionLabel}>PARTICIPANTS</span>
+=======
+          {!isCoordinator && (
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel} />
+              <button
+                type="button"
+                onClick={handleLeave}
+                disabled={leaving}
+                style={styles.leaveButton}
+              >
+                {leaving ? 'Leaving…' : 'Leave Trip'}
+              </button>
+            </div>
+          )}
+          {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
+          {deleteError && <p style={styles.leaveError}>{deleteError}</p>}
+>>>>>>> 5ce223e (refactor(TripInfo): split participants into coordinators and participants lists)
           <ParticipantList
             tripId={trip.$id}
+            heading="COORDINATORS"
+            showRole={false}
+            filterRole="coordinator"
+            listTripParticipants={listTripParticipants}
+          />
+          <ParticipantList
+            tripId={trip.$id}
+            heading="PARTICIPANTS"
+            showRole={false}
+            filterRole="participant"
             listTripParticipants={listTripParticipants}
           />
           {isCoordinator && (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { listTripParticipants as _listTripParticipants } from './backend'
-import { borders, colors, fonts } from './theme'
+import { colors, fonts } from './theme'
 
 interface Participant {
   id: string
@@ -10,6 +10,9 @@ interface Participant {
 
 interface ParticipantListProps {
   tripId: string
+  heading?: string
+  showRole?: boolean
+  filterRole?: 'coordinator' | 'participant'
   listTripParticipants?: (tripId: string) => Promise<{
     participants: Array<{
       $id: string
@@ -21,6 +24,9 @@ interface ParticipantListProps {
 
 export default function ParticipantList({
   tripId,
+  heading,
+  showRole = true,
+  filterRole,
   listTripParticipants = _listTripParticipants,
 }: ParticipantListProps) {
   const [participants, setParticipants] = useState<Participant[]>([])
@@ -32,12 +38,13 @@ export default function ParticipantList({
     async function load() {
       try {
         const { participants: ps } = await listTripParticipants(tripId)
+        const mapped = ps.map((p) => ({
+          id: p.$id,
+          name: p.participantUserName,
+          role: p.role,
+        }))
         setParticipants(
-          ps.map((p) => ({
-            id: p.$id,
-            name: p.participantUserName,
-            role: p.role,
-          }))
+          filterRole ? mapped.filter((p) => p.role === filterRole) : mapped
         )
       } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)))
@@ -46,25 +53,36 @@ export default function ParticipantList({
       }
     }
     load()
-  }, [tripId, listTripParticipants])
+  }, [tripId, listTripParticipants, filterRole])
 
   if (error) throw error
 
   if (loading) return <p style={styles.loading}>Loading participants…</p>
 
   return (
-    <ul style={styles.list}>
-      {participants.map((p) => (
-        <li key={p.id} style={styles.item}>
-          <span style={styles.name}>{p.name}</span>
-          <span style={styles.role}>{p.role}</span>
-        </li>
-      ))}
-    </ul>
+    <>
+      {heading && <p style={styles.heading}>{heading}</p>}
+      <ul style={styles.list}>
+        {participants.map((p) => (
+          <li key={p.id} style={styles.item}>
+            <span style={styles.name}>{p.name}</span>
+            {showRole && <span style={styles.role}>{p.role}</span>}
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }
 
 const styles = {
+  heading: {
+    fontFamily: fonts.body,
+    fontSize: '12px',
+    fontWeight: '500',
+    color: colors.textSecondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.08em',
+  },
   loading: {
     color: colors.textSecondary,
     fontSize: '14px',
@@ -82,8 +100,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '8px 0',
-    borderBottom: borders.subtle,
+    padding: '8px 0 8px 12px',
   },
   name: {
     fontFamily: fonts.body,

@@ -110,7 +110,8 @@ describe('TripInfo', () => {
   it('shows EditTripForm when Edit is clicked', async () => {
     const ue = userEvent.setup()
     await renderInfo()
-    await ue.click(screen.getByRole('button', { name: /^edit$/i }))
+    await ue.click(screen.getByRole('button', {
+      name: /^Edit description$/ i }))
     expect(screen.getByRole('button', { name: /^save$/i }))
   })
 
@@ -119,7 +120,7 @@ describe('TripInfo', () => {
     const handleUpdated = mock(() => {})
     await renderInfo({ onUpdated: handleUpdated })
 
-    await ue.click(screen.getByRole('button', { name: /^edit$/i }))
+    await ue.click(screen.getByRole('button', { name: 'Edit description' }))
 
     const descInput = screen.getByRole('textbox')
     await ue.clear(descInput)
