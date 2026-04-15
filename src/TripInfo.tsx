@@ -250,27 +250,27 @@ export default function TripInfo({
             tripId={trip.$id}
             listTripParticipants={listTripParticipants}
           />
-          <div style={styles.bottomActions}>
-            {isCoordinator && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  style={styles.deleteButton}
-                >
-                  {deleting ? 'Deleting…' : 'Delete Trip'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  style={styles.editButton}
-                >
-                  Edit Description
-                </button>
-              </>
-            )}
-            {!isCoordinator && (
+          {isCoordinator && (
+            <div style={styles.bottomActions}>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                style={styles.deleteButton}
+              >
+                {deleting ? 'Deleting…' : 'Delete Trip'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                style={styles.editButton}
+              >
+                Edit description
+              </button>
+            </div>
+          )}
+          {!isCoordinator && (
+            <div style={styles.bottomActions}>
               <button
                 type="button"
                 onClick={handleLeave}
@@ -279,8 +279,8 @@ export default function TripInfo({
               >
                 {leaving ? 'Leaving…' : 'Leave Trip'}
               </button>
-            )}
-          </div>
+            </div>
+          )}
           {leaveError && <p style={styles.leaveError}>{leaveError}</p>}
           {deleteError && <p style={styles.leaveError}>{deleteError}</p>}
         </div>
@@ -345,7 +345,7 @@ const styles = {
   },
   bottomActions: {
     display: 'flex',
-    gap: '8px',
+    justifyContent: 'space-between',
     marginTop: '4px',
   },
   editButton: {
