@@ -89,7 +89,7 @@ describe('TripInfo', () => {
 
   it('shows the Edit button for the coordinator', async () => {
     await renderInfo()
-    expect(screen.getByRole('button', { name: /^edit$/i }))
+    expect(screen.getByRole('button', { name: /Edit description$/i }))
   })
 
   it('shows the Leave Trip button for participants', async () => {
@@ -110,8 +110,11 @@ describe('TripInfo', () => {
   it('shows EditTripForm when Edit is clicked', async () => {
     const ue = userEvent.setup()
     await renderInfo()
-    await ue.click(screen.getByRole('button', {
-      name: /^Edit description$/ i }))
+    await ue.click(
+      screen.getByRole('button', {
+        name: /^Edit description$/i,
+      })
+    )
     expect(screen.getByRole('button', { name: /^save$/i }))
   })
 
